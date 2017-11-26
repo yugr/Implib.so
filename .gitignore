@@ -1,0 +1,4 @@
+*.tramp.S
+*.init.c
+*.so*
+.*.swp
