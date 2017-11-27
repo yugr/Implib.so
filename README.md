@@ -54,7 +54,11 @@ so it should be twice as slow (and still quite fast overall, provided that branc
 
 # Limitations
 
-The tool does not transparently support all features of POSIX shared libraries. In particular it can not provide wrappers for data symbols.
+The tool does not transparently support all features of POSIX shared libraries. In particular
+* it can not provide wrappers for data symbols
+* it makes wrapped functions asynch signal unsafe (as they may cause a call to `dlopen`)
+* it may change semantics if there are multiple definitions of same symbol in different loaded shared objects (runtime symbol interposition is considered a bad practice though)
+* it may change semantics because shared library constructors are delayed until when library is loaded
 
 Also note that the tool is meant to be a PoC. In particular I didn't implement the following very important features:
 * proper support for multi-threading

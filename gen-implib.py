@@ -225,6 +225,11 @@ extern void *_{0}_tramp_table[];
 
 static void *lib_handle;
 
+static void __attribute__((destructor)) unload_lib() {{
+  if(lib_handle)
+    dlclose(lib_handle);
+}}
+
 static const char *const sym_names[] = {{'''.format(sym_suffix), file=f)
 
     for sym in funs:
@@ -255,6 +260,7 @@ void _{0}_tramp_resolve(int i) {{
 '''.format(dlopen_callback, load_name), file=f)
 
     # Dlsym is thread-safe so don't need to protect it
+    # FIXME: instead of RTLD_NEXT we should search for loaded lib_handle
     handle_name = 'RTLD_NEXT' if no_dlopen else 'lib_handle'
     print('''\
   // Can be sped up by manually parsing library symtab...
