@@ -12,6 +12,7 @@ Implib.so provides an easy solution - link your program with a _wrapper_ which
 * provides all necessary symbols to make linker happy
 * loads wrapped library on first call to any of its functions
 * redirects calls to library symbols
+
 Generated wrapper code is analogous to Windows import libraries which achieve the same functionality for DLLs.
 
 Implib.so was originally inspired by Stackoverflow question [Is there an elegant way to avoid dlsym when using dlopen in C?](https://stackoverflow.com/questions/45917816/is-there-an-elegant-way-to-avoid-dlsym-when-using-dlopen-in-c/47221180).
@@ -46,11 +47,18 @@ $ gen-implib.py --dlopen-callback=mycallback
 
 # Overhead
 
-Implib.so adds the following on top of normal shlib call (which is direct jump to stub, load from PLT and predictable indirect jump):
-* untaken direct branch
+Implib.so overhead on a fast path boils down to
+* predictable direct jump to wrapper
+* predictable untaken direct branch to initialization code
 * load from trampoline table
-* predictable indirect jump
-so it should be twice as slow (and still quite fast overall, provided that branch predictor does its work). It of course increases the pressure on branch predictor and L1s.
+* predictable indirect jump to real function
+
+This is very similar to normal shlib call:
+* predictable direct jump to PLT stub
+* load from GOT
+* predictable indirect jump to real function
+
+So it should have pretty much the same performance.
 
 # Limitations
 
