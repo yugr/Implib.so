@@ -36,6 +36,6 @@ gcc $CFLAGS -shared -fPIC test.c -o libtest.so
 ../../gen-implib.py libtest.so
 
 # Build app
-gcc $CFLAGS main.c libtest.so.tramp.S libtest.so.init.c
+gcc $CFLAGS main.c libtest.so.tramp.S libtest.so.init.c -ldl
 
-LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:-} ./a.out
+LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} ./a.out
