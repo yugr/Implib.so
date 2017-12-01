@@ -29,7 +29,7 @@ A typical use-case would look like this:
 $ gen-implib.py libxyz.so
 ```
 
-This will generate two files: `libxyz.tramp.S` and `libxyz.init.c` which need to be linked to your application. Your application can then freely call functions from `libxyz.so` _without linking to it_. Library will be loaded (via `dlopen`) on first call to any of its functions. If you want to forcedly resolve all symbols (e.g. if you want to avoid delays further on) you can call `void libxyz_init_all()`.
+This will generate two files: `libxyz.tramp.S` and `libxyz.init.c` which need to be linked to your application. Application can then freely call functions from `libxyz.so` _without linking to it_. Library will be loaded (via `dlopen`) on first call to any of its functions. If you want to forcedly resolve all symbols (e.g. if you want to avoid delays further on) you can call `void libxyz_init_all()`.
 
 If you don't want `dlopen` to be called automatically and prefer to load library yourself at program startup, run script as
 
@@ -58,7 +58,7 @@ This is very similar to normal shlib call:
 * load from GOT
 * predictable indirect jump to real function
 
-So it should have pretty much the same performance.
+so it should have equivalent performance.
 
 # Limitations
 
@@ -72,6 +72,7 @@ Also note that the tool is meant to be a PoC. In particular I didn't implement t
 * proper support for multi-threading
 * support any targets beyond x86\_64 (need at least i386, ARM and AArch64)
 * symbol versions are not handled at all
+
 None of these should be hard to add so let me know if you need it.
 
 Finally tool is only lightly tested and minor TODOs are scattered all over the code.
