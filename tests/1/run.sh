@@ -29,13 +29,21 @@ cd $(dirname $0)
 #CFLAGS⇔'-gdwarf-2 -O0'
 CFLAGS='-DNDEBUG -O2'
 
+if uname -o | grep -q FreeBSD; then
+  LIBS=
+else
+  LIBS=-ldl
+fi
+
 # Build shlib
 gcc $CFLAGS -shared -fPIC test.c -o libtest.so
 
-# Prepare implib
-../../gen-implib.py libtest.so
+for flags in '' '--no-lazy-load'; do
+  # Prepare implib
+  ../../gen-implib.py $flags libtest.so
 
-# Build app
-gcc $CFLAGS main.c libtest.so.tramp.S libtest.so.init.c -ldl
+  # Build app
+  gcc $CFLAGS main.c libtest.so.tramp.S libtest.so.init.c $LIBS
 
-LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} ./a.out
+  LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} ./a.out
+done
