@@ -43,9 +43,10 @@ def main():
   parser = argparse.ArgumentParser(description="Generate wrappers for shared library functions.")
   parser.add_argument('library', metavar='LIB', help="Library to be wrapped.")
   parser.add_argument('--verbose', '-v', action='count', help="Print diagnostic info.", default=0)
-  parser.add_argument('--dlopen-callback', help="Call user-provided custom callback to dlopen library.")
+  parser.add_argument('--dlopen-callback', help="Call user-provided custom callback to dlopen library.", default='')
   parser.add_argument('--no-dlopen', help="Do not emit dlopen call (user must load library himself).", action='store_true')
   parser.add_argument('--library-load-name', help="Use custom name for dlopened library (default is LIB).")
+  parser.add_argument('--no-lazy-load', help="Load library at program start (by default library is loaded on first call to one of it's functions).", action='store_true')
 
   args = parser.parse_args()
 
@@ -53,7 +54,8 @@ def main():
   verbose = args.verbose
   dlopen_callback = args.dlopen_callback
   no_dlopen = args.no_dlopen
-  load_name = args.library_load_name if args.library_load_name is not None else input_name
+  lazy_load = not args.no_lazy_load
+  load_name = args.library_load_name if args.library_load_name is not None else os.path.basename(input_name)
 
   ptr_size = 8  # TODO: parameterize
 
@@ -221,17 +223,49 @@ save_regs_and_resolve:
     }} \\
   }} while(0)
 
-extern void *_{0}_tramp_table[];
+#define CALL_USER_CALLBACK {3}
+#define NO_DLOPEN {4}
+#define LAZY_LOAD {5}
 
 static void *lib_handle;
+
+static void *load_library() {{
+  if(lib_handle)
+    return lib_handle;
+
+  // TODO: dlopen and users callback must be protected w/ critical section (to avoid dlopening lib twice)
+#if NO_DLOPEN
+  CHECK(0, "internal error"); // We shouldn't get here
+#elif CALL_USER_CALLBACK
+  extern void *{2}(const char *lib_name);
+  lib_handle = {2}("{1}");
+  CHECK(lib_handle, "callback '{2}' failed to load library");
+#else
+  lib_handle = dlopen("{1}", RTLD_LAZY | RTLD_GLOBAL);
+  CHECK(lib_handle, "failed to load library '{1}': %s", dlerror());
+#endif
+
+  return lib_handle;
+}}
+
+#if ! NO_DLOPEN && ! LAZY_LOAD
+static void __attribute__((constructor)) load_lib() {{
+  load_library();
+}}
+#endif
 
 static void __attribute__((destructor)) unload_lib() {{
   if(lib_handle)
     dlclose(lib_handle);
 }}
 
-// TODO: convert to one 0-separated string
-static const char *const sym_names[] = {{'''.format(sym_suffix), file=f)
+// TODO: convert to single 0-separated string
+static const char *const sym_names[] = {{'''.format(sym_suffix,
+                                                    load_name,
+                                                    dlopen_callback,
+                                                    int(bool(dlopen_callback)),
+                                                    int(no_dlopen),
+                                                    int(lazy_load)), file=f)
 
     for sym in funs:
       print('  "%s",' % sym['Name'], file=f)
@@ -240,45 +274,37 @@ static const char *const sym_names[] = {{'''.format(sym_suffix), file=f)
   0,
 }};
 
+extern void *_{0}_tramp_table[];
+
+// Can be sped up by manually parsing library symtab...
 void _{0}_tramp_resolve(int i) {{
   assert(i < sizeof(sym_names) / sizeof(sym_names[0]) - 1);
-  if(!lib_handle) {{'''.format(sym_suffix), file=f)
 
-    # TODO: dlopen and users callback must be protected w/ critical section (to avoid dlopening lib twice)
-    if dlopen_callback is None:
-      if not no_dlopen:
-        print('''\
-    lib_handle = dlopen("{0}", RTLD_LAZY | RTLD_GLOBAL);
-  }}
-  CHECK(lib_handle, "failed to load library '{0}': %s", dlerror());
-'''.format(load_name), file=f)
-    else:
-      print('''\
-    extern void *{0}(const char *lib_name);
-    lib_handle = {0}("{1}");
-  }}
-  CHECK(lib_handle, "callback '{0}' failed to load library");
-'''.format(dlopen_callback, load_name), file=f)
+  void *h = 0;
+#if NO_DLOPEN
+  // FIXME: instead of RTLD_NEXT we should search for loaded lib_handle
+  // as in https://github.com/jethrogb/ssltrace/blob/bf17c150a7/ssltrace.cpp#L74-L112
+  h = RTLD_NEXT;
+#elif LAZY_LOAD
+  h = load_library();
+#else
+  h = lib_handle;
+  CHECK(h, "failed to resolve symbol '%s': library '{1}' was not loaded", sym_names[i]);
+#endif
 
-    # Dlsym is thread-safe so don't need to protect it
-    # FIXME: instead of RTLD_NEXT we should search for loaded lib_handle
-    # as in https://github.com/jethrogb/ssltrace/blob/bf17c150a7/ssltrace.cpp#L74-L112
-    handle_name = 'RTLD_NEXT' if no_dlopen else 'lib_handle'
-    print('''\
-  // Can be sped up by manually parsing library symtab...
-  _{0}_tramp_table[i] = dlsym({1}, sym_names[i]);
-  CHECK(_{0}_tramp_table[i], "failed to resolve symbol '%s' in library '{2}'", sym_names[i]);
+  // Dlsym is thread-safe so don't need to protect it.
+  _{0}_tramp_table[i] = dlsym(h, sym_names[i]);
+  CHECK(_{0}_tramp_table[i], "failed to resolve symbol '%s' in library '{1}'", sym_names[i]);
 }}
-'''.format(sym_suffix, handle_name, load_name), file=f)
 
-    print('''\
 // Helper for user to resolve all symbols
 void _{0}_tramp_resolve_all(void) {{
   int i;
-  for(i = 0; i < sizeof(sym_names)/sizeof(sym_names[0]) - 1; ++i)
+  for(i = 0; i < sizeof(sym_names) / sizeof(sym_names[0]) - 1; ++i)
     _{0}_tramp_resolve(i);
-}}
-'''.format(sym_suffix, len(funs)), file=f)
+}} '''.format(sym_suffix,
+              load_name,
+              dlopen_callback), file=f)
 
 if __name__ == '__main__':
   main()
