@@ -82,3 +82,9 @@ Also note that the tool is meant to be a PoC. In particular I didn't implement t
 None of these should be hard to add so let me know if you need it.
 
 Finally tool is only lightly tested and minor TODOs are scattered all over the code.
+
+# Related work
+
+Lazy loading is supported by Solaris shared libraries but was never implemented in Linux. There have been [some discussions](https://www.sourceware.org/ml/libc-help/2013-02/msg00017.html) in libc-alpha but no patches were posted.
+
+Implib.so-like functionality is used in [OpenGL loading libraries](https://www.khronos.org/opengl/wiki/OpenGL_Loading_Library) e.g. [GLEW](http://glew.sourceforge.net/) via custom project-specific scripts.
