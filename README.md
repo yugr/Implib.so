@@ -17,10 +17,6 @@ Generated wrapper code is analogous to Windows import libraries which achieve th
 
 Implib.so was originally inspired by Stackoverflow question [Is there an elegant way to avoid dlsym when using dlopen in C?](https://stackoverflow.com/questions/45917816/is-there-an-elegant-way-to-avoid-dlsym-when-using-dlopen-in-c/47221180).
 
-For some related reading:
-* [Wikipedia on Windows Import Libraries](https://en.wikipedia.org/wiki/Dynamic-link_library#Import_libraries)
-* [MSDN on Linker Support for Delay-Loaded DLLs](https://msdn.microsoft.com/en-us/library/151kt790.aspx)
-
 # Usage
 
 A typical use-case would look like this:
@@ -51,6 +47,10 @@ $ gen-implib.py --dlopen-callback=mycallback
 
 (callback must have signature `void *(*)(const char *lib_name)` and return handle of loaded library).
 
+Finally to force library load and resolution of all symbols, call
+
+    void _LIBNAME_tramp_resolve_all(void);
+
 # Overhead
 
 Implib.so overhead on a fast path boils down to
@@ -70,7 +70,7 @@ so it should have equivalent performance.
 
 The tool does not transparently support all features of POSIX shared libraries. In particular
 * it can not provide wrappers for data symbols
-* it makes wrapped functions asynch signal unsafe (as they may cause a call to `dlopen`)
+* it makes first call to wrapped functions asynch signal unsafe (as it will call `dlopen` and library constructors)
 * it may change semantics if there are multiple definitions of same symbol in different loaded shared objects (runtime symbol interposition is considered a bad practice though)
 * it may change semantics because shared library constructors are delayed until when library is loaded
 
@@ -84,6 +84,10 @@ None of these should be hard to add so let me know if you need it.
 Finally tool is only lightly tested and minor TODOs are scattered all over the code.
 
 # Related work
+
+As mentioned in introduction import libraries are first class citizens on Windows platform:
+* [Wikipedia on Windows Import Libraries](https://en.wikipedia.org/wiki/Dynamic-link_library#Import_libraries)
+* [MSDN on Linker Support for Delay-Loaded DLLs](https://msdn.microsoft.com/en-us/library/151kt790.aspx)
 
 Lazy loading is supported by Solaris shared libraries but was never implemented in Linux. There have been [some discussions](https://www.sourceware.org/ml/libc-help/2013-02/msg00017.html) in libc-alpha but no patches were posted.
 
