@@ -42,7 +42,7 @@ $ gen-implib.py --no-dlopen libxys.so
 If you do want to load library via `dlopen` but would prefer to call it yourself (e.g. with custom parameters or with modified library name), run script as
 
 ```
-$ gen-implib.py --dlopen-callback=mycallback
+$ gen-implib.py --dlopen-callback=mycallback libxyz.so
 ```
 
 (callback must have signature `void *(*)(const char *lib_name)` and return handle of loaded library).
