@@ -25,7 +25,13 @@ A typical use-case would look like this:
 $ gen-implib.py libxyz.so
 ```
 
-This will generate two files: `libxyz.tramp.S` and `libxyz.init.c` which need to be linked to your application. Application can then freely call functions from `libxyz.so` _without linking to it_. Library will be loaded (via `dlopen`) on first call to any of its functions. If you want to forcedly resolve all symbols (e.g. if you want to avoid delays further on) you can call `void libxyz_init_all()`.
+This will generate two files: `libxyz.tramp.S` and `libxyz.init.c` which need to be linked to your application (instead of `-lxyz`):
+
+```
+$ gcc myapp.c libxyz.tramp.S libxyz.init.c ...
+```
+
+Application can then freely call functions from `libxyz.so` _without linking to it_. Library will be loaded (via `dlopen`) on first call to any of its functions. If you want to forcedly resolve all symbols (e.g. if you want to avoid delays further on) you can call `void libxyz_init_all()`.
 
 Above command would perform a _lazy load_ i.e. load library on first call to one of it's symbols. If you want to load it at startup, run
 
