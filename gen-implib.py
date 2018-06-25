@@ -3,7 +3,7 @@
 # Copyright 2017 Yury Gribov
 #
 # The MIT License (MIT)
-# 
+#
 # Use of this source code is governed by MIT license that can be
 # found in the LICENSE.txt file.
 
@@ -146,7 +146,7 @@ save_regs_and_resolve:
   PUSH_REG(r14)
   PUSH_REG(r15)
 
-  call _libtest_so_tramp_resolve  // Stack will be aligned at 16 in call
+  call _{0}_tramp_resolve  // Stack will be aligned at 16 in call
 
   POP_REG(r15)
   POP_REG(r14)
@@ -168,6 +168,7 @@ save_regs_and_resolve:
 
   .cfi_endproc
 '''.format(sym_suffix, ptr_size*(len(funs) + 1)), file=f)
+
     for i, sym in enumerate(funs):
       # Intel opt. manual says to
       # "make the fall-through code following a conditional branch be the likely target for a branch with a forward target"
