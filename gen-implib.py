@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright 2017 Yury Gribov
+# Copyright 2017-2018 Yury Gribov
 #
 # The MIT License (MIT)
 #
@@ -56,7 +56,8 @@ def main():
   warn_versioned = False
   for line in out.splitlines():
     line = line.strip()
-    if not line: continue
+    if not line:
+      continue
     words = re.split(r' +', line)
     if line.startswith('Num'):  # Header?
       if hdr is not None:
@@ -67,7 +68,7 @@ def main():
         n = n.replace(':', '')
         hdr[i] = n
     elif hdr is not None:
-      sym = dict([(k, words[i]) for i, k in hdr.items()])
+      sym = {(k, words[i]) for i, k in hdr.items()}
       if sym['Name'].find('@') >= 0:
         name, ver = sym['Name'].split('@')
         sym['Name'] = name
@@ -287,8 +288,7 @@ void _{0}_tramp_resolve_all(void) {{
   for(i = 0; i < sizeof(sym_names) / sizeof(sym_names[0]) - 1; ++i)
     _{0}_tramp_resolve(i);
 }} '''.format(sym_suffix,
-              load_name,
-              dlopen_callback), file=f)
+              load_name), file=f)
 
 if __name__ == '__main__':
   main()
