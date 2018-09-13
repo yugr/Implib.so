@@ -25,7 +25,7 @@ gcc $CFLAGS -shared -fPIC test.c -o libtest.so
 
 for flags in '' '--no-lazy-load'; do
   # Prepare implib
-  ../../gen-implib.py $flags libtest.so
+  ../../implib-gen.py $flags libtest.so
 
   # Build app
   gcc $CFLAGS main.c libtest.so.tramp.S libtest.so.init.c $LIBS

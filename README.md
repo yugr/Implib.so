@@ -22,7 +22,7 @@ Implib.so was originally inspired by Stackoverflow question [Is there an elegant
 A typical use-case would look like this:
 
 ```
-$ gen-implib.py libxyz.so
+$ implib-gen.py libxyz.so
 ```
 
 This will generate two files: `libxyz.tramp.S` and `libxyz.init.c` which need to be linked to your application (instead of `-lxyz`):
@@ -36,19 +36,19 @@ Application can then freely call functions from `libxyz.so` _without linking to 
 Above command would perform a _lazy load_ i.e. load library on first call to one of it's symbols. If you want to load it at startup, run
 
 ```
-$ gen-implib.py --no-lazy-load libxyz.so
+$ implib-gen.py --no-lazy-load libxyz.so
 ```
 
 If you don't want `dlopen` to be called automatically and prefer to load library yourself at program startup, run script as
 
 ```
-$ gen-implib.py --no-dlopen libxys.so
+$ implib-gen.py --no-dlopen libxys.so
 ```
 
 If you do want to load library via `dlopen` but would prefer to call it yourself (e.g. with custom parameters or with modified library name), run script as
 
 ```
-$ gen-implib.py --dlopen-callback=mycallback libxyz.so
+$ implib-gen.py --dlopen-callback=mycallback libxyz.so
 ```
 
 (callback must have signature `void *(*)(const char *lib_name)` and return handle of loaded library).

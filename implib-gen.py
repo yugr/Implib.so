@@ -203,7 +203,7 @@ save_regs_and_resolve:
 
 #define CHECK(cond, fmt, ...) do {{ \\
     if(!(cond)) {{ \\
-      fprintf(stderr, "gen-implib: " fmt "\\n", ##__VA_ARGS__); \\
+      fprintf(stderr, "implib-gen: " fmt "\\n", ##__VA_ARGS__); \\
       exit(1); \\
     }} \\
   }} while(0)
