@@ -68,7 +68,7 @@ def main():
         n = n.replace(':', '')
         hdr[i] = n
     elif hdr is not None:
-      sym = {(k, words[i]) for i, k in hdr.items()}
+      sym = {k: words[i] for (i, k) in hdr.items()}
       if sym['Name'].find('@') >= 0:
         name, ver = sym['Name'].split('@')
         sym['Name'] = name
