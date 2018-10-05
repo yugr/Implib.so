@@ -1,0 +1,9 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "pypy3.5"
+script:
+  - tests/1/run.sh
