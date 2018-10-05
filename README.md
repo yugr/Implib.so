@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/yugr/Implib.so.svg?branch=master)](https://travis-ci.org/yugr/Implib.so)
+
 # Motivation
 
 In a nutshell, Implib.so is a simple equivalent of [Windows DLL import libraries](http://www.digitalmars.com/ctg/implib.html) for POSIX shared libraries.
