@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright 2017 Yury Gribov
+# Copyright 2017-2018 Yury Gribov
 #
 # The MIT License (MIT)
 # 
@@ -30,5 +30,6 @@ for flags in '' '--no-lazy-load'; do
   # Build app
   gcc $CFLAGS main.c libtest.so.tramp.S libtest.so.init.c $LIBS
 
-  LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} ./a.out
+  LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} ./a.out | tee a.out.log
+  diff test.ref a.out.log
 done
