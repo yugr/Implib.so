@@ -1,10 +1,16 @@
   .data
 
   .globl _${sym_suffix}_tramp_table
+  .hidden _${sym_suffix}_tramp_table
 _${sym_suffix}_tramp_table:
   .zero $table_size
 
   .text
+
+  .globl _${sym_suffix}_save_regs_and_resolve
+  .hidden _${sym_suffix}_save_regs_and_resolve
+_${sym_suffix}_save_regs_and_resolve:
+  .cfi_startproc
 
 #define PUSH_REG(reg) push {reg}; .cfi_adjust_cfa_offset 4; .cfi_rel_offset reg, 0
 #define POP_REG(reg) pop {reg} ; .cfi_adjust_cfa_offset -4; .cfi_restore reg
@@ -13,8 +19,6 @@ _${sym_suffix}_tramp_table:
   // We store all registers to handle arbitrary calling conventions.
   // We don't save FPU/NEON regs, hopefully compiler isn't crazy enough to use them in resolving code.
   // For Dwarf directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
-_${sym_suffix}_save_regs_and_resolve:
-  .cfi_startproc
 
   PUSH_REG(r0)
   ldr r0, [sp, #8]
