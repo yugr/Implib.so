@@ -2,3 +2,4 @@
 *.init.c
 *.so*
 .*.swp
+tests/*/a.out*
