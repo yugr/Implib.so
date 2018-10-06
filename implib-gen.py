@@ -91,7 +91,6 @@ def main():
   # Collect target info
 
   target_dir = os.path.join(root, 'arch', target)
-  print(target_dir)
 
   if not os.path.exists(target_dir):
     error("unknown architecture '%s'" % target)
