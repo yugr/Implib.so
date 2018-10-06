@@ -7,12 +7,16 @@
 # Use of this source code is governed by MIT license that can be
 # found in the LICENSE.txt file.
 
+# To run tests on ARM install
+# $ sudo apt-get install gcc-arm-linux-gnueabi libc6-dev-arm-cross qemu-user-static qemu-arm-static
+
 set -eu
 
 cd $(dirname $0)
 
-#CFLAGS⇔'-gdwarf-2 -O0'
-CFLAGS='-DNDEBUG -O2'
+#CFLAGS='-gdwarf-2 -O0'
+#CFLAGS='-DNDEBUG -O2'
+CFLAGS='-g -O2'
 
 if uname -o | grep -q FreeBSD; then
   LIBS=
@@ -20,17 +24,37 @@ else
   LIBS=-ldl
 fi
 
+case "${1:-}" in
+arm)
+  TARGET=arm
+  PREFIX=arm-linux-gnueabi-
+  INTERP="qemu-arm-static -L /usr/arm-linux-gnueabi -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+  ;;
+'' | x86_64 | host)
+  TARGET=x86_64
+  PREFIX=
+  INTERP=
+  ;;
+*)
+  echo >&2 "Unsupported target: $1"
+  exit 1
+  ;;
+esac
+
+
 # Build shlib
-gcc $CFLAGS -shared -fPIC test.c -o libtest.so
+${PREFIX}gcc $CFLAGS -shared -fPIC test.c -o libtest.so
 
 for flags in '' '--no-lazy-load'; do
+  echo "Testing config: ${flags:-default}."
+
   # Prepare implib
-  ../../implib-gen.py $flags libtest.so
+  ../../implib-gen.py --target $TARGET $flags libtest.so
 
   # Build app
-  gcc $CFLAGS main.c libtest.so.tramp.S libtest.so.init.c $LIBS
+  ${PREFIX}gcc $CFLAGS main.c libtest.so.tramp.S libtest.so.init.c $LIBS
 
-  LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} ./a.out | tee a.out.log
+  LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out | tee a.out.log
   diff test.ref a.out.log
 done
 

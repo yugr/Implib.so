@@ -27,7 +27,13 @@ A typical use-case would look like this:
 $ implib-gen.py libxyz.so
 ```
 
-This will generate two files: `libxyz.tramp.S` and `libxyz.init.c` which need to be linked to your application (instead of `-lxyz`):
+This will generate code for host platform (presumably x86\_64). For ARM do
+
+```
+$ implib-gen.py --target arm-linux-gnueabi libxyz.so
+```
+
+Script generates two files: `libxyz.tramp.S` and `libxyz.init.c` which need to be linked to your application (instead of `-lxyz`):
 
 ```
 $ gcc myapp.c libxyz.tramp.S libxyz.init.c ...
@@ -84,7 +90,7 @@ The tool does not transparently support all features of POSIX shared libraries. 
 
 Also note that the tool is meant to be a PoC. In particular I didn't implement the following very important features:
 * proper support for multi-threading
-* support any targets beyond x86\_64 (need at least i386, ARM and AArch64)
+* support more targets (at least i386 and AArch64)
 * symbol versions are not handled at all
 
 None of these should be hard to add so let me know if you need it.
