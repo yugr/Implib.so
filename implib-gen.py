@@ -121,7 +121,6 @@ def main():
       print("{0}: {1}".format(i, str(fun)))
 
   # Generate assembly code
-  # TODO: support PIC code
 
   suffix = os.path.basename(load_name)
   sym_suffix = re.sub(r'[^a-zA-Z_0-9]+', '_', suffix)

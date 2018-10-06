@@ -11,8 +11,14 @@
 #include "test.h"
 
 int main() {
-  int x = foo(),
-    y = bar();
+  int x, y;
+  // Slow path
+  x = foo(),
+  y = bar();
+  printf("Results: %x %x\n", x, y);
+  // Fast path
+  x = foo();
+  y = bar();
   printf("Results: %x %x\n", x, y);
   return 0;
 }

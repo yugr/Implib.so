@@ -33,3 +33,5 @@ for flags in '' '--no-lazy-load'; do
   LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} ./a.out | tee a.out.log
   diff test.ref a.out.log
 done
+
+echo SUCCESS
