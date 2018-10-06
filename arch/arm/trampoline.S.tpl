@@ -5,8 +5,8 @@ $sym:
 1:
   // Load address
   // TODO: can we do this faster on newer ARMs?
-  ldr ip, ${sym}_offset
-${sym}_dummy:
+  ldr ip, 3f
+2:
   add ip, pc, ip
   ldr ip, [ip, #$offset]
 
@@ -27,6 +27,6 @@ ${sym}_dummy:
   b 1b
   .cfi_endproc
 
-${sym}_offset:
-  .word _${sym_suffix}_tramp_table - (${sym}_dummy + 8)
+3:
+  .word _${sym_suffix}_tramp_table - (2b + 8)
 
