@@ -16,3 +16,4 @@ $sym:
   .cfi_adjust_cfa_offset -8
   jmp 1b
   .cfi_endproc
+
