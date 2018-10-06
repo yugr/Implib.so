@@ -11,7 +11,7 @@ $sym:
 2:
   pushq $$$number
   .cfi_adjust_cfa_offset 8
-  call save_regs_and_resolve
+  call _${sym_suffix}_save_regs_and_resolve
   addq $$8, %rsp
   .cfi_adjust_cfa_offset -8
   jmp 1b

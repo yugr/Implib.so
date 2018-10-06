@@ -13,7 +13,7 @@ _${sym_suffix}_tramp_table:
   // We store all registers to handle arbitrary calling conventions.
   // We don't save XMM regs, hopefully compiler isn't crazy enough to use them in resolving code.
   // For Dwarf directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
-save_regs_and_resolve:
+_${sym_suffix}_save_regs_and_resolve:
   .cfi_startproc
 
   PUSH_REG(rdi)

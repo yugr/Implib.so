@@ -20,7 +20,7 @@ $sym:
   push {ip}
   .cfi_adjust_cfa_offset 4
   PUSH_REG(lr)
-  bl save_regs_and_resolve
+  bl _${sym_suffix}_save_regs_and_resolve
   POP_REG(lr)
   add sp, #4
   .cfi_adjust_cfa_offset -4
