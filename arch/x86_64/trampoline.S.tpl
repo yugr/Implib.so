@@ -1,4 +1,5 @@
   .globl $sym
+  .p2align 4
 $sym:
   .cfi_startproc
   // Intel opt. manual says to
