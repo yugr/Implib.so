@@ -37,6 +37,8 @@ aarch64*)
   ;;
 esac
 
+CC=${PREFIX}gcc
+
 #CFLAGS='-gdwarf-2 -O0'
 #CFLAGS='-DNDEBUG -O2'
 CFLAGS='-g -O2'
@@ -48,11 +50,18 @@ else
 fi
 
 # Build shlib to test against
-${PREFIX}gcc $CFLAGS -shared -fPIC interposed.c -o libinterposed.so
+$CC $CFLAGS -shared -fPIC interposed.c -o libinterposed.so
 
 # Standalone executables
 
 for ADD_CFLAGS in '-no-pie' '-fPIE'; do
+  # Check for older compilers
+  case "$ADD_CFLAGS" in
+  -no-pie)
+    (strings $(which $CC) | grep -q no-pie) || continue
+    ;;
+  esac
+
   for ADD_GFLAGS in '' '--no-lazy-load'; do
     echo "Standalone executable: GFLAGS += '$ADD_GFLAGS', CFLAGS += '$ADD_CFLAGS'"
 
@@ -60,7 +69,7 @@ for ADD_CFLAGS in '-no-pie' '-fPIE'; do
     ../../implib-gen.py -q --target $TARGET $ADD_GFLAGS libinterposed.so
 
     # Build app
-    ${PREFIX}gcc $CFLAGS $ADD_CFLAGS main.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
+    $CC $CFLAGS $ADD_CFLAGS main.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
 
     LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
     diff test.ref a.out.log
@@ -76,10 +85,10 @@ for ADD_GFLAGS in '' '--no-lazy-load'; do
   ../../implib-gen.py -q --target $TARGET $ADD_GFLAGS libinterposed.so
 
   # Build shlib
-  ${PREFIX}gcc $CFLAGS -shared -fPIC shlib.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS -o shlib.so
+  $CC $CFLAGS -shared -fPIC shlib.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS -o shlib.so
 
   # Build app
-  ${PREFIX}gcc $CFLAGS $ADD_CFLAGS main.c shlib.so
+  $CC $CFLAGS $ADD_CFLAGS main.c shlib.so
 
   LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
   diff test.ref a.out.log
