@@ -20,34 +20,21 @@ _${sym_suffix}_save_regs_and_resolve:
   // We don't save FPU/NEON regs, hopefully compiler isn't crazy enough to use them in resolving code.
   // For Dwarf directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
 
+  // Stack is aligned at 16 bytes at this point
+
+  // Save only arguments (and lr)
   PUSH_REG(r0)
   ldr r0, [sp, #8]
   PUSH_REG(r1)
   PUSH_REG(r2)
   PUSH_REG(r3)
-  PUSH_REG(r4)
-  PUSH_REG(r5)
-  PUSH_REG(r6)
-  PUSH_REG(r7)
-  PUSH_REG(r8)
-  PUSH_REG(r9)
-  PUSH_REG(r10)
-  PUSH_REG(r11)
   PUSH_REG(lr)
   PUSH_REG(lr)  // Align to 8 bytes
 
   bl _${sym_suffix}_tramp_resolve(PLT)
 
+  POP_REG(lr)  // TODO: pop pc?
   POP_REG(lr)
-  POP_REG(lr)
-  POP_REG(r11)
-  POP_REG(r10)
-  POP_REG(r9)
-  POP_REG(r8)
-  POP_REG(r7)
-  POP_REG(r6)
-  POP_REG(r5)
-  POP_REG(r4)
   POP_REG(r3)
   POP_REG(r2)
   POP_REG(r1)
