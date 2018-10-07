@@ -89,7 +89,7 @@ def main():
                       help="Load library at program start (by default library is loaded on first call to one of it's functions).",
                       action='store_true')
   parser.add_argument('--target',
-                      help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi (atm x86_64 and arm are supported)",
+                      help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi (atm x86_64, arm and aarch64 are supported)",
                       default='x86_64')
 
   args = parser.parse_args()
