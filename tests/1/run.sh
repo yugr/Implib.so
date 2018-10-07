@@ -11,16 +11,6 @@ set -eu
 
 cd $(dirname $0)
 
-#CFLAGS='-gdwarf-2 -O0'
-#CFLAGS='-DNDEBUG -O2'
-CFLAGS='-g -O2'
-
-if uname -o | grep -q FreeBSD; then
-  LIBS=
-else
-  LIBS=-ldl
-fi
-
 case "${1:-}" in
 arm*)
   # To run tests for ARM install
@@ -47,21 +37,49 @@ aarch64*)
   ;;
 esac
 
+#CFLAGS='-gdwarf-2 -O0'
+#CFLAGS='-DNDEBUG -O2'
+CFLAGS='-g -O2'
 
-# Build shlib
-${PREFIX}gcc $CFLAGS -shared -fPIC test.c -o libtest.so
+if uname -o | grep -q FreeBSD; then
+  LIBS=
+else
+  LIBS=-ldl
+fi
 
-for flags in ';' '--no-lazy-load;' ';-fPIC' ';-fPIE'; do
-  ADD_GFLAGS=${flags%;*}
-  ADD_CFLAGS=${flags#*;}
+# Build shlib to test against
+${PREFIX}gcc $CFLAGS -shared -fPIC interposed.c -o libinterposed.so
 
-  echo "Testing config: GFLAGS += '$ADD_GFLAGS', CFLAGS += '$ADD_CFLAGS'"
+# Standalone executables
+
+for ADD_CFLAGS in '-no-pie' '-fPIE'; do
+  for ADD_GFLAGS in '' '--no-lazy-load'; do
+    echo "Standalone executable: GFLAGS += '$ADD_GFLAGS', CFLAGS += '$ADD_CFLAGS'"
+
+    # Prepare implib
+    ../../implib-gen.py -q --target $TARGET $ADD_GFLAGS libinterposed.so
+
+    # Build app
+    ${PREFIX}gcc $CFLAGS $ADD_CFLAGS main.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
+
+    LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
+    diff test.ref a.out.log
+  done
+done
+
+# Shlibs
+
+for ADD_GFLAGS in '' '--no-lazy-load'; do
+  echo "Shared library: GFLAGS += '$ADD_GFLAGS'"
 
   # Prepare implib
-  ../../implib-gen.py -q --target $TARGET $ADD_GFLAGS libtest.so
+  ../../implib-gen.py -q --target $TARGET $ADD_GFLAGS libinterposed.so
+
+  # Build shlib
+  ${PREFIX}gcc $CFLAGS -shared -fPIC shlib.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS -o shlib.so
 
   # Build app
-  ${PREFIX}gcc $CFLAGS $ADD_CFLAGS main.c libtest.so.tramp.S libtest.so.init.c $LIBS
+  ${PREFIX}gcc $CFLAGS $ADD_CFLAGS main.c shlib.so
 
   LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
   diff test.ref a.out.log

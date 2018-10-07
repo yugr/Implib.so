@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 Yury Gribov
+ * Copyright 2018 Yury Gribov
  *
  * The MIT License (MIT)
  * 
@@ -7,13 +7,8 @@
  * found in the LICENSE.txt file.
  */
 
-int main() {
-#ifdef SHLIB
-  extern void shlib_test();
-  shlib_test();
-#else
+__attribute__((visibility("default")))
+void shlib_test() {
   extern void test();
   test();
-#endif
-  return 0;
 }
