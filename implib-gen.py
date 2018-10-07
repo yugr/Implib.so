@@ -70,13 +70,27 @@ def collect_syms(f):
 
 def main():
   parser = argparse.ArgumentParser(description="Generate wrappers for shared library functions.")
-  parser.add_argument('library', metavar='LIB', help="Library to be wrapped.")
-  parser.add_argument('--verbose', '-v', action='count', help="Print diagnostic info.", default=0)
-  parser.add_argument('--dlopen-callback', help="Call user-provided custom callback to dlopen library.", default='')
-  parser.add_argument('--no-dlopen', help="Do not emit dlopen call (user must load library himself).", action='store_true')
-  parser.add_argument('--library-load-name', help="Use custom name for dlopened library (default is LIB).")
-  parser.add_argument('--no-lazy-load', help="Load library at program start (by default library is loaded on first call to one of it's functions).", action='store_true')
-  parser.add_argument('--target', help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi (atm only x86_64 is supported)", default='x86_64')
+  parser.add_argument('library',
+                      metavar='LIB',
+                      help="Library to be wrapped.")
+  parser.add_argument('--verbose', '-v',
+                      help="Print diagnostic info.",
+                      action='count',
+                      default=0)
+  parser.add_argument('--dlopen-callback',
+                      help="Call user-provided custom callback to dlopen library.",
+                      default='')
+  parser.add_argument('--no-dlopen',
+                      help="Do not emit dlopen call (user must load library himself).",
+                      action='store_true')
+  parser.add_argument('--library-load-name',
+                      help="Use custom name for dlopened library (default is LIB).")
+  parser.add_argument('--no-lazy-load',
+                      help="Load library at program start (by default library is loaded on first call to one of it's functions).",
+                      action='store_true')
+  parser.add_argument('--target',
+                      help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi (atm x86_64 and arm are supported)",
+                      default='x86_64')
 
   args = parser.parse_args()
 
