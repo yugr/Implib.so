@@ -89,8 +89,11 @@ def main():
                       help="Load library at program start (by default library is loaded on first call to one of it's functions).",
                       action='store_true')
   parser.add_argument('--target',
-                      help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi (atm x86_64, arm and aarch64 are supported)",
+                      help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi (atm x86_64, arm and aarch64 are supported).",
                       default='x86_64')
+  parser.add_argument('-q', '--quiet',
+                      help="Do not print progress info.",
+                      action='store_true')
 
   args = parser.parse_args()
 
@@ -101,6 +104,7 @@ def main():
   lazy_load = not args.no_lazy_load
   load_name = args.library_load_name if args.library_load_name is not None else os.path.basename(input_name)
   target = args.target.split('-')[0]
+  quiet = args.quiet
 
   # Collect target info
 
@@ -140,7 +144,8 @@ def main():
 
   tramp_file = '%s.tramp.S' % suffix
   with open(tramp_file, 'w') as f:
-    print("Generating %s..." % tramp_file)
+    if not quiet:
+      print("Generating %s..." % tramp_file)
     with open(target_dir + '/table.S.tpl', 'r') as t:
       table_text = string.Template(t.read()).substitute(
         sym_suffix=sym_suffix,
@@ -162,7 +167,8 @@ def main():
 
   init_file = '%s.init.c' % suffix
   with open(init_file, 'w') as f:
-    print("Generating %s..." % init_file)
+    if not quiet:
+      print("Generating %s..." % init_file)
     with open(os.path.join(root, 'arch/common/init.c.tpl'), 'r') as t:
       init_text = string.Template(t.read()).substitute(
         sym_suffix=sym_suffix,

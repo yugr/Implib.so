@@ -22,21 +22,21 @@ else
 fi
 
 case "${1:-}" in
-arm)
+arm*)
   # To run tests for ARM install
   # $ sudo apt-get install gcc-arm-linux-gnueabi qemu-user
   TARGET=arm
   PREFIX=arm-linux-gnueabi-
   INTERP="qemu-arm -L /usr/arm-linux-gnueabi -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
   ;;
-aarch64)
+aarch64*)
   # To run tests for AArch64 install
   # sudo apt-get install gcc-aarch64-linux-gnu qemu-user
   TARGET=aarch64
   PREFIX=aarch64-linux-gnu-
   INTERP="qemu-aarch64 -L /usr/aarch64-linux-gnu -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
   ;;
-'' | x86_64 | host)
+'' | x86_64* | host)
   TARGET=x86_64
   PREFIX=
   INTERP=
@@ -51,16 +51,19 @@ esac
 # Build shlib
 ${PREFIX}gcc $CFLAGS -shared -fPIC test.c -o libtest.so
 
-for flags in '' '--no-lazy-load'; do
-  echo "Testing config: ${flags:-default}."
+for flags in ';' '--no-lazy-load;' ';-fPIC' ';-fPIE'; do
+  ADD_GFLAGS=${flags%;*}
+  ADD_CFLAGS=${flags#*;}
+
+  echo "Testing config: GFLAGS += '$ADD_GFLAGS', CFLAGS += '$ADD_CFLAGS'"
 
   # Prepare implib
-  ../../implib-gen.py --target $TARGET $flags libtest.so
+  ../../implib-gen.py -q --target $TARGET $ADD_GFLAGS libtest.so
 
   # Build app
-  ${PREFIX}gcc $CFLAGS main.c libtest.so.tramp.S libtest.so.init.c $LIBS
+  ${PREFIX}gcc $CFLAGS $ADD_CFLAGS main.c libtest.so.tramp.S libtest.so.init.c $LIBS
 
-  LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out | tee a.out.log
+  LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
   diff test.ref a.out.log
 done
 
