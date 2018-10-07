@@ -7,6 +7,9 @@ _${sym_suffix}_tramp_table:
 
   .text
 
+  .globl _${sym_suffix}_tramp_resolve
+  .hidden _${sym_suffix}_tramp_resolve
+
   .globl _${sym_suffix}_save_regs_and_resolve
   .hidden _${sym_suffix}_save_regs_and_resolve
 _${sym_suffix}_save_regs_and_resolve:

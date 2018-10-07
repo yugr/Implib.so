@@ -1,10 +1,14 @@
   .data
 
   .globl _${sym_suffix}_tramp_table
+  .hidden _${sym_suffix}_tramp_table
 _${sym_suffix}_tramp_table:
   .zero $table_size
 
   .text
+
+  .globl _${sym_suffix}_tramp_resolve
+  .hidden _${sym_suffix}_tramp_resolve
 
   .globl _${sym_suffix}_save_regs_and_resolve
   .hidden _${sym_suffix}_save_regs_and_resolve
