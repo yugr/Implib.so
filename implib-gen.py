@@ -132,6 +132,9 @@ def main():
 
   funs = list(filter(is_public_fun, syms))
 
+  if not syms and not quiet:
+    print("no public functions were found in %s" % input_name)
+
   if verbose:
     print("Extracted functions from {0}:".format(load_name))
     for i, fun in enumerate(funs):
