@@ -37,8 +37,10 @@ $ implib-gen.py --target $TARGET libxyz.so
 Script generates two files: `libxyz.tramp.S` and `libxyz.init.c` which need to be linked to your application (instead of `-lxyz`):
 
 ```
-$ gcc myapp.c libxyz.tramp.S libxyz.init.c ...
+$ gcc myfile1.c myfile2.c ... libxyz.tramp.S libxyz.init.c ... -ldl
 ```
+
+(note that you need to link against libdl.so).
 
 Application can then freely call functions from `libxyz.so` _without linking to it_. Library will be loaded (via `dlopen`) on first call to any of its functions. If you want to forcedly resolve all symbols (e.g. if you want to avoid delays further on) you can call `void libxyz_init_all()`.
 

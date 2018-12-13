@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+extern "C" {
+
 #define CHECK(cond, fmt, ...) do { \
     if(!(cond)) { \
       fprintf(stderr, "implib-gen: " fmt "\n", ##__VA_ARGS__); \
@@ -81,3 +83,5 @@ void _${sym_suffix}_tramp_resolve_all(void) {
   for(i = 0; i < sizeof(sym_names) / sizeof(sym_names[0]) - 1; ++i)
     _${sym_suffix}_tramp_resolve(i);
 }
+
+}  // extern "C"
