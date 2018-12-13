@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <assert.h>
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 #define CHECK(cond, fmt, ...) do { \
     if(!(cond)) { \
@@ -84,4 +86,6 @@ void _${sym_suffix}_tramp_resolve_all(void) {
     _${sym_suffix}_tramp_resolve(i);
 }
 
+#ifdef __cplusplus
 }  // extern "C"
+#endif
