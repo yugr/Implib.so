@@ -1,3 +1,12 @@
+/*
+ * Copyright 2018-2019 Yury Gribov
+ *
+ * The MIT License (MIT)
+ *
+ * Use of this source code is governed by MIT license that can be
+ * found in the LICENSE.txt file.
+ */
+
   .globl $sym
   .p2align 4
 $sym:
