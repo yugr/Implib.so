@@ -34,10 +34,10 @@ This will generate code for host platform (presumably x86\_64). For other target
 $ implib-gen.py --target $TARGET libxyz.so
 ```
 
-Script generates two files: `libxyz.tramp.S` and `libxyz.init.c` which need to be linked to your application (instead of `-lxyz`):
+Script generates two files: `libxyz.so.tramp.S` and `libxyz.so.init.c` which need to be linked to your application (instead of `-lxyz`):
 
 ```
-$ gcc myfile1.c myfile2.c ... libxyz.tramp.S libxyz.init.c ... -ldl
+$ gcc myfile1.c myfile2.c ... libxyz.so.tramp.S libxyz.so.init.c ... -ldl
 ```
 
 (note that you need to link against libdl.so).
@@ -81,12 +81,18 @@ bar
 $ cat mycallback.c
 #define _GNU_SOURCE
 #include <dlfcn.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C"
 #endif
 void *mycallback() {
-  return dlmopen(LM_ID_NEWLM, "libxyz.so", RTLD_DEEPBIND);
+  void *h = dlmopen(LM_ID_NEWLM, "libxyz.so", RTLD_LAZY | RTLD_DEEPBIND);
+  if (h)
+    return h;
+  fprintf(stderr, "dlmopen failed: %s\n", dlerror());
+  exit(1);
 }
 
 $ implib-gen.py --dlopen-callback=mycallback --symbol-list=mysymbols.txt libxyz.so
