@@ -70,6 +70,8 @@ Finally to force library load and resolution of all symbols, call
 
 # Reducing external interface of closed-source library
 
+_TODO: modifying visibility of symbols .dynsym might be easier..._
+
 Sometimes you may want to reduce public interface of existing shared library (e.g. if it's a third-party lib which erroneously exports too many unrelated symbols).
 
 To achieve this you can generate a wrapper with limited number of symbols and override the callback which loads the library to use `dlmopen` instead of `dlopen` (and thus does not pollute the global namespace):
