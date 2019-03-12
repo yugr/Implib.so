@@ -91,6 +91,8 @@ def main():
   parser.add_argument('--target',
                       help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi (atm x86_64, arm and aarch64 are supported).",
                       default='x86_64')
+  parser.add_argument('--symbol-list',
+                      help="Path to file with symbols that should be present in wrapper (all by default).")
   parser.add_argument('-q', '--quiet',
                       help="Do not print progress info.",
                       action='store_true')
@@ -106,6 +108,17 @@ def main():
   target = args.target.split('-')[0]
   quiet = args.quiet
 
+  if args.symbol_list is None:
+    funs = None
+  else:
+    with open(args.symbol_list, 'r') as f:
+      funs = []
+      for line in re.split(r'\r?\n', f.read()):
+        line = re.sub(r'#.*', '', line)
+        line = line.strip()
+        if line:
+          funs.append(line)
+
   # Collect target info
 
   target_dir = os.path.join(root, 'arch', target)
@@ -120,25 +133,26 @@ def main():
 
   # Collect symbols
 
-  syms = collect_syms(input_name)
+  if funs is None:
+    syms = collect_syms(input_name)
 
-  def is_public_fun(s):
-    return (s['Type'] == 'FUNC'
-      and s['Type'] != 'LOCAL'
-      and s['Ndx'] != 'UND'
-      and s['Name'] not in ['_init', '_fini'])
+    def is_public_fun(s):
+      return (s['Type'] == 'FUNC'
+        and s['Type'] != 'LOCAL'
+        and s['Ndx'] != 'UND'
+        and s['Name'] not in ['_init', '_fini'])
 
-  # TODO: detect public data symbols and issue warning
+    # TODO: detect public data symbols and issue warning
 
-  funs = list(filter(is_public_fun, syms))
+    funs = list(map(lambda s: s['Name'], filter(is_public_fun, syms)))
 
-  if not syms and not quiet:
-    print("no public functions were found in %s" % input_name)
+    if not syms and not quiet:
+      print("no public functions were found in %s" % input_name)
 
   if verbose:
-    print("Extracted functions from {0}:".format(load_name))
+    print("Exported functions:")
     for i, fun in enumerate(funs):
-      print("{0}: {1}".format(i, str(fun)))
+      print("{0}: {1}".format(i, fun))
 
   # Generate assembly code
 
@@ -158,10 +172,10 @@ def main():
     with open(target_dir + '/trampoline.S.tpl', 'r') as t:
       tramp_tpl = string.Template(t.read())
 
-    for i, sym in enumerate(funs):
+    for i, name in enumerate(funs):
       tramp_text = tramp_tpl.substitute(
         sym_suffix=sym_suffix,
-        sym=sym['Name'],
+        sym=name,
         offset=i*ptr_size,
         number=i)
       f.write(tramp_text)
@@ -180,7 +194,7 @@ def main():
         has_dlopen_callback=int(bool(dlopen_callback)),
         no_dlopen=int(no_dlopen),
         lazy_load=int(lazy_load),
-        sym_names=',\n  '.join('"%s"' % sym['Name'] for sym in funs))
+        sym_names=',\n  '.join('"%s"' % name for name in funs))
     f.write(init_text)
 
 if __name__ == '__main__':

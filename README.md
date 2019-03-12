@@ -68,6 +68,31 @@ Finally to force library load and resolution of all symbols, call
 
     void _LIBNAME_tramp_resolve_all(void);
 
+# Reducing external interface of closed-source library
+
+Sometimes you may want to reduce public interface of existing shared library (e.g. if it's a third-party lib which erroneously exports too many unrelated symbols).
+
+To achieve this you can generate a wrapper with limited number of symbols and override the callback which loads the library to use `dlmopen` instead of `dlopen` (and thus does not pollute the global namespace):
+
+```
+$ cat mysymbols.txt
+foo
+bar
+$ cat mycallback.c
+#define _GNU_SOURCE
+#include <dlfcn.h>
+
+#ifdef __cplusplus
+extern "C"
+#endif
+void *mycallback() {
+  return dlmopen(LM_ID_NEWLM, "libxyz.so", RTLD_DEEPBIND);
+}
+
+$ implib-gen.py --dlopen-callback=mycallback --symbol-list=mysymbols.txt libxyz.so
+$ ... # Link your app with libxyz.tramp.S, libxyz.init.c and mycallback.c
+```
+
 # Overhead
 
 Implib.so overhead on a fast path boils down to
