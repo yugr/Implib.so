@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Yury Gribov
+ * Copyright 2017-2018 Yury Gribov
  *
  * The MIT License (MIT)
  * 
