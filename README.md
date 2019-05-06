@@ -14,8 +14,9 @@ Implib.so provides an easy solution - link your program with a _wrapper_ which
 * provides all necessary symbols to make linker happy
 * loads wrapped library on first call to any of its functions
 * redirects calls to library symbols
-
 Generated wrapper code is analogous to Windows import libraries which achieve the same functionality for DLLs.
+
+Implib.so can also be used to reduce API provided by existing shared library or rename it's exported symbols (see below).
 
 Implib.so was originally inspired by Stackoverflow question [Is there an elegant way to avoid dlsym when using dlopen in C?](https://stackoverflow.com/questions/45917816/is-there-an-elegant-way-to-avoid-dlsym-when-using-dlopen-in-c/47221180).
 
@@ -98,6 +99,19 @@ void *mycallback() {
 }
 
 $ implib-gen.py --dlopen-callback=mycallback --symbol-list=mysymbols.txt libxyz.so
+$ ... # Link your app with libxyz.tramp.S, libxyz.init.c and mycallback.c
+```
+
+# Renaming exported interface of closed-source library
+
+Sometimes you may need to rename API of existing shared library to avoid name clashes.
+
+To achieve this you can generate a wrapper with _renamed_ symbols which call to old, non-renamed symbols in original library loaded via `dlmopen` instead of `dlopen` (to avoid polluting global namespace):
+
+```
+$ cat mycallback.c
+... Same as before ...
+$ implib-gen.py --dlopen-callback=mycallback --symbol_prefix=MYPREFIX_ libxyz.so
 $ ... # Link your app with libxyz.tramp.S, libxyz.init.c and mycallback.c
 ```
 

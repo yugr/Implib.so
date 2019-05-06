@@ -15,8 +15,8 @@ $sym:
 1:
   // Load address
   // TODO: can we do this faster on newer ARMs?
-  adrp ip0, _${sym_suffix}_tramp_table+$offset
-  ldr ip0, [ip0, #:lo12:_${sym_suffix}_tramp_table+$offset]
+  adrp ip0, _${lib_suffix}_tramp_table+$offset
+  ldr ip0, [ip0, #:lo12:_${lib_suffix}_tramp_table+$offset]
  
   cbz ip0, 2f
 
@@ -29,7 +29,7 @@ $sym:
   str ip0, [sp, #-8]!
   .cfi_adjust_cfa_offset 8
   PUSH_REG(lr)
-  bl _${sym_suffix}_save_regs_and_resolve
+  bl _${lib_suffix}_save_regs_and_resolve
   POP_REG(lr)
   add sp, sp, #8
   .cfi_adjust_cfa_offset -8

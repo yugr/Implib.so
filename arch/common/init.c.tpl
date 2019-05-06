@@ -71,10 +71,10 @@ static const char *const sym_names[] = {
   0
 };
 
-extern void *_${sym_suffix}_tramp_table[];
+extern void *_${lib_suffix}_tramp_table[];
 
 // Can be sped up by manually parsing library symtab...
-void _${sym_suffix}_tramp_resolve(int i) {
+void _${lib_suffix}_tramp_resolve(int i) {
   assert(i < sizeof(sym_names) / sizeof(sym_names[0]) - 1);
 
   CHECK(!is_lib_loading, "library function '%s' called during library load", sym_names[i]);
@@ -92,15 +92,15 @@ void _${sym_suffix}_tramp_resolve(int i) {
 #endif
 
   // Dlsym is thread-safe so don't need to protect it.
-  _${sym_suffix}_tramp_table[i] = dlsym(h, sym_names[i]);
-  CHECK(_${sym_suffix}_tramp_table[i], "failed to resolve symbol '%s'", sym_names[i]);
+  _${lib_suffix}_tramp_table[i] = dlsym(h, sym_names[i]);
+  CHECK(_${lib_suffix}_tramp_table[i], "failed to resolve symbol '%s'", sym_names[i]);
 }
 
 // Helper for user to resolve all symbols
-void _${sym_suffix}_tramp_resolve_all(void) {
+void _${lib_suffix}_tramp_resolve_all(void) {
   int i;
   for(i = 0; i < sizeof(sym_names) / sizeof(sym_names[0]) - 1; ++i)
-    _${sym_suffix}_tramp_resolve(i);
+    _${lib_suffix}_tramp_resolve(i);
 }
 
 #ifdef __cplusplus

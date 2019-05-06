@@ -93,6 +93,10 @@ def main():
                       default='x86_64')
   parser.add_argument('--symbol-list',
                       help="Path to file with symbols that should be present in wrapper (all by default).")
+  parser.add_argument('--symbol-prefix',
+                      metavar='PFX',
+                      help="Prefix wrapper symbols with PFX.",
+                      default='')
   parser.add_argument('-q', '--quiet',
                       help="Do not print progress info.",
                       action='store_true')
@@ -157,7 +161,7 @@ def main():
   # Generate assembly code
 
   suffix = os.path.basename(load_name)
-  sym_suffix = re.sub(r'[^a-zA-Z_0-9]+', '_', suffix)
+  lib_suffix = re.sub(r'[^a-zA-Z_0-9]+', '_', suffix)
 
   tramp_file = '%s.tramp.S' % suffix
   with open(tramp_file, 'w') as f:
@@ -165,7 +169,7 @@ def main():
       print("Generating %s..." % tramp_file)
     with open(target_dir + '/table.S.tpl', 'r') as t:
       table_text = string.Template(t.read()).substitute(
-        sym_suffix=sym_suffix,
+        lib_suffix=lib_suffix,
         table_size=ptr_size*(len(funs) + 1))
     f.write(table_text)
 
@@ -174,8 +178,8 @@ def main():
 
     for i, name in enumerate(funs):
       tramp_text = tramp_tpl.substitute(
-        sym_suffix=sym_suffix,
-        sym=name,
+        lib_suffix=lib_suffix,
+        sym=args.symbol_prefix + name,
         offset=i*ptr_size,
         number=i)
       f.write(tramp_text)
@@ -188,7 +192,7 @@ def main():
       print("Generating %s..." % init_file)
     with open(os.path.join(root, 'arch/common/init.c.tpl'), 'r') as t:
       init_text = string.Template(t.read()).substitute(
-        sym_suffix=sym_suffix,
+        lib_suffix=lib_suffix,
         load_name=load_name,
         dlopen_callback=dlopen_callback,
         has_dlopen_callback=int(bool(dlopen_callback)),
