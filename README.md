@@ -16,7 +16,7 @@ Implib.so provides an easy solution - link your program with a _wrapper_ which
 * redirects calls to library symbols
 Generated wrapper code is analogous to Windows import libraries which achieve the same functionality for DLLs.
 
-Implib.so can also be used to reduce API provided by existing shared library or rename it's exported symbols (see below).
+Implib.so can also be used to [reduce API provided by existing shared library](#reducing-external-interface-of-closed-source-library) or [rename it's exported symbols](#renaming-exported-interface-of-closed-source-library).
 
 Implib.so was originally inspired by Stackoverflow question [Is there an elegant way to avoid dlsym when using dlopen in C?](https://stackoverflow.com/questions/45917816/is-there-an-elegant-way-to-avoid-dlsym-when-using-dlopen-in-c/47221180).
 
