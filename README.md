@@ -141,7 +141,7 @@ The tool does not transparently support all features of POSIX shared libraries. 
 Also note that the tool is meant to be a PoC. In particular I didn't implement the following very important features:
 * proper support for multi-threading
 * symbol versions are not handled at all
-* support i386
+* support i386 and OSX
 
 None of these should be hard to add so let me know if you need it.
 
