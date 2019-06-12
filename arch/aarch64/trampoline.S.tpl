@@ -26,13 +26,9 @@ $sym:
 2:
   // Slow path
   mov ip0, $number
-  str ip0, [sp, #-8]!
-  .cfi_adjust_cfa_offset 8
-  PUSH_REG(lr)
+  stp ip0, lr, [sp, #-16]!; .cfi_adjust_cfa_offset 16; .cfi_rel_offset ip0, 0; .cfi_rel_offset lr, 8;
   bl _${lib_suffix}_save_regs_and_resolve
-  POP_REG(lr)
-  add sp, sp, #8
-  .cfi_adjust_cfa_offset -8
+  ldp ip0, lr, [sp], #16; .cfi_adjust_cfa_offset -16; .cfi_restore lr; .cfi_restore ip0
   b 1b
   .cfi_endproc
 

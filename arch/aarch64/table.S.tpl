@@ -24,9 +24,6 @@ _${lib_suffix}_tramp_table:
 _${lib_suffix}_save_regs_and_resolve:
   .cfi_startproc
 
-#define PUSH_REG(reg) str reg, [sp,#-8]!; .cfi_adjust_cfa_offset 8; .cfi_rel_offset reg, 0
-#define POP_REG(reg) ldr reg, [sp], #8; .cfi_adjust_cfa_offset -8; .cfi_restore reg
-
   // Slow path which calls dlsym, taken only on first call.
   // We store all registers to handle arbitrary calling conventions.
   // We don't save FPU/NEON regs, hopefully compiler isn't crazy enough to use them in resolving code.
@@ -35,32 +32,23 @@ _${lib_suffix}_save_regs_and_resolve:
   // Stack is aligned at 16 bytes
 
   // Save only arguments (and lr)
-  PUSH_REG(x0)
-  ldr x0, [sp, #16]
-  PUSH_REG(x1)
-  PUSH_REG(x2)
-  PUSH_REG(x3)
-  PUSH_REG(x4)
-  PUSH_REG(x5)
-  PUSH_REG(x6)
-  PUSH_REG(x7)
-  PUSH_REG(x8)
-  PUSH_REG(lr)
+  stp x0, x1, [sp, #-16]!; .cfi_adjust_cfa_offset 16; .cfi_rel_offset x0, 0; .cfi_rel_offset x1, 8
+  stp x2, x3, [sp, #-16]!; .cfi_adjust_cfa_offset 16; .cfi_rel_offset x2, 0; .cfi_rel_offset x3, 8
+  stp x4, x5, [sp, #-16]!; .cfi_adjust_cfa_offset 16; .cfi_rel_offset x4, 0; .cfi_rel_offset x5, 8
+  stp x6, x7, [sp, #-16]!; .cfi_adjust_cfa_offset 16; .cfi_rel_offset x6, 0; .cfi_rel_offset x7, 8
+  stp x8, lr, [sp, #-16]!; .cfi_adjust_cfa_offset 16; .cfi_rel_offset x8, 0; .cfi_rel_offset lr, 8
+  ldr x0, [sp, #80]
 
   // Stack is aligned at 16 bytes
 
   bl _${lib_suffix}_tramp_resolve
 
-  POP_REG(lr)  // TODO: pop pc?
-  POP_REG(x8)
-  POP_REG(x7)
-  POP_REG(x6)
-  POP_REG(x5)
-  POP_REG(x4)
-  POP_REG(x3)
-  POP_REG(x2)
-  POP_REG(x1)
-  POP_REG(x0)
+  // TODO: pop pc?
+  ldp x8, lr, [sp], #16; .cfi_adjust_cfa_offset -16; .cfi_restore lr; .cfi_restore x8
+  ldp x6, x7, [sp], #16; .cfi_adjust_cfa_offset -16; .cfi_restore x7; .cfi_restore x6
+  ldp x4, x5, [sp], #16; .cfi_adjust_cfa_offset -16; .cfi_restore x5; .cfi_restore x4
+  ldp x2, x3, [sp], #16; .cfi_adjust_cfa_offset -16; .cfi_restore x3; .cfi_restore x2
+  ldp x0, x1, [sp], #16; .cfi_adjust_cfa_offset -16; .cfi_restore x1; .cfi_restore x0
 
   br lr
 
