@@ -100,6 +100,7 @@ def main():
   parser.add_argument('-q', '--quiet',
                       help="Do not print progress info.",
                       action='store_true')
+  parser.add_argument('--outdir', help="Path to create wrapper at", default='./')
 
   args = parser.parse_args()
 
@@ -111,6 +112,7 @@ def main():
   load_name = args.library_load_name if args.library_load_name is not None else os.path.basename(input_name)
   target = args.target.split('-')[0]
   quiet = args.quiet
+  outdir = args.outdir
 
   if args.symbol_list is None:
     funs = None
@@ -164,7 +166,7 @@ def main():
   lib_suffix = re.sub(r'[^a-zA-Z_0-9]+', '_', suffix)
 
   tramp_file = '%s.tramp.S' % suffix
-  with open(tramp_file, 'w') as f:
+  with open(os.path.join(outdir, tramp_file), 'w') as f:
     if not quiet:
       print("Generating %s..." % tramp_file)
     with open(target_dir + '/table.S.tpl', 'r') as t:
@@ -187,7 +189,7 @@ def main():
   # Generate C code
 
   init_file = '%s.init.c' % suffix
-  with open(init_file, 'w') as f:
+  with open(os.path.join(outdir, init_file), 'w') as f:
     if not quiet:
       print("Generating %s..." % init_file)
     with open(os.path.join(root, 'arch/common/init.c.tpl'), 'r') as t:
