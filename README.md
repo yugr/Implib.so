@@ -81,7 +81,7 @@ To achieve this you can generate a wrapper with limited number of symbols and ov
 $ cat mysymbols.txt
 foo
 bar
-$ cat mycallback.c
+$ cat mycallbacks.c
 #define _GNU_SOURCE
 #include <dlfcn.h>
 #include <stdio.h>
@@ -90,7 +90,8 @@ $ cat mycallback.c
 #ifdef __cplusplus
 extern "C"
 #endif
-void *mycallback() {
+// Dlopen callback that loads library to dedicated namespace
+void *mycallback_1() {
   void *h = dlmopen(LM_ID_NEWLM, "libxyz.so", RTLD_LAZY | RTLD_DEEPBIND);
   if (h)
     return h;
@@ -98,8 +99,21 @@ void *mycallback() {
   exit(1);
 }
 
-$ implib-gen.py --dlopen-callback=mycallback --symbol-list=mysymbols.txt libxyz.so
-$ ... # Link your app with libxyz.tramp.S, libxyz.init.c and mycallback.c
+// Callback that tries different library names
+void *mycallback_2() {
+  void *h;
+  h = dlopen("libxyz.so", RTLD_LAZY);
+  if (h)
+    return h;
+  h = dlopen("libxyz-stub.so", RTLD_LAZY);
+  if (h)
+    return h;
+  fprintf(stderr, "dlopen failed: %s\n", dlerror());
+  exit(1);
+}
+
+$ implib-gen.py --dlopen-callback=mycallback_1 --symbol-list=mysymbols.txt libxyz.so
+$ ... # Link your app with libxyz.tramp.S, libxyz.init.c and mycallbacks.c
 ```
 
 # Renaming exported interface of closed-source library
