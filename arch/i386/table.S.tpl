@@ -28,8 +28,8 @@ _${lib_suffix}_save_regs_and_resolve:
 #define POP_REG(reg) popl %reg ; .cfi_adjust_cfa_offset -4; .cfi_restore reg
 
   // Slow path which calls dlsym, taken only on first call.
-  // We store all registers to handle arbitrary calling conventions.
-  // We don't save XMM regs, hopefully compiler isn't crazy enough to use them in resolving code.
+  // All registers are stored to handle arbitrary calling conventions
+  // (except XMM/x87 regs in hope they are not used in resolving code).
   // For Dwarf directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
 
   PUSH_REG(eax)
@@ -41,8 +41,6 @@ _${lib_suffix}_save_regs_and_resolve:
   PUSH_REG(edi)
   PUSH_REG(esi)
   pushfl; .cfi_adjust_cfa_offset 4  // 16
-
-  // TODO: save and restore x87 registers
 
   subl $$8, %esp
   .cfi_adjust_cfa_offset 8
@@ -67,10 +65,10 @@ _${lib_suffix}_save_regs_and_resolve:
 
   .cfi_endproc
 
-  .section .text.__x86.get_pc_thunk.ax,"axG",@progbits,__x86.get_pc_thunk.ax,comdat
-  .globl __x86.get_pc_thunk.ax
-  .hidden __x86.get_pc_thunk.ax
-__x86.get_pc_thunk.ax:
+  .section .text.__implib.x86.get_pc_thunk.ax,"axG",@progbits,__implib.x86.get_pc_thunk.ax,comdat
+  .globl __implib.x86.get_pc_thunk.ax
+  .hidden __implib.x86.get_pc_thunk.ax
+__implib.x86.get_pc_thunk.ax:
   .cfi_startproc
   movl (%esp), %eax
   ret

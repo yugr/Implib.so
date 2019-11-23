@@ -158,7 +158,7 @@ Also note that the tool is meant to be a PoC. In particular I didn't implement t
 * support OSX
 (none should be hard to add so let me know if you need it).
 
-Finally tool is only lightly tested and minor TODOs are scattered all over the code.
+Finally tool is only lightly tested and there are some minor TODOs in code.
 
 # Related work
 

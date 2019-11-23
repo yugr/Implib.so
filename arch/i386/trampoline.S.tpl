@@ -11,21 +11,15 @@
   .p2align 4
 $sym:
   .cfi_startproc
-  // x86 has no support for position-independent addresses so code is not very efficient.
+  // x86 has no support for PC-relative addressing so code is not very efficient.
   // We also trash EAX here (it's call-clobbered in cdecl).
-  call __x86.get_pc_thunk.ax
+  call __implib.x86.get_pc_thunk.ax
   addl $$_GLOBAL_OFFSET_TABLE_, %eax
-  movl _${lib_suffix}_tramp_table@GOT(%eax), %eax
-  movl $offset(%eax), %eax
+  movl $offset+_${lib_suffix}_tramp_table@GOTOFF(%eax), %eax
   cmp $$0, %eax
   je 2f
 1:
-  subl $$12, %esp
-  .cfi_adjust_cfa_offset 12
-  call *%eax
-  addl $$12, %esp
-  .cfi_adjust_cfa_offset -12
-  ret
+  jmp *%eax
 2:
   mov $$$number, %eax
   call _${lib_suffix}_save_regs_and_resolve

@@ -28,8 +28,8 @@ _${lib_suffix}_save_regs_and_resolve:
 #define POP_REG(reg) popq %reg ; .cfi_adjust_cfa_offset -8; .cfi_restore reg
 
   // Slow path which calls dlsym, taken only on first call.
-  // We store all registers to handle arbitrary calling conventions.
-  // We don't save XMM regs, hopefully compiler isn't crazy enough to use them in resolving code.
+  // All registers are stored to handle arbitrary calling conventions
+  // (except XMM/x87 regs in hope they are not used in resolving code).
   // For Dwarf directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
 
   PUSH_REG(rdi)

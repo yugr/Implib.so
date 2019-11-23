@@ -25,8 +25,8 @@ _${lib_suffix}_save_regs_and_resolve:
   .cfi_startproc
 
   // Slow path which calls dlsym, taken only on first call.
-  // We store all registers to handle arbitrary calling conventions.
-  // We don't save FPU/NEON regs, hopefully compiler isn't crazy enough to use them in resolving code.
+  // All registers are stored to handle arbitrary calling conventions
+  // (except FPU/NEON regs in hope they are not used in resolving code).
   // For Dwarf directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
 
   // Stack is aligned at 16 bytes
