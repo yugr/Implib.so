@@ -11,7 +11,8 @@
 # Run it like
 #   ./run.sh ARCH
 # where ARCH stands for any supported arch (arm, x86_64, etc., see `implib-gen -h' for full list).
-# Note that you may need to install qemu-user for respective platform.
+# Note that you may need to install qemu-user for respective platform
+# (i386 also needs gcc-multilib).
 
 set -eu
 
