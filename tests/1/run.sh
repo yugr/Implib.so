@@ -1,15 +1,25 @@
 #!/bin/sh
 
-# Copyright 2017-2018 Yury Gribov
+# Copyright 2017-2019 Yury Gribov
 #
 # The MIT License (MIT)
 # 
 # Use of this source code is governed by MIT license that can be
 # found in the LICENSE.txt file.
 
+# This is a simple test for Implib.so functionality.
+# Run it like
+#   ./run.sh ARCH
+# where ARCH stands for any supported arch (arm, x86_64, etc., see `implib-gen -h' for full list).
+# Note that you may need to install qemu-user for respective platform.
+
 set -eu
 
 cd $(dirname $0)
+
+#CFLAGS='-gdwarf-2 -O0'
+#CFLAGS='-DNDEBUG -O2'
+CFLAGS='-g -O2'
 
 case "${1:-}" in
 arm*)
@@ -26,6 +36,14 @@ aarch64*)
   PREFIX=aarch64-linux-gnu-
   INTERP="qemu-aarch64 -L /usr/aarch64-linux-gnu -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
   ;;
+i[0-9]86)
+  # To run tests for AArch64 install
+  # sudo apt-get install gcc-aarch64-linux-gnu qemu-user
+  TARGET=i686
+  PREFIX=
+  INTERP=
+  CFLAGS="$CFLAGS -m32"
+  ;;
 '' | x86_64* | host)
   TARGET=x86_64
   PREFIX=
@@ -38,10 +56,6 @@ aarch64*)
 esac
 
 CC=${PREFIX}gcc
-
-#CFLAGS='-gdwarf-2 -O0'
-#CFLAGS='-DNDEBUG -O2'
-CFLAGS='-g -O2'
 
 if uname -o | grep -q FreeBSD; then
   LIBS=
