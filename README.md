@@ -60,28 +60,7 @@ $ implib-gen.py --no-dlopen libxys.so
 If you do want to load library via `dlopen` but would prefer to call it yourself (e.g. with custom parameters or with modified library name), run script as
 
 ```
-$ implib-gen.py --dlopen-callback=mycallback libxyz.so
-```
-
-(callback must have signature `void *(*)(const char *lib_name)` and return handle of loaded library).
-
-Finally to force library load and resolution of all symbols, call
-
-    void _LIBNAME_tramp_resolve_all(void);
-
-# Reducing external interface of closed-source library
-
-_TODO: modifying visibility of symbols .dynsym might be easier..._
-
-Sometimes you may want to reduce public interface of existing shared library (e.g. if it's a third-party lib which erroneously exports too many unrelated symbols).
-
-To achieve this you can generate a wrapper with limited number of symbols and override the callback which loads the library to use `dlmopen` instead of `dlopen` (and thus does not pollute the global namespace):
-
-```
-$ cat mysymbols.txt
-foo
-bar
-$ cat mycallbacks.c
+$ cat mycallback.c
 #define _GNU_SOURCE
 #include <dlfcn.h>
 #include <stdio.h>
@@ -90,17 +69,9 @@ $ cat mycallbacks.c
 #ifdef __cplusplus
 extern "C"
 #endif
-// Dlopen callback that loads library to dedicated namespace
-void *mycallback_1() {
-  void *h = dlmopen(LM_ID_NEWLM, "libxyz.so", RTLD_LAZY | RTLD_DEEPBIND);
-  if (h)
-    return h;
-  fprintf(stderr, "dlmopen failed: %s\n", dlerror());
-  exit(1);
-}
 
 // Callback that tries different library names
-void *mycallback_2() {
+void *mycallback() {
   void *h;
   h = dlopen("libxyz.so", RTLD_LAZY);
   if (h)
@@ -112,8 +83,46 @@ void *mycallback_2() {
   exit(1);
 }
 
-$ implib-gen.py --dlopen-callback=mycallback_1 --symbol-list=mysymbols.txt libxyz.so
-$ ... # Link your app with libxyz.tramp.S, libxyz.init.c and mycallbacks.c
+$ implib-gen.py --dlopen-callback=mycallback libxyz.so
+```
+
+(callback must have signature `void *(*)(const char *lib_name)` and return handle of loaded library).
+
+Finally to force library load and resolution of all symbols, call
+
+    void _LIBNAME_tramp_resolve_all(void);
+
+# Reducing external interface of closed-source library
+
+Sometimes you may want to reduce public interface of existing shared library (e.g. if it's a third-party lib which erroneously exports too many unrelated symbols).
+
+To achieve this you can generate a wrapper with limited number of symbols and override the callback which loads the library to use `dlmopen` instead of `dlopen` (and thus does not pollute the global namespace):
+
+```
+$ cat mysymbols.txt
+foo
+bar
+$ cat mycallback.c
+#define _GNU_SOURCE
+#include <dlfcn.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#ifdef __cplusplus
+extern "C"
+#endif
+
+// Dlopen callback that loads library to dedicated namespace
+void *mycallback() {
+  void *h = dlmopen(LM_ID_NEWLM, "libxyz.so", RTLD_LAZY | RTLD_DEEPBIND);
+  if (h)
+    return h;
+  fprintf(stderr, "dlmopen failed: %s\n", dlerror());
+  exit(1);
+}
+
+$ implib-gen.py --dlopen-callback=mycallback --symbol-list=mysymbols.txt libxyz.so
+$ ... # Link your app with libxyz.tramp.S, libxyz.init.c and mycallback.c
 ```
 
 # Renaming exported interface of closed-source library
