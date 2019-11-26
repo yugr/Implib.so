@@ -1,8 +1,29 @@
+# TODO:
+# * factor out common code
+# * Asan
+# * FreeBSD
+# * gcc-9
+# * armhf (https://www.acmesystems.it/arm9_toolchain)
+
 language: python
-python:
-  - "3.4"
-  - "3.5"
-  - "3.6"
-  - "pypy3.5"
-script:
-  - tests/1/run.sh
+os: linux
+script: tests/1/run.sh
+python: "3.6"
+env:
+  - CC=gcc
+jobs:
+  include:
+    - stage: baseline
+      name: python3.6-gcc-x86_64
+      compiler: gcc
+    - name: python3.6-clang-x86_64
+      compiler: clang
+      env:
+        - CC=clang
+    - stage: pythons
+      name: python3.4
+      python: "3.4"
+    - name: python3.5
+      python: "3.5"
+    - name: pypy3.5
+      python: "pypy3.5"

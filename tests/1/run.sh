@@ -22,7 +22,11 @@ cd $(dirname $0)
 #CFLAGS='-DNDEBUG -O2'
 CFLAGS='-g -O2'
 
-case "${1:-}" in
+if test -n "${1:-}"; then
+  ARCH="$1"
+fi
+
+case "${ARCH:-}" in
 arm*)
   # To run tests for ARM install
   # $ sudo apt-get install gcc-arm-linux-gnueabi qemu-user
@@ -56,7 +60,7 @@ i[0-9]86)
   ;;
 esac
 
-CC=${PREFIX}gcc
+CC=$PREFIX${CC:-gcc}
 
 if uname -o | grep -q FreeBSD; then
   LIBS=
