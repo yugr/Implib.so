@@ -14,7 +14,7 @@ $sym:
   // Intel opt. manual says to
   // "make the fall-through code following a conditional branch be the likely target for a branch with a forward target"
   // to hint static predictor.
-  cmp $$0, _${lib_suffix}_tramp_table+$offset(%rip)
+  cmpq $$0, _${lib_suffix}_tramp_table+$offset(%rip)
   je 2f
 1:
   jmp *_${lib_suffix}_tramp_table+$offset(%rip)
