@@ -16,6 +16,10 @@
 
 set -eu
 
+if test -n "${TRAVIS:-}"; then
+  set -x
+fi
+
 cd $(dirname $0)
 
 #CFLAGS='-gdwarf-2 -O0'
