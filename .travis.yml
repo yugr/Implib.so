@@ -1,8 +1,5 @@
 # TODO:
-# * factor out common code
-# * Asan
 # * FreeBSD
-# * gcc-9
 # * armhf (https://www.acmesystems.it/arm9_toolchain)
 
 language: python
