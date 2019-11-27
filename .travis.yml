@@ -20,6 +20,14 @@ jobs:
       compiler: clang
       env:
         - CC=clang
+    - stage: targets
+      name: i386
+      env:
+        - ARCH=i386-linux-gnueabi
+      addons:
+        apt:
+          packages:
+            - gcc-multilib
     - stage: pythons
       name: python3.4
       python: "3.4"

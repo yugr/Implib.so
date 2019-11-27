@@ -41,7 +41,7 @@ aarch64*)
   PREFIX=aarch64-linux-gnu-
   INTERP="qemu-aarch64 -L /usr/aarch64-linux-gnu -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
   ;;
-i[0-9]86)
+i[0-9]86*)
   # To run tests for AArch64 install
   # sudo apt-get install gcc-aarch64-linux-gnu qemu-user
   TARGET=i686
@@ -55,7 +55,7 @@ i[0-9]86)
   INTERP=
   ;;
 *)
-  echo >&2 "Unsupported target: $1"
+  echo >&2 "Unsupported target: $ARCH"
   exit 1
   ;;
 esac
