@@ -28,6 +28,28 @@ jobs:
         apt:
           packages:
             - gcc-multilib
+    - name: arm
+      env:
+        - ARCH=arm-linux-gnueabi
+      addons:
+        apt:
+          packages:
+            - qemu-user
+            - gcc-arm-linux-gnueabi
+            - binutils-arm-linux-gnueabi
+            - libc6-armel-cross
+            - libc6-dev-armel-cross
+    - name: aarch64
+      env:
+        - ARCH=aarch64-linux-gnueabi
+      addons:
+        apt:
+          packages:
+            - qemu-user
+            - gcc-aarch64-linux-gnu
+            - binutils-aarch64-linux-gnu
+            - libc6-arm64-cross
+            - libc6-dev-arm64-cross
     - stage: pythons
       name: python3.4
       python: "3.4"
