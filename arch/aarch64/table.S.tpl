@@ -7,6 +7,9 @@
  * found in the LICENSE.txt file.
  */
 
+#define lr x30
+#define ip0 x16
+
   .data
 
   .globl _${lib_suffix}_tramp_table
