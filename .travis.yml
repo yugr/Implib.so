@@ -4,7 +4,7 @@
 
 language: python
 os: linux
-script: tests/1/run.sh
+script: scripts/travis.sh
 python: "3.6"
 env:
   - CC=gcc
