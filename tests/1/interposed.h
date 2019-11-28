@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 Yury Gribov
+ * Copyright 2017-2019 Yury Gribov
  *
  * The MIT License (MIT)
  * 
@@ -10,7 +10,7 @@
 #ifndef INTERPOSED_H
 #define INTERPOSED_H
 
-extern int foo(void);
-extern int bar(void);
+extern int foo(int x, float y);
+extern int bar(int x, int y, int z);
 
 #endif

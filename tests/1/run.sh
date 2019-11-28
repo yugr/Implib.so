@@ -22,9 +22,7 @@ fi
 
 cd $(dirname $0)
 
-#CFLAGS='-gdwarf-2 -O0'
-#CFLAGS='-DNDEBUG -O2'
-CFLAGS='-g -O2 -Wall -Wextra -Werror'
+CFLAGS="-g -O2 -Wall -Wextra -Werror ${CFLAGS:-}"
 
 if test -n "${1:-}"; then
   ARCH="$1"

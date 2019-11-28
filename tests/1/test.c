@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 Yury Gribov
+ * Copyright 2017-2019 Yury Gribov
  *
  * The MIT License (MIT)
  * 
@@ -13,11 +13,11 @@
 void test() {
   int x, y;
   // Slow path
-  x = foo(),
-  y = bar();
+  x = foo(25, 0.5),
+  y = bar(11, 22, 33);
   printf("Results: %x %x\n", x, y);
   // Fast path
-  x = foo();
-  y = bar();
+  x = foo(35, 0.25);
+  y = bar(44, 55, 66);
   printf("Results: %x %x\n", x, y);
 }
