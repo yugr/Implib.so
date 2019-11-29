@@ -31,7 +31,7 @@ $ implib-gen.py libxyz.so
 This will generate code for host platform (presumably x86\_64). For other targets do
 
 ```
-# TARGET can be arm-linux-gnueabi, aarch64-linux-gnu, x86_64-linux-gnu, i686-linux-gnu
+# TARGET can be x86_64-linux-gnu, i686-linux-gnu, arm-linux-gnueabi (or armel-linux-gnueabi), aarch64-linux-gnu
 $ implib-gen.py --target $TARGET libxyz.so
 ```
 
@@ -162,6 +162,7 @@ The tool does not transparently support all features of POSIX shared libraries. 
 * it may change semantics because shared library constructors are delayed until when library is loaded
 
 Also note that the tool is meant to be a PoC. In particular I didn't implement the following very important features:
+* armhf
 * proper support for multi-threading
 * symbol versions are not handled at all
 * support OSX

@@ -29,7 +29,7 @@ if test -n "${1:-}"; then
 fi
 
 case "${ARCH:-}" in
-arm*)
+arm-* | armel-*)
   # To run tests for ARM install
   # $ sudo apt-get install gcc-arm-linux-gnueabi qemu-user
   TARGET=arm
