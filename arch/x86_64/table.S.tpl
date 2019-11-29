@@ -27,44 +27,69 @@ _${lib_suffix}_save_regs_and_resolve:
 #define PUSH_REG(reg) pushq %reg ; .cfi_adjust_cfa_offset 8; .cfi_rel_offset reg, 0
 #define POP_REG(reg) popq %reg ; .cfi_adjust_cfa_offset -8; .cfi_restore reg
 
+#define DEC_STACK(d) subq $$d, %rsp; .cfi_adjust_cfa_offset d
+#define INC_STACK(d) addq $$d, %rsp; .cfi_adjust_cfa_offset -d
+
+#define PUSH_XMM_REG(reg) DEC_STACK(16); movdqa %reg, (%rsp); .cfi_rel_offset reg, 0
+#define POP_XMM_REG(reg) movdqa (%rsp), %reg; .cfi_restore reg; INC_STACK(16)
+
   // Slow path which calls dlsym, taken only on first call.
   // All registers are stored to handle arbitrary calling conventions
-  // (except XMM/x87 regs in hope they are not used in resolving code).
+  // (except x87 FPU registers which do not have to be preserved).
   // For Dwarf directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
 
-  PUSH_REG(rdi)
+  // FIXME: AVX (YMM, ZMM) registers are NOT saved to simplify code.
+
+  PUSH_REG(rdi)  // 16
   mov 0x10(%rsp), %rdi
   PUSH_REG(rax)
-  PUSH_REG(rbx)
+  PUSH_REG(rbx)  // 16
   PUSH_REG(rcx)
-  PUSH_REG(rdx)
+  PUSH_REG(rdx)  // 16
   PUSH_REG(rbp)
-  PUSH_REG(rsi)
+  PUSH_REG(rsi)  // 16
   PUSH_REG(r8)
-  PUSH_REG(r9)
+  PUSH_REG(r9)  // 16
   PUSH_REG(r10)
-  PUSH_REG(r11)
+  PUSH_REG(r11)  // 16
   PUSH_REG(r12)
-  PUSH_REG(r13)
+  PUSH_REG(r13)  // 16
   PUSH_REG(r14)
-  PUSH_REG(r15)
+  PUSH_REG(r15)  // 16
+  PUSH_XMM_REG(xmm0)
+  PUSH_XMM_REG(xmm1)
+  PUSH_XMM_REG(xmm2)
+  PUSH_XMM_REG(xmm3)
+  PUSH_XMM_REG(xmm4)
+  PUSH_XMM_REG(xmm5)
+  PUSH_XMM_REG(xmm6)
+  PUSH_XMM_REG(xmm7)
 
-  call _${lib_suffix}_tramp_resolve  // Stack will be aligned at 16 in call
+  // Stack is just 8-byte aligned but callee will re-align to 16
+  call _${lib_suffix}_tramp_resolve
 
+  POP_XMM_REG(xmm7)
+  POP_XMM_REG(xmm6)
+  POP_XMM_REG(xmm5)
+  POP_XMM_REG(xmm4)
+  POP_XMM_REG(xmm3)
+  POP_XMM_REG(xmm2)
+  POP_XMM_REG(xmm1)
+  POP_XMM_REG(xmm0)  // 16
   POP_REG(r15)
-  POP_REG(r14)
+  POP_REG(r14)  // 16
   POP_REG(r13)
-  POP_REG(r12)
+  POP_REG(r12)  // 16
   POP_REG(r11)
-  POP_REG(r10)
+  POP_REG(r10)  // 16
   POP_REG(r9)
-  POP_REG(r8)
+  POP_REG(r8)  // 16
   POP_REG(rsi)
-  POP_REG(rbp)
+  POP_REG(rbp)  // 16
   POP_REG(rdx)
-  POP_REG(rcx)
+  POP_REG(rcx)  // 16
   POP_REG(rbx)
-  POP_REG(rax)
+  POP_REG(rax)  // 16
   POP_REG(rdi)
 
   ret
