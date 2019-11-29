@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/yugr/Implib.so.svg?branch=master)](https://travis-ci.org/yugr/Implib.so)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/yugr/Implib.so.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/yugr/Implib.so/alerts/)
 
 # Motivation
 
