@@ -8,8 +8,9 @@ os: linux
 script: scripts/travis.sh
 python: "3.6"
 env:
-  - CC=gcc
-  - CXX=g++
+  global:
+    - CC=gcc
+    - CXX=g++
 jobs:
   include:
     - stage: baseline
