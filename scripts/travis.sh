@@ -15,5 +15,7 @@ fi
 
 cd $(dirname $0)/..
 
-tests/1/run.sh ${ARCH:-}
-tests/2/run.sh
+ARCH=${ARCH:-}
+
+tests/1/run.sh $ARCH
+tests/2/run.sh $ARCH
