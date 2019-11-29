@@ -9,6 +9,7 @@ script: scripts/travis.sh
 python: "3.6"
 env:
   - CC=gcc
+  - CXX=g++
 jobs:
   include:
     - stage: baseline
@@ -18,6 +19,7 @@ jobs:
       compiler: clang
       env:
         - CC=clang
+        - CXX=clang++
     - stage: targets
       name: i386
       env:
@@ -26,6 +28,7 @@ jobs:
         apt:
           packages:
             - gcc-multilib
+            - g++-multilib
     - name: arm
       env:
         - ARCH=arm-linux-gnueabi
@@ -34,6 +37,7 @@ jobs:
           packages:
             - qemu-user
             - gcc-arm-linux-gnueabi
+            - g++-arm-linux-gnueabi
             - binutils-arm-linux-gnueabi
             - libc6-armel-cross
             - libc6-dev-armel-cross
@@ -45,6 +49,7 @@ jobs:
           packages:
             - qemu-user
             - gcc-aarch64-linux-gnu
+            - g++-aarch64-linux-gnu
             - binutils-aarch64-linux-gnu
             - libc6-arm64-cross
             - libc6-dev-arm64-cross

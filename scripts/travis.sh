@@ -16,10 +16,4 @@ fi
 cd $(dirname $0)/..
 
 tests/1/run.sh ${ARCH:-}
-
-# TODO: all platforms
-case "${ARCH:-}" in
-'' | x86_64)
-  tests/2/run.sh
-  ;;
-esac
+tests/2/run.sh
