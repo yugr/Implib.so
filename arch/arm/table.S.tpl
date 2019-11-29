@@ -28,9 +28,8 @@ _${lib_suffix}_save_regs_and_resolve:
 #define POP_REG(reg) pop {reg} ; .cfi_adjust_cfa_offset -4; .cfi_restore reg
 
   // Slow path which calls dlsym, taken only on first call.
-  // All registers are stored to handle arbitrary calling conventions
-  // (except FPU/NEON regs in hope they are not used in resolving code).
-  // For Dwarf directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
+  // Registers are saved acc. to "Procedure Call Standard for the ARM Architecture".
+  // For DWARF directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
 
   // Stack is aligned at 16 bytes at this point
 
