@@ -1,6 +1,7 @@
 # TODO:
-# * FreeBSD
+# * coverage
 # * armhf (https://www.acmesystems.it/arm9_toolchain)
+# * FreeBSD
 
 language: python
 os: linux
