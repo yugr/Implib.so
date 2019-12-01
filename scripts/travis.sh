@@ -16,6 +16,7 @@ fi
 cd $(dirname $0)/..
 
 ARCH=${ARCH:-}
+export PYTHON="${PYTHON:-python3}"
 
 tests/1/run.sh $ARCH
 tests/2/run.sh $ARCH

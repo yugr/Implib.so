@@ -26,7 +26,7 @@ $CXX $CFLAGS -shared -fPIC interposed.cpp -o libinterposed.so
 $CXX $CFLAGS main.cpp -L. -linterposed
 $INTERP ./a.out 2>&1 | tee ref.log
 
-../../implib-gen.py -q --target $TARGET libinterposed.so
+${PYTHON:-} ../../implib-gen.py -q --target $TARGET libinterposed.so
 $CXX $CFLAGS -Wno-deprecated main.cpp libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
 $INTERP ./a.out 2>&1 | tee new.log
 

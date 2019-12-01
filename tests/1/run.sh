@@ -43,7 +43,7 @@ for ADD_CFLAGS in '-no-pie' '-fPIE'; do
     echo "Standalone executable: GFLAGS += '$ADD_GFLAGS', CFLAGS += '$ADD_CFLAGS'"
 
     # Prepare implib
-    ../../implib-gen.py -q --target $TARGET $ADD_GFLAGS libinterposed.so
+    ${PYTHON:-} ../../implib-gen.py -q --target $TARGET $ADD_GFLAGS libinterposed.so
 
     # Build app
     $CC $CFLAGS $ADD_CFLAGS main.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
@@ -59,7 +59,7 @@ for ADD_GFLAGS in '' '--no-lazy-load'; do
   echo "Shared library: GFLAGS += '$ADD_GFLAGS'"
 
   # Prepare implib
-  ../../implib-gen.py -q --target $TARGET $ADD_GFLAGS libinterposed.so
+  ${PYTHON:-} ../../implib-gen.py -q --target $TARGET $ADD_GFLAGS libinterposed.so
 
   # Build shlib
   $CC $CFLAGS -shared -fPIC shlib.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS -o shlib.so

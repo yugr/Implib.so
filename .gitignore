@@ -4,3 +4,4 @@
 .*.swp
 tests/*/a.out*
 tests/*/*.log
+*.coverage

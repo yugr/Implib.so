@@ -1,5 +1,4 @@
 # TODO:
-# * coverage
 # * armhf (https://www.acmesystems.it/arm9_toolchain)
 # * FreeBSD
 
@@ -61,3 +60,12 @@ jobs:
       python: "3.5"
     - name: pypy3.5
       python: "pypy3.5"
+    - stage: coverage
+      name: python3.6-coverage
+      env:
+        - PYTHON="coverage run -a"
+        - CODECOV_TOKEN="9cae8cb5-f8d1-4fa7-8cd9-61d3a0b243fd"
+      install:
+        - pip3 install codecov
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
