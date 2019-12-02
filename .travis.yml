@@ -68,4 +68,4 @@ jobs:
       install:
         - pip3 install codecov
       after_success:
-        - codecov
+        - codecov --required
