@@ -68,4 +68,5 @@ jobs:
       install:
         - pip3 install codecov
       after_success:
+        - for t in tests/*; do (cd $t && coverage xml); done
         - codecov --required

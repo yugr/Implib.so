@@ -5,3 +5,4 @@
 tests/*/a.out*
 tests/*/*.log
 *.coverage
+*coverage.xml
