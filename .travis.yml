@@ -41,6 +41,18 @@ jobs:
             - binutils-arm-linux-gnueabi
             - libc6-armel-cross
             - libc6-dev-armel-cross
+    - name: armhf
+      env:
+        - ARCH=arm-linux-gnueabihf
+      addons:
+        apt:
+          packages:
+            - qemu-user
+            - gcc-arm-linux-gnueabihf
+            - g++-arm-linux-gnueabihf
+            - binutils-arm-linux-gnueabihf
+            - libc6-armhf-cross
+            - libc6-dev-armhf-cross
     - name: aarch64
       env:
         - ARCH=aarch64-linux-gnueabi

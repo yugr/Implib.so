@@ -8,6 +8,14 @@ fi
 
 CFLAGS="-Wall -Wextra -Werror ${CFLAGS:-}"
 case "${ARCH:-}" in
+arm*hf | armhf-*)
+  # To run tests for ARM install
+  # $ sudo apt-get install gcc-arm-linux-gnueabi qemu-user
+  TARGET=armhf
+  PREFIX=arm-linux-gnueabihf-
+  INTERP="qemu-arm -L /usr/arm-linux-gnueabihf -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+  CFLAGS="$CFLAGS -marm"  # TODO: generate Thumb-compatible code
+  ;;
 arm | arm-* | armel-*)
   # To run tests for ARM install
   # $ sudo apt-get install gcc-arm-linux-gnueabi qemu-user

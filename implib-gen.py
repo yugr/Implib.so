@@ -89,7 +89,7 @@ def main():
                       help="Load library at program start (by default library is loaded on first call to one of it's functions).",
                       action='store_true')
   parser.add_argument('--target',
-                      help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi (atm x86_64, i[0-9]86, arm and aarch64 are supported).",
+                      help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi (atm x86_64, i[0-9]86, arm/armhf and aarch64 are supported).",
                       default='x86_64')
   parser.add_argument('--symbol-list',
                       help="Path to file with symbols that should be present in wrapper (all by default).")
@@ -110,9 +110,12 @@ def main():
   no_dlopen = args.no_dlopen
   lazy_load = not args.no_lazy_load
   load_name = args.library_load_name if args.library_load_name is not None else os.path.basename(input_name)
-  target = args.target.split('-')[0]
-  if re.match(r'^i[0-9]86$', target):
-    target = 'i386'
+  if args.target.startswith('arm'):
+    target = 'arm'  # Handle armhf-...
+  elif re.match(r'^i[0-9]86', args.target):
+      target = 'i386'
+  else:
+    target = args.target.split('-')[0]
   quiet = args.quiet
   outdir = args.outdir
 

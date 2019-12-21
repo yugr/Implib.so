@@ -164,7 +164,7 @@ The tool does not transparently support all features of POSIX shared libraries. 
 * it may change semantics because shared library constructors are delayed until when library is loaded
 
 Also note that the tool is meant to be a PoC. In particular I didn't implement the following very important features:
-* armhf
+* Thumb support
 * proper support for multi-threading
 * symbol versions are not handled at all
 * support OSX
