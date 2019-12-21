@@ -14,7 +14,7 @@ arm*hf | armhf-*)
   TARGET=armhf
   PREFIX=arm-linux-gnueabihf-
   INTERP="qemu-arm -L /usr/arm-linux-gnueabihf -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-  CFLAGS="$CFLAGS -marm"  # TODO: generate Thumb-compatible code
+  CFLAGS="$CFLAGS -mthumb-interwork"
   ;;
 arm | arm-* | armel-*)
   # To run tests for ARM install

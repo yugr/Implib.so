@@ -21,6 +21,7 @@ _${lib_suffix}_tramp_table:
 
   .globl _${lib_suffix}_save_regs_and_resolve
   .hidden _${lib_suffix}_save_regs_and_resolve
+  .type _${lib_suffix}_save_regs_and_resolve, %function
 _${lib_suffix}_save_regs_and_resolve:
   .cfi_startproc
 
@@ -68,6 +69,7 @@ _${lib_suffix}_save_regs_and_resolve:
   .section .text.__implib.x86.get_pc_thunk.ax,"axG",@progbits,__implib.x86.get_pc_thunk.ax,comdat
   .globl __implib.x86.get_pc_thunk.ax
   .hidden __implib.x86.get_pc_thunk.ax
+  .type __implib.x86.get_pc_thunk.ax, %function
 __implib.x86.get_pc_thunk.ax:
   .cfi_startproc
   movl (%esp), %eax

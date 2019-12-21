@@ -24,6 +24,7 @@ _${lib_suffix}_tramp_table:
 
   .globl _${lib_suffix}_save_regs_and_resolve
   .hidden _${lib_suffix}_save_regs_and_resolve
+  .type _${lib_suffix}_save_regs_and_resolve, %function
 _${lib_suffix}_save_regs_and_resolve:
   .cfi_startproc
 

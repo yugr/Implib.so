@@ -29,9 +29,10 @@ jobs:
           packages:
             - gcc-multilib
             - g++-multilib
-    - name: arm
+    - name: arm-arm
       env:
         - ARCH=arm-linux-gnueabi
+        - CFLAGS=-marm
       addons:
         apt:
           packages:
@@ -41,9 +42,36 @@ jobs:
             - binutils-arm-linux-gnueabi
             - libc6-armel-cross
             - libc6-dev-armel-cross
-    - name: armhf
+    - name: arm-thumb
+      env:
+        - ARCH=arm-linux-gnueabi
+        - CFLAGS=-mthumb
+      addons:
+        apt:
+          packages:
+            - qemu-user
+            - gcc-arm-linux-gnueabi
+            - g++-arm-linux-gnueabi
+            - binutils-arm-linux-gnueabi
+            - libc6-armel-cross
+            - libc6-dev-armel-cross
+    - name: armhf-arm
       env:
         - ARCH=arm-linux-gnueabihf
+        - CFLAGS=-marm
+      addons:
+        apt:
+          packages:
+            - qemu-user
+            - gcc-arm-linux-gnueabihf
+            - g++-arm-linux-gnueabihf
+            - binutils-arm-linux-gnueabihf
+            - libc6-armhf-cross
+            - libc6-dev-armhf-cross
+    - name: armhf-thumb
+      env:
+        - ARCH=arm-linux-gnueabihf
+        - CFLAGS=-mthumb
       addons:
         apt:
           packages:

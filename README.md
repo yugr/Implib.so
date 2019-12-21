@@ -43,7 +43,7 @@ Script generates two files: `libxyz.so.tramp.S` and `libxyz.so.init.c` which nee
 $ gcc myfile1.c myfile2.c ... libxyz.so.tramp.S libxyz.so.init.c ... -ldl
 ```
 
-(note that you need to link against libdl.so).
+Note that you need to link against libdl.so. On ARM in case your app is compiled to Thumb code (which e.g. Ubuntu's `arm-linux-gnueabihf-gcc` does by default) you'll also need to add `-mthumb-interwork`.
 
 Application can then freely call functions from `libxyz.so` _without linking to it_. Library will be loaded (via `dlopen`) on first call to any of its functions. If you want to forcedly resolve all symbols (e.g. if you want to avoid delays further on) you can call `void libxyz_init_all()`.
 
@@ -164,7 +164,6 @@ The tool does not transparently support all features of POSIX shared libraries. 
 * it may change semantics because shared library constructors are delayed until when library is loaded
 
 Also note that the tool is meant to be a PoC. In particular I didn't implement the following very important features:
-* Thumb support
 * proper support for multi-threading
 * symbol versions are not handled at all
 * support OSX

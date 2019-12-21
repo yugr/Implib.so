@@ -9,6 +9,7 @@
 
   .globl $sym
   .p2align 4
+  .type $sym, %function
 $sym:
   .cfi_startproc
 
