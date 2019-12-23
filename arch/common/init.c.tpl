@@ -12,6 +12,13 @@
 #include <stdio.h>
 #include <assert.h>
 
+// Sanity check for ARM to avoid puzzling runtime crashes
+#ifdef __arm__
+# if defined __thumb__ && ! defined __THUMB_INTERWORK__
+#   error "ARM trampolines need -mthumb-interwork to work in Thumb mode"
+# endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
