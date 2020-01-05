@@ -106,7 +106,9 @@ def main():
   parser.add_argument('-q', '--quiet',
                       help="Do not print progress info.",
                       action='store_true')
-  parser.add_argument('--outdir', help="Path to create wrapper at", default='./')
+  parser.add_argument('--outdir', '-o',
+                      help="Path to create wrapper at",
+                      default='./')
 
   args = parser.parse_args()
 
