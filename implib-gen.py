@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright 2017-2019 Yury Gribov
+# Copyright 2017-2020 Yury Gribov
 #
 # The MIT License (MIT)
 #
@@ -26,8 +26,8 @@ def error(msg):
   sys.exit(1)
 
 def collect_syms(f):
-  p = subprocess.Popen(["readelf", "-sDW", f], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  (out, err) = p.communicate()
+  p = subprocess.Popen(["readelf", "-sW", "--dyn-syms", f], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  out, err = p.communicate()
   out = out.decode('utf-8')
   err = err.decode('utf-8')
   if p.returncode != 0 or err:
@@ -35,10 +35,17 @@ def collect_syms(f):
 
   toc = None
   syms = []
-  warn_versioned = False
-  for line in out.splitlines():
+  itr = iter(out.splitlines())
+  for line in itr:
     line = line.strip()
     if not line:
+      continue
+    # Skip static symtab
+    if line.startswith('Symbol table \'.symtab\''):
+      for line in itr:
+        line = line.strip()
+        if not line:
+            break
       continue
     words = re.split(r' +', line)
     if line.startswith('Num'):  # Header?
@@ -50,16 +57,15 @@ def collect_syms(f):
         n = n.replace(':', '')
         toc[i] = n
     elif toc is not None:
-      sym = {k: words[i] for i, k in toc.items()}
-      if '@' in sym['Name']:
-        name, ver = sym['Name'].split('@')
+      sym = {k: (words[i] if i < len(words) else '') for i, k in toc.items()}
+      name = sym['Name']
+      if '@' in name:
+        sym['Default'] = '@@' in name
+        name, ver = re.split(r'@+', name)
         sym['Name'] = name
         sym['Version'] = ver
-        if not warn_versioned:
-          # TODO
-          warn("library %s contains versioned symbols which are NYI" % f)
-          warn_versioned = True
       else:
+        sym['Default'] = True
         sym['Version'] = None
       syms.append(sym)
 
@@ -145,19 +151,31 @@ def main():
   # Collect symbols
 
   if funs is None:
-    syms = collect_syms(input_name)
-
-    def is_public_fun(s):
-      return (s['Type'] == 'FUNC'
-        and s['Type'] != 'LOCAL'
-        and s['Ndx'] != 'UND'
-        and s['Name'] not in ['_init', '_fini'])
+    orig_syms = collect_syms(input_name)
 
     # TODO: detect public data symbols and issue warning
 
-    funs = list(map(lambda s: s['Name'], filter(is_public_fun, syms)))
+    def is_public_fun(s):
+      return (s['Type'] == 'FUNC'
+              and s['Type'] != 'LOCAL'
+              and s['Ndx'] != 'UND'
+              and s['Name'] not in ['', '_init', '_fini'])
+    orig_funs = list(filter(is_public_fun, orig_syms))
 
-    if not syms and not quiet:
+    funs = []
+    warn_versioned = False
+    for s in orig_funs:
+      if s['Version'] is not None:
+        # TODO: support versions
+        if not warn_versioned:
+          warn("library %s contains versioned symbols which are NYI" % input_name)
+          warn_versioned = True
+        if verbose:
+          print("Skipping versioned symbol %s" % s['Name'])
+        continue
+      funs.append(s['Name'])
+
+    if not funs and not quiet:
       print("no public functions were found in %s" % input_name)
 
   if verbose:
