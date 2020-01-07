@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright 2019 Yury Gribov
+# Copyright 2019-2020 Yury Gribov
 #
 # The MIT License (MIT)
 # 
@@ -20,3 +20,4 @@ export PYTHON="${PYTHON:-python3}"
 
 tests/1/run.sh $ARCH
 tests/2/run.sh $ARCH
+test -n "$ARCH" || tests/3/run.sh  # TODO: enable for other targets

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Yury Gribov
+ * Copyright 2020 Yury Gribov
  *
  * The MIT License (MIT)
  * 
@@ -9,7 +9,7 @@
 
 #include "interposed.h"
 
-__attribute__((visibility("default")))
-void foo(int x, int y) {
-  throw err(x + y);
+int main() {
+  foo(1, 2);
+  return 0;
 }

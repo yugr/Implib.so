@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Yury Gribov
+ * Copyright 2020 Yury Gribov
  *
  * The MIT License (MIT)
  * 
@@ -7,9 +7,10 @@
  * found in the LICENSE.txt file.
  */
 
+#include <stdio.h>
 #include "interposed.h"
 
 __attribute__((visibility("default")))
 void foo(int x, int y) {
-  throw err(x + y);
+  printf("Hello %d\n", x + 2*y);
 }

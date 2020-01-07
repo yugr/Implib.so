@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright 2019 Yury Gribov
+# Copyright 2019-2020 Yury Gribov
 #
 # The MIT License (MIT)
 # 
@@ -34,3 +34,5 @@ if ! diff ref.log new.log; then
   echo "Exceptions do NOT propagate through implibs"
   exit 1
 fi
+
+echo SUCCESS

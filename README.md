@@ -140,6 +140,14 @@ $ implib-gen.py --dlopen-callback=mycallback --symbol_prefix=MYPREFIX_ libxyz.so
 $ ... # Link your app with libxyz.tramp.S, libxyz.init.c and mycallback.c
 ```
 
+# Linker wrapper
+
+Generation of wrappers may be automated via linker wrapper `scripts/ld`.
+Adding it to `PATH` (in front of normal `ld`) would result in all dynamic libs
+(besides libc) to be replaced with wrappers.
+
+Atm it's only meant for tesing.
+
 # Overhead
 
 Implib.so overhead on a fast path boils down to
