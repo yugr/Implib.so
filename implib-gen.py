@@ -42,9 +42,9 @@ def collect_syms(f):
       continue
     # Skip static symtab
     if line.startswith('Symbol table \'.symtab\''):
-      for line in itr:
-        line = line.strip()
-        if not line:
+      for line2 in itr:
+        line2 = line2.strip()
+        if not line2:
             break
       continue
     words = re.split(r' +', line)
