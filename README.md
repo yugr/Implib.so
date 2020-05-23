@@ -144,10 +144,19 @@ $ ... # Link your app with libxyz.tramp.S, libxyz.init.c and mycallback.c
 # Linker wrapper
 
 Generation of wrappers may be automated via linker wrapper `scripts/ld`.
-Adding it to `PATH` (in front of normal `ld`) would result in all dynamic libs
-(besides libc) to be replaced with wrappers.
+Adding it to `PATH` (in front of normal `ld`) would by default result
+in all dynamic libs (besides system ones) to be replaced with wrappers.
+Explicit list of libraries can be specified by exporting
+`IMPLIBSO_LD_OPTIONS` environment variable:
+```
+export IMPLIBSO_LD_OPTIONS='--wrap-libs attr,acl'
+```
+For more details run with
+```
+export IMPLIBSO_LD_OPTIONS=--help
+```
 
-Atm it's only meant for tesing.
+Atm linker wrapper is only meant for testing.
 
 # Overhead
 
@@ -189,7 +198,3 @@ As mentioned in introduction import libraries are first class citizens on Window
 Lazy loading is supported by Solaris shared libraries but was never implemented in Linux. There have been [some discussions](https://www.sourceware.org/ml/libc-help/2013-02/msg00017.html) in libc-alpha but no patches were posted.
 
 Implib.so-like functionality is used in [OpenGL loading libraries](https://www.khronos.org/opengl/wiki/OpenGL_Loading_Library) e.g. [GLEW](http://glew.sourceforge.net/) via custom project-specific scripts.
-
-# TODO
-
-* Linker wrapper with flag for specifying which libs to wrap
