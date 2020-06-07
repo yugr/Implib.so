@@ -19,13 +19,16 @@ me = os.path.basename(__file__)
 root = os.path.dirname(__file__)
 
 def warn(msg):
+  """Emits a nicely-decorated warning."""
   sys.stderr.write('%s: warning: %s\n' % (me, msg))
 
 def error(msg):
+  """Emits a nicely-decorated error and exits."""
   sys.stderr.write('%s: error: %s\n' % (me, msg))
   sys.exit(1)
 
 def run(args, input=''):
+  """Runs external program and aborts on error."""
   p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
   out, err = p.communicate(input=input.encode('utf-8'))
@@ -36,6 +39,8 @@ def run(args, input=''):
   return out, err
 
 def collect_syms(f):
+  """Collect ELF dynamic symtab."""
+
   out, err = run(["readelf", "-W", "--dyn-syms", f])
 
   toc = None
