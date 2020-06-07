@@ -25,13 +25,18 @@ def error(msg):
   sys.stderr.write('%s: error: %s\n' % (me, msg))
   sys.exit(1)
 
-def collect_syms(f):
-  p = subprocess.Popen(["readelf", "-sW", "--dyn-syms", f], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  out, err = p.communicate()
+def run(args, input=''):
+  p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE)
+  out, err = p.communicate(input=input.encode('utf-8'))
   out = out.decode('utf-8')
   err = err.decode('utf-8')
   if p.returncode != 0 or err:
-    error("readelf failed with retcode %d: %s" % (p.returncode, err))
+    error("%s failed with retcode %d:\n%s" % (args[0], p.returncode, err))
+  return out, err
+
+def collect_syms(f):
+  out, err = run(["readelf", "-sW", "--dyn-syms", f])
 
   toc = None
   syms = []
@@ -71,6 +76,12 @@ def collect_syms(f):
 
   if toc is None:
     error("failed to analyze %s" % f)
+
+  # Also collected demangled names
+  if syms:
+    out, err = run(['c++filt'], '\n'.join((sym['Name'] for sym in syms)))
+    for i, name in enumerate(out.split("\n")):
+      syms[i]['Demangled Name'] = name
 
   return syms
 
@@ -150,18 +161,20 @@ def main():
 
   ptr_size = int(cfg['Arch']['PointerSize'])
 
-  # Collect symbols
+  orig_syms = collect_syms(input_name)
+
+  def is_public(s):
+    return (s['Type'] != 'LOCAL'
+            and s['Ndx'] != 'UND'
+            and s['Name'] not in ['', '_init', '_fini'])
+
+  # Collect functions
+  # TODO: detect public data symbols and issue warning
 
   if funs is None:
-    orig_syms = collect_syms(input_name)
-
-    # TODO: detect public data symbols and issue warning
 
     def is_public_fun(s):
-      return (s['Type'] == 'FUNC'
-              and s['Type'] != 'LOCAL'
-              and s['Ndx'] != 'UND'
-              and s['Name'] not in ['', '_init', '_fini'])
+      return s['Type'] == 'FUNC' and is_public(s)
     orig_funs = list(filter(is_public_fun, orig_syms))
 
     funs = []
@@ -183,7 +196,24 @@ def main():
   if verbose:
     print("Exported functions:")
     for i, fun in enumerate(funs):
-      print("{0}: {1}".format(i, fun))
+      print("  {0}: {1}".format(i, fun))
+
+  # Collect vtables
+
+  vtabs = {}
+
+  for s in orig_syms:
+    m = re.match(r'^(vtable|typeinfo|typeinfo name) for (.*)', s['Demangled Name'])
+    if m is not None and is_public(s):
+      typ, cls = m.groups()
+      vtabs.setdefault(cls, {})[typ] = s
+
+  # TODO: collect vtable raw contents and relocations
+
+  if verbose:
+    print("Exported vtables:")
+    for i, (cls, _) in enumerate(sorted(vtabs.items())):
+      print("  {0}: {1}".format(i, cls))
 
   # Generate assembly code
 
