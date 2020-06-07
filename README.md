@@ -176,18 +176,18 @@ so it should have equivalent performance.
 # Limitations
 
 The tool does not transparently support all features of POSIX shared libraries. In particular
-* it can not provide wrappers for data symbols (including C++ vtables and RTTI)
+* it can not provide wrappers for data symbols (support for C++ vtables/RTTI is planned)
 * it makes first call to wrapped functions asynch signal unsafe (as it will call `dlopen` and library constructors)
 * it may change semantics if there are multiple definitions of same symbol in different loaded shared objects (runtime symbol interposition is considered a bad practice though)
 * it may change semantics because shared library constructors are delayed until when library is loaded
 
-Also note that the tool is meant to be a PoC. In particular I didn't implement the following very important features:
+The tool also lacks the following very important features:
 * proper support for multi-threading
 * symbol versions are not handled at all
 * support OSX
 (none should be hard to add so let me know if you need it).
 
-Finally tool is only lightly tested and there are some minor TODOs in code.
+Finally, Implib.so is only lightly tested and there are some minor TODOs in code.
 
 # Related work
 
