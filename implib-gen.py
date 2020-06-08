@@ -124,39 +124,56 @@ def collect_relocs(f):
   return rels
 
 def main():
-  parser = argparse.ArgumentParser(description="Generate wrappers for shared library functions.")
+  parser = argparse.ArgumentParser(description="Generate wrappers for shared library functions.",
+                                   formatter_class=argparse.RawDescriptionHelpFormatter,
+                                   epilog="""\
+Examples:
+  $ python3 {0} /usr/lib/x86_64-linux-gnu/libaccountsservice.so.0
+  Generating libaccountsservice.so.0.tramp.S...
+  Generating libaccountsservice.so.0.init.c...
+""".format(me))
+
   parser.add_argument('library',
                       metavar='LIB',
                       help="Library to be wrapped.")
   parser.add_argument('--verbose', '-v',
-                      help="Print diagnostic info.",
+                      help="Print diagnostic info",
                       action='count',
                       default=0)
   parser.add_argument('--dlopen-callback',
-                      help="Call user-provided custom callback to dlopen library.",
+                      help="Call user-provided custom callback to load library instead of dlopen",
                       default='')
+  parser.add_argument('--dlopen',
+                      help="Emit dlopen call (default)",
+                      dest='dlopen', action='store_true', default=True)
   parser.add_argument('--no-dlopen',
-                      help="Do not emit dlopen call (user must load library himself).",
-                      action='store_true')
+                      help="Do not emit dlopen call (user must load library himself)",
+                      dest='dlopen', action='store_false')
   parser.add_argument('--library-load-name',
-                      help="Use custom name for dlopened library (default is LIB).")
+                      help="Use custom name for dlopened library (default is LIB)")
+  parser.add_argument('--lazy-load',
+                      help="Load library lazily on first call to one of it's functions (default)",
+                      dest='lazy_load', action='store_true', default=True)
   parser.add_argument('--no-lazy-load',
-                      help="Load library at program start (by default library is loaded on first call to one of it's functions).",
-                      action='store_true')
+                      help="Load library eagerly at program start",
+                      dest='lazy_load', action='store_false')
   parser.add_argument('--vtables',
-                      help="Intercept virtual tables.",
-                      action='store_true')
+                      help="Intercept virtual tables (EXPERIMENTAL)",
+                      dest='vtables', action='store_true', default=False)
+  parser.add_argument('--no-vtables',
+                      help="Do not intercept virtual tables (default)",
+                      dest='vtables', action='store_false')
   parser.add_argument('--target',
-                      help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi (atm x86_64, i[0-9]86, arm/armhf and aarch64 are supported).",
+                      help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi (atm x86_64, i[0-9]86, arm/armhf and aarch64 are supported)",
                       default='x86_64')
   parser.add_argument('--symbol-list',
-                      help="Path to file with symbols that should be present in wrapper (all by default).")
+                      help="Path to file with symbols that should be present in wrapper (all by default)")
   parser.add_argument('--symbol-prefix',
                       metavar='PFX',
-                      help="Prefix wrapper symbols with PFX.",
+                      help="Prefix wrapper symbols with PFX",
                       default='')
   parser.add_argument('-q', '--quiet',
-                      help="Do not print progress info.",
+                      help="Do not print progress info",
                       action='store_true')
   parser.add_argument('--outdir', '-o',
                       help="Path to create wrapper at",
@@ -167,8 +184,8 @@ def main():
   input_name = args.library
   verbose = args.verbose
   dlopen_callback = args.dlopen_callback
-  no_dlopen = args.no_dlopen
-  lazy_load = not args.no_lazy_load
+  dlopen = args.dlopen
+  lazy_load = args.lazy_load
   load_name = args.library_load_name if args.library_load_name is not None else os.path.basename(input_name)
   if args.target.startswith('arm'):
     target = 'arm'  # Handle armhf-...
@@ -298,7 +315,7 @@ def main():
         load_name=load_name,
         dlopen_callback=dlopen_callback,
         has_dlopen_callback=int(bool(dlopen_callback)),
-        no_dlopen=int(no_dlopen),
+        no_dlopen=not int(dlopen),
         lazy_load=int(lazy_load),
         sym_names=',\n  '.join('"%s"' % name for name in funs))
     f.write(init_text)
