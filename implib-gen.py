@@ -38,6 +38,16 @@ def run(args, input=''):
     error("%s failed with retcode %d:\n%s" % (args[0], p.returncode, err))
   return out, err
 
+def make_toc(words):
+  return {i: n for i, n in enumerate(words)}
+
+def parse_row(words, toc, hex_keys):
+  vals = {k: (words[i] if i < len(words) else '') for i, k in toc.items()}
+  for k in hex_keys:
+    if vals[k]:
+      vals[k] = int(vals[k], 16)
+  return vals
+
 def collect_syms(f):
   """Collect ELF dynamic symtab."""
 
@@ -53,13 +63,10 @@ def collect_syms(f):
     if line.startswith('Num'):  # Header?
       if toc is not None:
         error("multiple headers in output of readelf")
-      toc = {}
-      for i, n in enumerate(words):
-        # Colons are different across readelf versions so get rid of them.
-        n = n.replace(':', '')
-        toc[i] = n
+      # Colons are different across readelf versions so get rid of them.
+      toc = make_toc(map(lambda n: n.replace(':', ''), words))
     elif toc is not None:
-      sym = {k: (words[i] if i < len(words) else '') for i, k in toc.items()}
+      sym = parse_row(words, toc, ['Value'])
       name = sym['Name']
       if '@' in name:
         sym['Default'] = '@@' in name
@@ -82,6 +89,40 @@ def collect_syms(f):
 
   return syms
 
+def collect_relocs(f):
+  """Collect ELF dynamic relocs."""
+
+  out, err = run(["readelf", "-r", f])
+
+  toc = None
+  rels = []
+  for line in out.splitlines():
+    line = line.strip()
+    if not line:
+      continue
+    if re.match(r'^\s*Offset', line):  # Header?
+      if toc is not None:
+        error("multiple headers in output of readelf")
+      words = re.split(r'\s\s+', line)  # "Sym. Name + Addend"
+      toc = make_toc(words)
+    elif toc is not None:
+      line = re.sub(r' \+ ', '+', line)
+      words = re.split(r'\s+', line)
+      rel = parse_row(words, toc, ['Offset', 'Info'])
+      rels.append(rel)
+      # Split symbolic representation
+      sym_name = 'Sym. Name + Addend'
+      if rel[sym_name]:
+        p = rel[sym_name].split('+')
+        if len(p) == 1:
+          p = ['', p[0]]
+        rel[sym_name] = (p[0], int(p[1], 16))
+
+  if toc is None:
+    error("failed to analyze %s" % f)
+
+  return rels
+
 def main():
   parser = argparse.ArgumentParser(description="Generate wrappers for shared library functions.")
   parser.add_argument('library',
@@ -101,6 +142,9 @@ def main():
                       help="Use custom name for dlopened library (default is LIB).")
   parser.add_argument('--no-lazy-load',
                       help="Load library at program start (by default library is loaded on first call to one of it's functions).",
+                      action='store_true')
+  parser.add_argument('--vtables',
+                      help="Intercept virtual tables.",
                       action='store_true')
   parser.add_argument('--target',
                       help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi (atm x86_64, i[0-9]86, arm/armhf and aarch64 are supported).",
@@ -158,21 +202,19 @@ def main():
 
   ptr_size = int(cfg['Arch']['PointerSize'])
 
-  orig_syms = collect_syms(input_name)
-
-  def is_public(s):
+  def is_exported(s):
     return (s['Type'] != 'LOCAL'
             and s['Ndx'] != 'UND'
             and s['Name'] not in ['', '_init', '_fini'])
 
-  # Collect functions
+  syms = list(filter(is_exported, collect_syms(input_name)))
+
   # TODO: detect public data symbols and issue warning
 
-  if funs is None:
+  # Collect functions
 
-    def is_public_fun(s):
-      return s['Type'] == 'FUNC' and is_public(s)
-    orig_funs = list(filter(is_public_fun, orig_syms))
+  if funs is None:
+    orig_funs = filter(lambda s: s['Type'] == 'FUNC', syms)
 
     funs = []
     warn_versioned = False
@@ -197,20 +239,26 @@ def main():
 
   # Collect vtables
 
-  vtabs = {}
+  if args.vtables:
+    vtabs = {}
 
-  for s in orig_syms:
-    m = re.match(r'^(vtable|typeinfo|typeinfo name) for (.*)', s['Demangled Name'])
-    if m is not None and is_public(s):
-      typ, cls = m.groups()
-      vtabs.setdefault(cls, {})[typ] = s
+    for s in syms:
+      m = re.match(r'^(vtable|typeinfo|typeinfo name) for (.*)', s['Demangled Name'])
+      if m is not None and is_exported(s):
+        typ, cls = m.groups()
+        vtabs.setdefault(cls, {})[typ] = s
 
-  # TODO: collect vtable raw contents and relocations
+    rels = collect_relocs(input_name)
 
-  if verbose:
-    print("Exported vtables:")
-    for i, (cls, _) in enumerate(sorted(vtabs.items())):
-      print("  {0}: {1}".format(i, cls))
+    # TODO: collect vtable raw contents and relocations
+
+    if verbose:
+      print("Exported vtables:")
+      for i, (cls, _) in enumerate(sorted(vtabs.items())):
+        print("  {0}: {1}".format(i, cls))
+      print("Relocs:")
+      for rel in rels:
+        print("  {0}: {1}".format(rel['Offset'], rel['Sym. Name + Addend']))
 
   # Generate assembly code
 
