@@ -123,6 +123,44 @@ def collect_relocs(f):
 
   return rels
 
+def collect_sections(f):
+  """Collect section info from ELF."""
+
+  out, err = run(["readelf", "-SW", f])
+
+  toc = None
+  sections = []
+  for line in out.splitlines():
+    line = line.strip()
+    if not line:
+      continue
+    line = re.sub(r'\[\s+', '[', line)
+    words = re.split(r' +', line)
+    if line.startswith('[Nr]'):  # Header?
+      if toc is not None:
+        error("multiple headers in output of readelf")
+      toc = make_toc(words)
+    elif line.startswith('[') and toc is not None:
+      sec = parse_row(words, toc, ['Address', 'Off', 'Size'])
+      if 'A' in sec['Flg']:  # Allocatable section?
+        sections.append(sec)
+
+  if toc is None:
+    error("failed to analyze %s" % f)
+
+  return sections
+
+def read_unrelocate_data(f, chunks):
+  """Collect unrelocated data from ELF."""
+
+  secs = collect_sections(f)
+  secs.sort(key=lambda s: s['Address'])
+
+  # TODO: read bytes for each chunk (via -x)
+  data = []
+
+  return data
+
 def main():
   parser = argparse.ArgumentParser(description="Generate wrappers for shared library functions.",
                                    formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -266,6 +304,7 @@ Examples:
         vtabs.setdefault(cls, {})[typ] = s
 
     rels = collect_relocs(input_name)
+    secs = collect_sections(input_name)
 
     # TODO: collect vtable raw contents and relocations
 
@@ -276,6 +315,9 @@ Examples:
       print("Relocs:")
       for rel in rels:
         print("  {0}: {1}".format(rel['Offset'], rel['Sym. Name + Addend']))
+      print("Sections:")
+      for sec in secs:
+        print("  {}: [{:x}, {:x}), at {:x}".format(sec['Name'], sec['Address'], sec['Address'] + sec['Size'], sec['Off']))
 
   # Generate assembly code
 
