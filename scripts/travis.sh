@@ -18,6 +18,6 @@ cd $(dirname $0)/..
 ARCH=${ARCH:-}
 export PYTHON="${PYTHON:-python3}"
 
-tests/1/run.sh $ARCH
-tests/2/run.sh $ARCH
-test -n "$ARCH" || tests/3/run.sh  # TODO: enable for other targets
+tests/basic/run.sh $ARCH
+tests/exceptions/run.sh $ARCH
+test -n "$ARCH" || tests/ld/run.sh  # TODO: enable for other targets
