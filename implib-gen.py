@@ -264,9 +264,12 @@ Examples:
 
   syms = list(filter(is_exported, collect_syms(input_name)))
 
-  # TODO: detect public data symbols and issue warning
+  exported_data = [s['Name'] for s in syms if s['Type'] == 'OBJECT' and not s['Name'].startswith('_')]
+  if exported_data:
+    warn("library '%s' contains data symbols which won't be intercepted: %s" % (input_name, ', '.join(exported_data)))
 
   # Collect functions
+  # TODO: warn if user-specified functions are missing
 
   if funs is None:
     orig_funs = filter(lambda s: s['Type'] == 'FUNC', syms)
