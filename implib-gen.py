@@ -264,7 +264,12 @@ Examples:
 
   syms = list(filter(is_exported, collect_syms(input_name)))
 
-  exported_data = [s['Name'] for s in syms if s['Type'] == 'OBJECT' and not s['Name'].startswith('_')]
+  def is_data_symbol(s):
+    return (s['Type'] == 'OBJECT'
+            # Allow vtables if --vtables is on
+            and not (' for ' in s['Demangled Name'] and args.vtables))
+
+  exported_data = [s['Name'] for s in syms if is_data_symbol(s)]
   if exported_data:
     warn("library '%s' contains data symbols which won't be intercepted: %s" % (input_name, ', '.join(exported_data)))
 
