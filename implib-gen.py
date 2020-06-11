@@ -67,6 +67,7 @@ def collect_syms(f):
       toc = make_toc(map(lambda n: n.replace(':', ''), words))
     elif toc is not None:
       sym = parse_row(words, toc, ['Value'])
+      sym['Size'] = int(sym['Size'])
       name = sym['Name']
       if '@' in name:
         sym['Default'] = '@@' in name
@@ -150,15 +151,40 @@ def collect_sections(f):
 
   return sections
 
-def read_unrelocate_data(f, chunks):
+def read_unrelocated_data(input_name, syms, secs):
   """Collect unrelocated data from ELF."""
+  data = {}
+  with open(input_name, 'rb') as f:
+    for name, s in sorted(syms.items(), key=lambda s: s[1]['Value']):
+      # TODO: binary search (bisect)
+      sec = [sec for sec in secs if sec['Address'] <= s['Value'] < sec['Address'] + sec['Size'] and s['Size'] <= sec['Size']]
+      if len(sec) != 1:
+        error("failed to locate section for interval [%x, %x]" %  (s['Value'], s['Size']))
+      sec = sec[0]
+      f.seek(sec['Off'])
+      data[name] = f.read(s['Size'])
+  return data
 
-  secs = collect_sections(f)
-  secs.sort(key=lambda s: s['Address'])
-
-  # TODO: read bytes for each chunk (via -x)
-  data = []
-
+def collect_relocated_data(syms, bites, rels, ptr_size, reloc_type):
+  data = {}
+  for name, s in sorted(syms.items()):
+    b = bites.get(name)
+    assert b is not None
+    if name.startswith('typeinfo name'):
+      data[name] = [(None, int(x)) for x in b]
+      continue
+    data[name] = []
+    for i in range(0, len(b), ptr_size):
+      imm = int.from_bytes(b[i*ptr_size:(i + 1)*ptr_size], byteorder='little')
+      data[name].append((None, imm))
+    start = s['Value']
+    finish = start + s['Size']
+    # TODO: binary search (bisect)
+    for rel in rels:
+      if rel['Type'] == reloc_type and start <= rel['Offset'] < finish:
+        i = (rel['Offset'] - start) // ptr_size
+        assert i < len(data[name])
+        data[name][i] = rel, 0
   return data
 
 def main():
@@ -256,6 +282,7 @@ Examples:
   cfg.read(target_dir + '/config.ini')
 
   ptr_size = int(cfg['Arch']['PointerSize'])
+  symbol_reloc_type = cfg['Arch']['SymbolReloc']
 
   def is_exported(s):
     return (s['Type'] != 'LOCAL'
@@ -303,29 +330,45 @@ Examples:
   # Collect vtables
 
   if args.vtables:
-    vtabs = {}
+    cls_info = {}
+    data_syms = {}
 
     for s in syms:
-      m = re.match(r'^(vtable|typeinfo|typeinfo name) for (.*)', s['Demangled Name'])
+      name = s['Demangled Name']
+      m = re.match(r'^(vtable|typeinfo|typeinfo name) for (.*)', name)
       if m is not None and is_exported(s):
         typ, cls = m.groups()
-        vtabs.setdefault(cls, {})[typ] = s
-
-    rels = collect_relocs(input_name)
-    secs = collect_sections(input_name)
-
-    # TODO: collect vtable raw contents and relocations
+        cls_info.setdefault(cls, {})[typ] = name
+        data_syms[name] = s
 
     if verbose:
       print("Exported vtables:")
-      for i, (cls, _) in enumerate(sorted(vtabs.items())):
-        print("  {0}: {1}".format(i, cls))
-      print("Relocs:")
-      for rel in rels:
-        print("  {0}: {1}".format(rel['Offset'], rel['Sym. Name + Addend']))
+      for cls, _ in sorted(cls_info.items()):
+        print("  {0}".format(cls))
+
+    secs = collect_sections(input_name)
+    if verbose:
       print("Sections:")
       for sec in secs:
         print("  {}: [{:x}, {:x}), at {:x}".format(sec['Name'], sec['Address'], sec['Address'] + sec['Size'], sec['Off']))
+
+    bites = read_unrelocated_data(input_name, data_syms, secs)
+
+    rels = collect_relocs(input_name)
+    if verbose:
+      print("Relocs:")
+      for rel in rels:
+        print("  {0}: {1}".format(rel['Offset'], rel['Sym. Name + Addend']))
+
+    vtable_data = collect_relocated_data(data_syms, bites, rels, ptr_size, symbol_reloc_type)
+    if verbose:
+      print("Vtable data:")
+      for name, data in sorted(vtable_data.items()):
+        print("  {}:".format(name))
+        for rel, imm in data:
+          print("    {}".format(imm if rel is None else rel['Sym. Name + Addend']))
+
+    # TODO: print vtables
 
   # Generate assembly code
 
