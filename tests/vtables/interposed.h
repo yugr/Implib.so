@@ -18,7 +18,7 @@ public:
 
 class VIS B : public A {
 public:
-  virtual void foo(int x, int y) override;
+  virtual void foo(int x, int y);
 };
 
 #endif
