@@ -51,13 +51,15 @@ def parse_row(words, toc, hex_keys):
 def collect_syms(f):
   """Collect ELF dynamic symtab."""
 
-  out, err = run(["readelf", "-W", "--dyn-syms", f])
+  # TODO: investigate why --dyn-syms does not work for many libs e.g. sotruss-lib.so or libanl-2.27.so
+  out, err = run(['readelf', '-W', '-s', f])
 
   toc = None
   syms = []
   for line in out.splitlines():
     line = line.strip()
     if not line:
+      toc = None
       continue
     words = re.split(r' +', line)
     if line.startswith('Num'):  # Header?
@@ -67,7 +69,7 @@ def collect_syms(f):
       toc = make_toc(map(lambda n: n.replace(':', ''), words))
     elif toc is not None:
       sym = parse_row(words, toc, ['Value'])
-      sym['Size'] = int(sym['Size'])
+      sym['Size'] = int(sym['Size'], 16 if sym['Size'].startswith('0x') else 10)  # Readelf is inconistent
       name = sym['Name']
       if '@' in name:
         sym['Default'] = '@@' in name
@@ -80,7 +82,7 @@ def collect_syms(f):
       syms.append(sym)
 
   if toc is None:
-    error("failed to analyze %s" % f)
+    error("failed to analyze symbols in %s" % f)
 
   # Also collected demangled names
   if syms:
@@ -93,7 +95,7 @@ def collect_syms(f):
 def collect_relocs(f):
   """Collect ELF dynamic relocs."""
 
-  out, err = run(["readelf", "-rW", f])
+  out, err = run(['readelf', '-rW', f])
 
   toc = None
   rels = []
@@ -121,14 +123,14 @@ def collect_relocs(f):
         rel[sym_name] = (p[0], int(p[1], 16))
 
   if toc is None:
-    error("failed to analyze %s" % f)
+    error("failed to analyze relocations in %s" % f)
 
   return rels
 
 def collect_sections(f):
   """Collect section info from ELF."""
 
-  out, err = run(["readelf", "-SW", f])
+  out, err = run(['readelf', '-SW', f])
 
   toc = None
   sections = []
@@ -148,7 +150,7 @@ def collect_sections(f):
         sections.append(sec)
 
   if toc is None:
-    error("failed to analyze %s" % f)
+    error("failed to analyze sections in %s" % f)
 
   return sections
 
@@ -364,7 +366,8 @@ Examples:
   symbol_reloc_type = cfg['Arch']['SymbolReloc']
 
   def is_exported(s):
-    return (s['Type'] != 'LOCAL'
+    return (s['Bind'] != 'LOCAL'
+            and s['Type'] != 'NOTYPE'
             and s['Ndx'] != 'UND'
             and s['Name'] not in ['', '_init', '_fini'])
 
@@ -447,8 +450,6 @@ Examples:
         print("  {0} ({1}):".format(name, demangled_name))
         for typ, val in data:
           print("    {}".format(val if type != 'reloc' else rel['Symbol\'s Name + Addend']))
-
-    # TODO: print vtables
 
   # Generate assembly code
 

@@ -64,7 +64,6 @@ def which(exe, all=False):
   Analog if which(1).
   """
   paths = os.environ['PATH'].split(os.pathsep)
-  # TODO: append .exe on Windows
   exes = []
   for p in paths:
     f = os.path.join(p, exe)
