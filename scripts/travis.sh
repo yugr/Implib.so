@@ -20,4 +20,5 @@ export PYTHON="${PYTHON:-python3}"
 
 tests/basic/run.sh $ARCH
 tests/exceptions/run.sh $ARCH
+tests/data-warnings/run.sh $ARCH
 test -n "$ARCH" || tests/ld/run.sh  # TODO: enable for other targets
