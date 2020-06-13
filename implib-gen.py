@@ -93,18 +93,19 @@ def collect_syms(f):
 def collect_relocs(f):
   """Collect ELF dynamic relocs."""
 
-  out, err = run(["readelf", "-r", f])
+  out, err = run(["readelf", "-rW", f])
 
   toc = None
   rels = []
   for line in out.splitlines():
     line = line.strip()
     if not line:
+      toc = None
       continue
     if re.match(r'^\s*Offset', line):  # Header?
       if toc is not None:
         error("multiple headers in output of readelf")
-      words = re.split(r'\s\s+', line)  # "Sym. Name + Addend"
+      words = re.split(r'\s\s+', line)  # "Symbol's Name + Addend"
       toc = make_toc(words)
     elif toc is not None:
       line = re.sub(r' \+ ', '+', line)
@@ -112,7 +113,7 @@ def collect_relocs(f):
       rel = parse_row(words, toc, ['Offset', 'Info'])
       rels.append(rel)
       # Split symbolic representation
-      sym_name = 'Sym. Name + Addend'
+      sym_name = 'Symbol\'s Name + Addend'
       if rel[sym_name]:
         p = rel[sym_name].split('+')
         if len(p) == 1:
@@ -170,13 +171,13 @@ def collect_relocated_data(syms, bites, rels, ptr_size, reloc_type):
   for name, s in sorted(syms.items()):
     b = bites.get(name)
     assert b is not None
-    if name.startswith('typeinfo name'):
-      data[name] = [(None, int(x)) for x in b]
+    if s['Demangled Name'].startswith('typeinfo name'):
+      data[name] = [('byte', int(x)) for x in b]
       continue
     data[name] = []
     for i in range(0, len(b), ptr_size):
-      imm = int.from_bytes(b[i*ptr_size:(i + 1)*ptr_size], byteorder='little')
-      data[name].append((None, imm))
+      val = int.from_bytes(b[i*ptr_size:(i + 1)*ptr_size], byteorder='little')
+      data[name].append(('offset', val))
     start = s['Value']
     finish = start + s['Size']
     # TODO: binary search (bisect)
@@ -184,8 +185,86 @@ def collect_relocated_data(syms, bites, rels, ptr_size, reloc_type):
       if rel['Type'] == reloc_type and start <= rel['Offset'] < finish:
         i = (rel['Offset'] - start) // ptr_size
         assert i < len(data[name])
-        data[name][i] = rel, 0
+        data[name][i] = 'reloc', rel
   return data
+
+def generate_vtables(cls_tables, cls_syms, cls_data):
+  c_types = {
+    'reloc'  : 'const void *',
+    'char'   : 'byte',
+    'offset' : 'size_t'
+  }
+
+  ss = []
+  ss.append('''\
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+''')
+
+  # Print externs
+
+  printed = set()
+  for name, data in sorted(cls_data.items()):
+    for typ, val in data:
+      if typ != 'reloc':
+        continue
+      sym_name, addend = val['Symbol\'s Name + Addend']
+      sym_name = re.sub(r'@.*', '', sym_name)  # Can we pin version in C?
+      if sym_name not in cls_syms and sym_name not in printed:
+        ss.append('''\
+extern const char %s[];
+
+''' % sym_name)
+
+  # Print vtables
+
+  for cls, tables in sorted(cls_tables.items()):
+    # typeinfo name
+    name = tables['typeinfo name']
+    name_data = cls_data[name]
+    ss.append('''\
+// %s typeinfo name
+extern const __attribute__((weak))
+char %s[] = { %s };
+
+''' % (cls, name, ', '.join((str(val) for _, val in name_data))))
+
+    # Other tables
+    for table_type in ['typeinfo', 'vtable']:
+      name = tables[table_type]
+      data = cls_data[name]
+      ss.append('''\
+// %s %s
+extern const __attribute__((weak))
+struct {
+''' % (cls, table_type))
+      for i, (typ, _) in enumerate(data):
+        ss.append('''\
+  %s field_%d;
+''' % (c_types[typ], i))
+      ss.append('''\
+} %s = { ''' % name)
+      for typ, val in data:
+        if typ != 'reloc':
+          ss.append('%s, ' % val)
+        else:
+          sym_name, addend = val['Symbol\'s Name + Addend']
+          sym_name = re.sub(r'@.*', '', sym_name)  # Can we pin version in C?
+          ss.append('(const char *)&%s + %d, ' % (sym_name, addend))
+      ss.append('''\
+};
+
+''')
+
+  ss.append('''\
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+''')
+
+  return ''.join(ss)
 
 def main():
   parser = argparse.ArgumentParser(description="Generate wrappers for shared library functions.",
@@ -330,20 +409,20 @@ Examples:
   # Collect vtables
 
   if args.vtables:
-    cls_info = {}
-    data_syms = {}
+    cls_tables = {}
+    cls_syms = {}
 
     for s in syms:
-      name = s['Demangled Name']
-      m = re.match(r'^(vtable|typeinfo|typeinfo name) for (.*)', name)
+      m = re.match(r'^(vtable|typeinfo|typeinfo name) for (.*)', s['Demangled Name'])
       if m is not None and is_exported(s):
         typ, cls = m.groups()
-        cls_info.setdefault(cls, {})[typ] = name
-        data_syms[name] = s
+        name = s['Name']
+        cls_tables.setdefault(cls, {})[typ] = name
+        cls_syms[name] = s
 
     if verbose:
-      print("Exported vtables:")
-      for cls, _ in sorted(cls_info.items()):
+      print("Exported classes:")
+      for cls, _ in sorted(cls_tables.items()):
         print("  {0}".format(cls))
 
     secs = collect_sections(input_name)
@@ -352,21 +431,22 @@ Examples:
       for sec in secs:
         print("  {}: [{:x}, {:x}), at {:x}".format(sec['Name'], sec['Address'], sec['Address'] + sec['Size'], sec['Off']))
 
-    bites = read_unrelocated_data(input_name, data_syms, secs)
+    bites = read_unrelocated_data(input_name, cls_syms, secs)
 
     rels = collect_relocs(input_name)
     if verbose:
       print("Relocs:")
       for rel in rels:
-        print("  {0}: {1}".format(rel['Offset'], rel['Sym. Name + Addend']))
+        print("  {0}: {1}".format(rel['Offset'], rel['Symbol\'s Name + Addend']))
 
-    vtable_data = collect_relocated_data(data_syms, bites, rels, ptr_size, symbol_reloc_type)
+    cls_data = collect_relocated_data(cls_syms, bites, rels, ptr_size, symbol_reloc_type)
     if verbose:
-      print("Vtable data:")
-      for name, data in sorted(vtable_data.items()):
-        print("  {}:".format(name))
-        for rel, imm in data:
-          print("    {}".format(imm if rel is None else rel['Sym. Name + Addend']))
+      print("Class data:")
+      for name, data in sorted(cls_data.items()):
+        demangled_name = cls_syms[name]['Demangled Name']
+        print("  {0} ({1}):".format(name, demangled_name))
+        for typ, val in data:
+          print("    {}".format(val if type != 'reloc' else rel['Symbol\'s Name + Addend']))
 
     # TODO: print vtables
 
@@ -411,6 +491,8 @@ Examples:
         no_dlopen=not int(dlopen),
         lazy_load=int(lazy_load),
         sym_names=',\n  '.join('"%s"' % name for name in funs))
+    if args.vtables:
+      init_text += generate_vtables(cls_tables, cls_syms, cls_data)
     f.write(init_text)
 
 if __name__ == '__main__':
