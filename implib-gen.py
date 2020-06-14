@@ -385,24 +385,30 @@ Examples:
   # Collect functions
   # TODO: warn if user-specified functions are missing
 
+  orig_funs = filter(lambda s: s['Type'] == 'FUNC', syms)
+
+  all_funs = set()
+  warn_versioned = False
+  for s in orig_funs:
+    if s['Version'] is not None:
+      # TODO: support versions
+      if not warn_versioned:
+        warn("library %s contains versioned symbols which are NYI" % input_name)
+        warn_versioned = True
+      if verbose:
+        print("Skipping versioned symbol %s" % s['Name'])
+      continue
+    all_funs.add(s['Name'])
+
   if funs is None:
-    orig_funs = filter(lambda s: s['Type'] == 'FUNC', syms)
-
-    funs = []
-    warn_versioned = False
-    for s in orig_funs:
-      if s['Version'] is not None:
-        # TODO: support versions
-        if not warn_versioned:
-          warn("library %s contains versioned symbols which are NYI" % input_name)
-          warn_versioned = True
-        if verbose:
-          print("Skipping versioned symbol %s" % s['Name'])
-        continue
-      funs.append(s['Name'])
-
+    funs = sorted(list(all_funs))
     if not funs and not quiet:
-      print("no public functions were found in %s" % input_name)
+      warn("no public functions were found in %s" % input_name)
+  else:
+    missing_funs = [name for name in funs if name not in all_funs]
+    if missing_funs:
+      warn("some user-specified functions are not present in library: %s" % ', '.join(missing_funs))
+    funs = [name for name in funs if name in all_funs]
 
   if verbose:
     print("Exported functions:")
