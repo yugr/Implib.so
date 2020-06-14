@@ -22,5 +22,11 @@ export PYTHON="${PYTHON:-python3}"
 tests/basic/run.sh $ARCH
 tests/exceptions/run.sh $ARCH
 tests/data-warnings/run.sh $ARCH
-test -n "$ARCH" || tests/vtables/run.sh $ARCH  # TODO: enable for other arches
-test -n "$ARCH" || tests/ld/run.sh  # TODO: enable for other targets
+if test "$ARCH" != aarch64; then
+  # TODO: for AArch64
+  tests/vtables/run.sh $ARCH
+fi
+if test -n "$ARCH"; then
+  # TODO: enable for other targets
+  tests/ld/run.sh
+fi

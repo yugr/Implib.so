@@ -38,8 +38,12 @@ def run(args, input=''):
     error("%s failed with retcode %d:\n%s" % (args[0], p.returncode, err))
   return out, err
 
-def make_toc(words):
-  return {i: n for i, n in enumerate(words)}
+def make_toc(words, renames={}):
+  toc = {}
+  for i, n in enumerate(words):
+    name = renames.get(n, n)
+    toc[i] = name
+  return toc
 
 def parse_row(words, toc, hex_keys):
   vals = {k: (words[i] if i < len(words) else '') for i, k in toc.items()}
@@ -116,6 +120,9 @@ def collect_relocs(f):
       rels.append(rel)
       # Split symbolic representation
       sym_name = 'Symbol\'s Name + Addend'
+      if sym_name not in rel and 'Symbol\'s Name' in rel:
+        # Adapt to different versions of readelf
+        rel[sym_name] = rel['Symbol\'s Name'] + '+0'
       if rel[sym_name]:
         p = rel[sym_name].split('+')
         if len(p) == 1:
@@ -143,7 +150,7 @@ def collect_sections(f):
     if line.startswith('[Nr]'):  # Header?
       if toc is not None:
         error("multiple headers in output of readelf")
-      toc = make_toc(words)
+      toc = make_toc(words, {'Addr' : 'Address'})
     elif line.startswith('[') and toc is not None:
       sec = parse_row(words, toc, ['Address', 'Off', 'Size'])
       if 'A' in sec['Flg']:  # Allocatable section?
