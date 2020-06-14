@@ -60,6 +60,7 @@ def collect_syms(f):
 
   toc = None
   syms = []
+  syms_set = set()
   for line in out.splitlines():
     line = line.strip()
     if not line:
@@ -73,8 +74,11 @@ def collect_syms(f):
       toc = make_toc(map(lambda n: n.replace(':', ''), words))
     elif toc is not None:
       sym = parse_row(words, toc, ['Value'])
-      sym['Size'] = int(sym['Size'], 16 if sym['Size'].startswith('0x') else 10)  # Readelf is inconistent
       name = sym['Name']
+      if name in syms_set:
+        continue
+      syms_set.add(name)
+      sym['Size'] = int(sym['Size'], 16 if sym['Size'].startswith('0x') else 10)  # Readelf is inconistent
       if '@' in name:
         sym['Default'] = '@@' in name
         name, ver = re.split(r'@+', name)
