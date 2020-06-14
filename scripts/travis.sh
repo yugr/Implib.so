@@ -26,7 +26,7 @@ if test "$ARCH" != aarch64; then
   # TODO: for AArch64
   tests/vtables/run.sh $ARCH
 fi
-if test -n "$ARCH"; then
+if test -z "$ARCH"; then
   # TODO: enable for other targets
   tests/ld/run.sh
 fi
