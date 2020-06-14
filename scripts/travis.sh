@@ -22,10 +22,7 @@ export PYTHON="${PYTHON:-python3}"
 tests/basic/run.sh $ARCH
 tests/exceptions/run.sh $ARCH
 tests/data-warnings/run.sh $ARCH
-if ! echo "$ARCH" | grep -q '^aarch64'; then
-  # TODO: enable for AArch64
-  tests/vtables/run.sh $ARCH
-fi
+tests/vtables/run.sh $ARCH
 if test -z "$ARCH"; then
   # TODO: enable for other targets
   tests/ld/run.sh
