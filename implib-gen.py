@@ -203,7 +203,7 @@ def collect_relocated_data(syms, bites, rels, ptr_size, reloc_type):
         data[name][i] = 'reloc', rel
   return data
 
-def generate_vtables(cls_tables, cls_syms, cls_data):
+def generate_vtables(cls_tables, cls_syms, cls_data, t):
   c_types = {
     'reloc'  : 'const void *',
     'char'   : 'byte',
@@ -237,43 +237,33 @@ extern const char %s[];
 
   for cls, tables in sorted(cls_tables.items()):
     for table_type in ['typeinfo name', 'typeinfo', 'vtable']:
-      ss.append('''\
-// %s %s
-''' % (cls, table_type))
       name = tables[table_type]
       data = cls_data[name]
+
       if table_type == 'typeinfo name':
         c_type = 'unsigned char'
         brackets = '[]'
       else:
-        field_types = ['%s field_%d;' % (c_types[typ], i) for i, (typ, _) in enumerate(data)]
-        c_type = name + '_type'
-        brackets = ''
-        ss.append('''\
-typedef {0} {1};
-'''.format('struct { %s }' % ' '.join(field_types), c_type))
-      # A lot of nonsense to avoid warnings from both gcc and g++
-      ss.append('''\
-#ifdef __cplusplus
-extern
-#else
-extern const __attribute__((weak))
-{0} {1}{2};
-#endif  // __cplusplus
-const __attribute__((weak))
-{0} {1}{2} = {{
-'''.format(c_type, name, brackets))
+        field_types = ('%s field_%d;' % (c_types[typ], i) for i, (typ, _) in enumerate(data))
+        c_type = 'struct { %s }' % ' '.join(field_types)
+        brackets =''
+
+      vals = []
       for typ, val in data:
         if typ != 'reloc':
-          ss.append('%s, ' % val)
+          vals.append(str(val))
         else:
           sym_name, addend = val['Symbol\'s Name + Addend']
           sym_name = re.sub(r'@.*', '', sym_name)  # Can we pin version in C?
-          ss.append('(const char *)&%s + %d, ' % (sym_name, addend))
-      ss.append('''\
-};
+          vals.append('(const char *)&%s + %d' % (sym_name, addend))
 
-''')
+      ss.append(t.substitute(
+        cls=cls,
+        table_type=table_type,
+        c_type=c_type,
+        name=name,
+        brackets=brackets,
+        vals=', '.join(vals)))
 
   ss.append('''\
 #ifdef __cplusplus
@@ -518,9 +508,11 @@ Examples:
         no_dlopen=not int(dlopen),
         lazy_load=int(lazy_load),
         sym_names=sym_names)
+      f.write(init_text)
     if args.vtables:
-      init_text += generate_vtables(cls_tables, cls_syms, cls_data)
-    f.write(init_text)
+      with open(os.path.join(root, 'arch/common/vtable.c.tpl'), 'r') as t:
+        vtable_text = generate_vtables(cls_tables, cls_syms, cls_data, string.Template(t.read()))
+        f.write(vtable_text)
 
 if __name__ == '__main__':
   main()
