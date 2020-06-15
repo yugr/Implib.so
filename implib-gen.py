@@ -236,31 +236,33 @@ extern const char %s[];
   # Print vtables
 
   for cls, tables in sorted(cls_tables.items()):
-    # typeinfo name
-    name = tables['typeinfo name']
-    name_data = cls_data[name]
-    ss.append('''\
-// %s typeinfo name
-extern const __attribute__((weak))
-char %s[] = { %s };
-
-''' % (cls, name, ', '.join((str(val) for _, val in name_data))))
-
-    # Other tables
-    for table_type in ['typeinfo', 'vtable']:
-      name = tables[table_type]
-      data = cls_data[name]
+    for table_type in ['typeinfo name', 'typeinfo', 'vtable']:
       ss.append('''\
 // %s %s
-extern const __attribute__((weak))
-struct {
 ''' % (cls, table_type))
-      for i, (typ, _) in enumerate(data):
+      name = tables[table_type]
+      data = cls_data[name]
+      if table_type == 'typeinfo name':
+        c_type = 'unsigned char'
+        brackets = '[]'
+      else:
+        field_types = ['%s field_%d;' % (c_types[typ], i) for i, (typ, _) in enumerate(data)]
+        c_type = name + '_type'
+        brackets = ''
         ss.append('''\
-  %s field_%d;
-''' % (c_types[typ], i))
+typedef {0} {1};
+'''.format('struct { %s }' % ' '.join(field_types), c_type))
+      # A lot of nonsense to avoid warnings from both gcc and g++
       ss.append('''\
-} %s = { ''' % name)
+#ifdef __cplusplus
+extern
+#else
+extern const __attribute__((weak))
+{0} {1}{2};
+#endif  // __cplusplus
+const __attribute__((weak))
+{0} {1}{2} = {{
+'''.format(c_type, name, brackets))
       for typ, val in data:
         if typ != 'reloc':
           ss.append('%s, ' % val)
