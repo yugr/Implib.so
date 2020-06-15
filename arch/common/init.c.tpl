@@ -82,7 +82,7 @@ extern void *_${lib_suffix}_tramp_table[];
 
 // Can be sped up by manually parsing library symtab...
 void _${lib_suffix}_tramp_resolve(int i) {
-  assert((unsigned)i < sizeof(sym_names) / sizeof(sym_names[0]) - 1);
+  assert((unsigned)i + 1 < sizeof(sym_names) / sizeof(sym_names[0]));
 
   CHECK(!is_lib_loading, "library function '%s' called during library load", sym_names[i]);
 
@@ -106,7 +106,7 @@ void _${lib_suffix}_tramp_resolve(int i) {
 // Helper for user to resolve all symbols
 void _${lib_suffix}_tramp_resolve_all(void) {
   size_t i;
-  for(i = 0; i < sizeof(sym_names) / sizeof(sym_names[0]) - 1; ++i)
+  for(i = 0; i + 1 < sizeof(sym_names) / sizeof(sym_names[0]); ++i)
     _${lib_suffix}_tramp_resolve(i);
 }
 
