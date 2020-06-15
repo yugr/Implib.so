@@ -395,6 +395,7 @@ Examples:
 
   exported_data = [s['Name'] for s in syms if is_data_symbol(s)]
   if exported_data:
+    # TODO: we can generate wrappers for const data without relocations (or only code relocations)
     warn("library '%s' contains data symbols which won't be intercepted: %s" % (input_name, ', '.join(exported_data)))
 
   # Collect functions
