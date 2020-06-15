@@ -74,7 +74,7 @@ static void __attribute__((destructor)) unload_lib() {
 
 // TODO: convert to single 0-separated string
 static const char *const sym_names[] = {
-  $sym_names,
+  $sym_names
   0
 };
 

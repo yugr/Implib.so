@@ -112,7 +112,9 @@ def collect_relocs(f):
     if not line:
       toc = None
       continue
-    if re.match(r'^\s*Offset', line):  # Header?
+    if line == 'There are no relocations in this file.':
+      return []
+    elif re.match(r'^\s*Offset', line):  # Header?
       if toc is not None:
         error("multiple headers in output of readelf")
       words = re.split(r'\s\s+', line)  # "Symbol's Name + Addend"
@@ -501,6 +503,10 @@ Examples:
     if not quiet:
       print("Generating %s..." % init_file)
     with open(os.path.join(root, 'arch/common/init.c.tpl'), 'r') as t:
+      if funs:
+        sym_names = ',\n  '.join('"%s"' % name for name in funs) + ','
+      else:
+        sym_names = ''
       init_text = string.Template(t.read()).substitute(
         lib_suffix=lib_suffix,
         load_name=load_name,
@@ -508,7 +514,7 @@ Examples:
         has_dlopen_callback=int(bool(dlopen_callback)),
         no_dlopen=not int(dlopen),
         lazy_load=int(lazy_load),
-        sym_names=',\n  '.join('"%s"' % name for name in funs))
+        sym_names=sym_names)
     if args.vtables:
       init_text += generate_vtables(cls_tables, cls_syms, cls_data)
     f.write(init_text)
