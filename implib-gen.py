@@ -203,10 +203,10 @@ def collect_relocated_data(syms, bites, rels, ptr_size, reloc_type):
         data[name][i] = 'reloc', rel
   return data
 
-def generate_vtables(cls_tables, cls_syms, cls_data, t):
+def generate_vtables(cls_tables, cls_syms, cls_data):
   c_types = {
     'reloc'  : 'const void *',
-    'char'   : 'byte',
+    'byte'   : 'unsigned char',
     'offset' : 'size_t'
   }
 
@@ -233,37 +233,44 @@ extern const char %s[];
 
 ''' % sym_name)
 
-  # Print vtables
+  # Collect variable infos
 
-  for cls, tables in sorted(cls_tables.items()):
-    for table_type in ['typeinfo name', 'typeinfo', 'vtable']:
-      name = tables[table_type]
-      data = cls_data[name]
+  code_info = {}
 
-      if table_type == 'typeinfo name':
-        c_type = 'unsigned char'
-        brackets = '[]'
+  for name, s in sorted(cls_syms.items()):
+    data = cls_data[name]
+    if s['Demangled Name'].startswith('typeinfo name'):
+      declarator = 'const unsigned char %s[]'
+    else:
+      field_types = ('%s field_%d;' % (c_types[typ], i) for i, (typ, _) in enumerate(data))
+      declarator = 'const struct { %s } %%s' % ' '.join(field_types)
+    vals = []
+    for typ, val in data:
+      if typ != 'reloc':
+        vals.append(str(val))
       else:
-        field_types = ('%s field_%d;' % (c_types[typ], i) for i, (typ, _) in enumerate(data))
-        c_type = 'struct { %s }' % ' '.join(field_types)
-        brackets =''
+        sym_name, addend = val['Symbol\'s Name + Addend']
+        sym_name = re.sub(r'@.*', '', sym_name)  # Can we pin version in C?
+        vals.append('(const char *)&%s + %d' % (sym_name, addend))
+    code_info[name] = (declarator, '{ %s }' % ', '.join(vals))
 
-      vals = []
-      for typ, val in data:
-        if typ != 'reloc':
-          vals.append(str(val))
-        else:
-          sym_name, addend = val['Symbol\'s Name + Addend']
-          sym_name = re.sub(r'@.*', '', sym_name)  # Can we pin version in C?
-          vals.append('(const char *)&%s + %d' % (sym_name, addend))
+  # Print declarations
 
-      ss.append(t.substitute(
-        cls=cls,
-        table_type=table_type,
-        c_type=c_type,
-        name=name,
-        brackets=brackets,
-        vals=', '.join(vals)))
+  for name, (decl, _) in sorted(code_info.items()):
+    type_name = name + '_type'
+    type_decl = decl % type_name
+    ss.append('''\
+typedef %s;
+extern __attribute__((weak)) %s %s;
+''' % (type_decl, type_name, name))
+
+  # Print definitions
+
+  for name, (_, init) in sorted(code_info.items()):
+    type_name = name + '_type'
+    ss.append('''\
+const %s %s = %s;
+''' % (type_name, name, init))
 
   ss.append('''\
 #ifdef __cplusplus
@@ -510,9 +517,8 @@ Examples:
         sym_names=sym_names)
       f.write(init_text)
     if args.vtables:
-      with open(os.path.join(root, 'arch/common/vtable.c.tpl'), 'r') as t:
-        vtable_text = generate_vtables(cls_tables, cls_syms, cls_data, string.Template(t.read()))
-        f.write(vtable_text)
+      vtable_text = generate_vtables(cls_tables, cls_syms, cls_data)
+      f.write(vtable_text)
 
 if __name__ == '__main__':
   main()
