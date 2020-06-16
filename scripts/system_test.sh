@@ -1,5 +1,14 @@
 #!/bin/sh
 
+# Copyright 2020 Yury Gribov
+# 
+# Use of this source code is governed by MIT license that can be
+# found in the LICENSE.txt file.
+#
+# Wrapper for ld which automatically calls implib-gen.
+# To enable, add it to PATH.
+# Flags are passed via env variable IMPLIBSO_LD_OPTIONS.
+
 # Runs implib-gen on all installed libraries
 
 set -eu
