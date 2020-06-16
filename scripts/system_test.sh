@@ -15,7 +15,8 @@ fi
 
 for lib in $(cat libs.txt); do
   echo "Checking $lib..."
-  ./implib-gen.py $lib
-  # TODO: run with --vtables
-  rm $(basename $lib)*
+  ./implib-gen.py --vtables $lib
+  name=$(basename $lib)
+  gcc -Wall -Wextra -Werror -c $name*.[cS]
+  rm $name*
 done
