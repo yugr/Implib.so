@@ -95,6 +95,13 @@ Finally to force library load and resolution of all symbols, call
 
     void _LIBNAME_tramp_resolve_all(void);
 
+# Wrapping vtables
+
+By default the tool does not try to wrap vtables exported from the library. This can be enabled via `--vtables` flag:
+```
+$ implib-gen.py --vtables ...
+```
+
 # Reducing external interface of closed-source library
 
 Sometimes you may want to reduce public interface of existing shared library (e.g. if it's a third-party lib which erroneously exports too many unrelated symbols).
@@ -176,7 +183,7 @@ so it should have equivalent performance.
 # Limitations
 
 The tool does not transparently support all features of POSIX shared libraries. In particular
-* it can not provide wrappers for data symbols (support for C++ vtables/RTTI is planned)
+* it can not provide wrappers for data symbols (except C++ virtual/RTTI tables)
 * it makes first call to wrapped functions asynch signal unsafe (as it will call `dlopen` and library constructors)
 * it may change semantics if there are multiple definitions of same symbol in different loaded shared objects (runtime symbol interposition is considered a bad practice though)
 * it may change semantics because shared library constructors are delayed until when library is loaded
