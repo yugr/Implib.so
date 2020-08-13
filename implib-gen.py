@@ -29,8 +29,13 @@ def error(msg):
 
 def run(args, input=''):
   """Runs external program and aborts on error."""
+  env = os.environ.copy()
+  try:
+    del env["LANG"]
+  except KeyError:
+    pass
   p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE)
+                       stderr=subprocess.PIPE, env=env)
   out, err = p.communicate(input=input.encode('utf-8'))
   out = out.decode('utf-8')
   err = err.decode('utf-8')
