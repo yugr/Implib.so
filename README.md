@@ -17,6 +17,7 @@ Implib.so provides an easy solution - link your program with a _wrapper_ which
 * provides all necessary symbols to make linker happy
 * loads wrapped library on first call to any of its functions
 * redirects calls to library symbols
+
 Generated wrapper code is analogous to Windows import libraries which achieve the same functionality for DLLs.
 
 Implib.so can also be used to [reduce API provided by existing shared library](#reducing-external-interface-of-closed-source-library) or [rename it's exported symbols](#renaming-exported-interface-of-closed-source-library).
