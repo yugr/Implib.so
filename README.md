@@ -192,7 +192,7 @@ The tool does not transparently support all features of POSIX shared libraries. 
 The tool also lacks the following very important features:
 * proper support for multi-threading
 * symbol versions are not handled at all
-* support OSX
+* support Android and OSX
 (none should be hard to add so let me know if you need it).
 
 Finally, Implib.so is only lightly tested and there are some minor TODOs in code.
