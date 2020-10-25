@@ -39,7 +39,7 @@ $CC $CFLAGS $LIB_CFLAGS libA.so.* libB.so.* -o libC.so
 # Use it in final app
 
 $CC $CFLAGS main.c -L. -lC -ldl
-./a.out >out.log
+$INTERP ./a.out >out.log 2>&1
 
 if ! diff out.ref out.log; then
   echo 'Creating unified wrapper for several libraries does not work'
