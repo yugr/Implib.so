@@ -23,6 +23,7 @@ tests/basic/run.sh $ARCH
 tests/exceptions/run.sh $ARCH
 tests/data-warnings/run.sh $ARCH
 tests/vtables/run.sh $ARCH
+tests/multilib/run.sh $ARCH
 if test -z "$ARCH"; then
   # TODO: enable for other targets
   tests/ld/run.sh

@@ -136,6 +136,8 @@ $ implib-gen.py --dlopen-callback=mycallback --symbol-list=mysymbols.txt libxyz.
 $ ... # Link your app with libxyz.tramp.S, libxyz.init.c and mycallback.c
 ```
 
+Similar approach can be used if you want to provide a common interface for several libraries with partially intersecting interfaces (see [this example](tests/multilib/run.sh) for more details).
+
 # Renaming exported interface of closed-source library
 
 Sometimes you may need to rename API of existing shared library to avoid name clashes.
