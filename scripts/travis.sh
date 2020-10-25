@@ -23,8 +23,11 @@ tests/basic/run.sh $ARCH
 tests/exceptions/run.sh $ARCH
 tests/data-warnings/run.sh $ARCH
 tests/vtables/run.sh $ARCH
-tests/multilib/run.sh $ARCH
 if test -z "$ARCH"; then
   # TODO: enable for other targets
   tests/ld/run.sh
+fi
+if ! echo "$ARCH" | grep -q 'i[0-9]86'; then
+  # TODO: symtab on x86 seems to be corrupted
+  tests/multilib/run.sh $ARCH
 fi
