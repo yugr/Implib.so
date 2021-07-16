@@ -75,7 +75,8 @@ extern "C"
 #endif
 
 // Callback that tries different library names
-void *mycallback() {
+void *mycallback(const char *lib_name) {
+  lib_name = lib_name;  // Please the compiler
   void *h;
   h = dlopen("libxyz.so", RTLD_LAZY);
   if (h)
@@ -124,8 +125,8 @@ extern "C"
 #endif
 
 // Dlopen callback that loads library to dedicated namespace
-void *mycallback() {
-  void *h = dlmopen(LM_ID_NEWLM, "libxyz.so", RTLD_LAZY | RTLD_DEEPBIND);
+void *mycallback(const char *lib_name) {
+  void *h = dlmopen(LM_ID_NEWLM, lib_name, RTLD_LAZY | RTLD_DEEPBIND);
   if (h)
     return h;
   fprintf(stderr, "dlmopen failed: %s\n", dlerror());
