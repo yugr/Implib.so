@@ -10,6 +10,9 @@
   .globl $sym
   .p2align 4
   .type $sym, %function
+#ifdef IMPLIB_HIDDEN_SHIMS
+  .hidden $sym
+#endif
 $sym:
   .cfi_startproc
   // x86 has no support for PC-relative addressing so code is not very efficient.
