@@ -110,3 +110,4 @@ jobs:
       after_success:
         - for t in tests/*; do (cd $t && coverage xml); done
         - codecov --required
+
