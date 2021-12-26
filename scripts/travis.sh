@@ -31,3 +31,4 @@ if ! echo "$ARCH" | grep -q 'i[0-9]86'; then
   # TODO: symtab on x86 seems to be corrupted
   tests/multilib/run.sh $ARCH
 fi
+tests/hidden/run.sh $ARCH
