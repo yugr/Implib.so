@@ -48,7 +48,12 @@ jobs:
       run: scripts/travis.sh
     - name: Upload coverage
       run: |
-        for t in tests/*; do (cd $t && coverage xml); done
+        scripts/travis.sh
+        for t in tests/*; do
+          if test -d $t; then
+            (cd $t && coverage xml)
+          fi
+        done
         codecov --required
   x86:
     runs-on: ubuntu-latest
