@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright 2020 Yury Gribov
+# Copyright 2020-2021 Yury Gribov
 # 
 # Use of this source code is governed by MIT license that can be
 # found in the LICENSE.txt file.
@@ -253,5 +253,5 @@ Flags can be specified directly or via IMPLIBSO_LD_OPTIONS environment variable.
   sys.stderr.write(err)
   sys.exit(rc)
 
-if __name__ == '__main__':                                                      
+if __name__ == '__main__':
   main()
