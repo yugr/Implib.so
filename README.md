@@ -1,5 +1,5 @@
 [![License](http://img.shields.io/:license-MIT-blue.svg)](https://github.com/yugr/Implib.so/blob/master/LICENSE.txt)
-[![Build Status](https://travis-ci.org/yugr/Implib.so.svg?branch=master)](https://travis-ci.org/yugr/Implib.so)
+[![Build Status](https://github.com/yugr/Implib.so/actions/workflows/ci.yml/badge.svg)](https://github.com/yugr/Implib.so/actions)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/yugr/Implib.so.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/yugr/Implib.so/alerts/)
 [![Codecov](https://codecov.io/gh/yugr/Implib.so/branch/master/graph/badge.svg)](https://codecov.io/gh/yugr/Implib.so)
 
