@@ -1,5 +1,4 @@
 # TODO:
-# * pypy
 # * FreeBSD
 
 name: CI
@@ -24,6 +23,7 @@ jobs:
     env:
       CC: ${{ matrix.cc[0] }}
       CXX: ${{ matrix.cc[1] }}
+      PYTHON: ${{ matrix.py }}
     steps:
     - uses: actions/checkout@v2
     - name: Install deps
@@ -31,6 +31,16 @@ jobs:
         sudo add-apt-repository ppa:deadsnakes/ppa
         sudo apt-get update
         sudo apt-get install ${{ matrix.py }}
+    - name: Run tests
+      run: scripts/travis.sh
+  PyPy:  # Can't test this in matrix, pypy package has different names in old distros
+    runs-on: ubuntu-latest
+    env:
+      PYTHON: pypy3
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install deps
+      run: sudo apt-get install pypy3
     - name: Run tests
       run: scripts/travis.sh
   Coverage:
