@@ -61,6 +61,7 @@ def collect_syms(f):
   """Collect ELF dynamic symtab."""
 
   # TODO: investigate why --dyn-syms does not work for many libs e.g. sotruss-lib.so or libanl-2.27.so
+  # TODO: do we need -D here?
   out, err = run(['readelf', '-W', '-s', f])
 
   toc = None
