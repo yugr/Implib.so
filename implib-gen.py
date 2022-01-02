@@ -60,10 +60,8 @@ def parse_row(words, toc, hex_keys):
 def collect_syms(f):
   """Collect ELF dynamic symtab."""
 
-  # There is a certain discrepancy between --dyn-syms and -D
-  # but -D seems more complete.
-  # See also https://sourceware.org/bugzilla/show_bug.cgi?id=25707
-  out, err = run(['readelf', '-sDW', f])
+  # --dyn-syms does not always work for some reason so dump all symtabs
+  out, err = run(['readelf', '-sW', f])
 
   toc = None
   syms = []
@@ -71,6 +69,7 @@ def collect_syms(f):
   for line in out.splitlines():
     line = line.strip()
     if not line:
+      # Next symtab
       toc = None
       continue
     words = re.split(r' +', line)
