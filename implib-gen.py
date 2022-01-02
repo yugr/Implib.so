@@ -253,7 +253,7 @@ extern const char %s[];
     vals = []
     for typ, val in data:
       if typ != 'reloc':
-        vals.append(str(val))
+        vals.append(str(val) + 'UL')
       else:
         sym_name, addend = val['Symbol\'s Name + Addend']
         sym_name = re.sub(r'@.*', '', sym_name)  # Can we pin version in C?
