@@ -60,9 +60,10 @@ def parse_row(words, toc, hex_keys):
 def collect_syms(f):
   """Collect ELF dynamic symtab."""
 
-  # TODO: investigate why --dyn-syms does not work for many libs e.g. sotruss-lib.so or libanl-2.27.so
-  # TODO: do we need -D here?
-  out, err = run(['readelf', '-W', '-s', f])
+  # There is a certain discrepancy between --dyn-syms and -D
+  # but -D seems more complete.
+  # See also https://sourceware.org/bugzilla/show_bug.cgi?id=25707
+  out, err = run(['readelf', '-sDW', f])
 
   toc = None
   syms = []
