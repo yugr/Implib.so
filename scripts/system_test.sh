@@ -24,7 +24,7 @@ fi
 
 for lib in $(cat libs.txt); do
   echo "Checking $lib..."
-  ./implib-gen.py --vtables $lib
+  ./implib-gen.py -q --vtables $lib
   name=$(basename $lib)
   gcc -Wall -Wextra -Werror -c $name*.[cS]
   rm $name*
