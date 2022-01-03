@@ -58,7 +58,6 @@ jobs:
       run: scripts/travis.sh
     - name: Upload coverage
       run: |
-        scripts/travis.sh
         for t in tests/*; do
           if test -d $t; then
             (cd $t && coverage xml)
