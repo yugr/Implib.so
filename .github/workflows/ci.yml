@@ -31,6 +31,7 @@ jobs:
         sudo add-apt-repository ppa:deadsnakes/ppa
         sudo apt-get update
         sudo apt-get install ${PYTHON}
+        sudo apt-get install ${PYTHON}-pip || true
     - name: Run tests
       run: scripts/travis.sh
   PyPy:  # Can't test this in matrix, pypy package has different names in old distros
@@ -53,7 +54,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install deps
-      run: sudo pip3 install codecov
+      run: sudo ${PYTHON} -mpip install codecov
     - name: Run tests
       run: scripts/travis.sh
     - name: Upload coverage
