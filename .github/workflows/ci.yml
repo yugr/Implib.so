@@ -44,6 +44,14 @@ jobs:
       run: sudo apt-get install ${PYTHON}
     - name: Run tests
       run: scripts/travis.sh
+  Pylint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install deps
+      run: sudo apt-get install pylint
+    - name: Run tests
+      run: pylint implib-gen.py
   Coverage:
     runs-on: ubuntu-latest
     environment: secrets
