@@ -54,7 +54,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install deps
-      run: sudo ${PYTHON} -mpip install codecov
+      run: |
+        sudo apt-get install python3 python3-pip
+        sudo python3 -mpip install codecov
     - name: Run tests
       run: scripts/travis.sh
     - name: Upload coverage
