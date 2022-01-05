@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright 2017-2021 Yury Gribov
+# Copyright 2017-2022 Yury Gribov
 #
 # The MIT License (MIT)
 #
