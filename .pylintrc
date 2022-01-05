@@ -16,3 +16,7 @@ indent-after-paren = 2
 [IMPORT]
 
 allow-wildcard-with-all = yes
+
+[TYPECHECK]
+
+disable = bad-option-value  # C0209 is unsupported in older versions
