@@ -263,7 +263,7 @@ extern const char {sym_name}[];
       declarator = 'const unsigned char %s[]'
     else:
       field_types = (f'{c_types[typ]} field_{i};' for i, (typ, _) in enumerate(data))
-      declarator = 'const struct { %s } %%s' % ' '.join(field_types)  # pylint: disable=C0209 (consider-using-f-string)
+      declarator = 'const struct { %s } %%s' % ' '.join(field_types)  # pylint: disable=C0209  # consider-using-f-string
     vals = []
     for typ, val in data:
       if typ != 'reloc':
@@ -272,7 +272,7 @@ extern const char {sym_name}[];
         sym_name, addend = val['Symbol\'s Name + Addend']
         sym_name = re.sub(r'@.*', '', sym_name)  # Can we pin version in C?
         vals.append(f'(const char *)&{sym_name} + {addend}')
-    code_info[name] = (declarator, '{ %s }' % ', '.join(vals))  # pylint: disable= C0209 (consider-using-f-string)
+    code_info[name] = (declarator, '{ %s }' % ', '.join(vals))  # pylint: disable= C0209  # consider-using-f-string
 
   # Print declarations
 
