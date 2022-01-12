@@ -31,7 +31,7 @@ $CXX $CFLAGS -Wno-deprecated main.cpp libinterposed.so.tramp.S libinterposed.so.
 $INTERP ./a.out 2>&1 | tee new.log
 
 if ! diff ref.log new.log; then
-  echo "Exceptions do NOT propagate through implibs"
+  echo "Vtable interception in implibs fails"
   exit 1
 fi
 

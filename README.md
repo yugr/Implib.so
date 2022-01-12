@@ -35,7 +35,7 @@ $ implib-gen.py libxyz.so
 This will generate code for host platform (presumably x86\_64). For other targets do
 
 ```
-# TARGET can be x86_64-linux-gnu, i686-linux-gnu, arm-linux-gnueabi (or armel-linux-gnueabi), aarch64-linux-gnu
+# TARGET can be x86_64-linux-gnu, i686-linux-gnu, arm-linux-gnueabi (or armel-linux-gnueabi), aarch64-linux-gnu, e2k-linux-gnu
 $ implib-gen.py --target $TARGET libxyz.so
 ```
 

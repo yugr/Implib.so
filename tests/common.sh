@@ -10,7 +10,7 @@ CFLAGS="-Wall -Wextra -Werror ${CFLAGS:-}"
 
 if test $ARCH = $(uname -m); then
   # Native
-  TARGET=x86_64
+  TARGET=$ARCH
   PREFIX=
   INTERP=
 else
@@ -53,6 +53,7 @@ else
   esac
 fi
 
+CFLAGS="-Wall -Wextra -Werror ${CFLAGS:-}"
 CC=$PREFIX${CC:-gcc}
 CXX=$PREFIX${CXX:-g++}
 

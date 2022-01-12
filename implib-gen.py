@@ -345,7 +345,7 @@ Examples:
                       dest='vtables', action='store_false')
   parser.add_argument('--target',
                       help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi "
-                           "(atm x86_64, i[0-9]86, arm/armhf and aarch64 are supported)",
+                           "(atm x86_64, i[0-9]86, arm/armhf, aarch64 and e2k are supported)",
                       default=os.uname()[-1])
   parser.add_argument('--symbol-list',
                       help="Path to file with symbols that should be present in wrapper "
