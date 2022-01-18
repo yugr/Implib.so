@@ -34,6 +34,8 @@ def error(msg):
 def run(args, stdin=''):
   """Runs external program and aborts on error."""
   env = os.environ.copy()
+  # Force English language
+  env['LC_ALL'] = 'c'
   try:
     del env["LANG"]
   except KeyError:
