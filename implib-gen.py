@@ -201,7 +201,7 @@ def read_unrelocated_data(input_name, syms, secs):
       data[name] = f.read(s['Size'])
   return data
 
-def collect_relocated_data(syms, bites, rels, ptr_size, reloc_type):
+def collect_relocated_data(syms, bites, rels, ptr_size, reloc_types):
   """Identify relocations for each symbol"""
   data = {}
   for name, s in sorted(syms.items()):
@@ -218,7 +218,7 @@ def collect_relocated_data(syms, bites, rels, ptr_size, reloc_type):
     finish = start + s['Size']
     # TODO: binary search (bisect)
     for rel in rels:
-      if rel['Type'] == reloc_type and start <= rel['Offset'] < finish:
+      if rel['Type'] in reloc_types and start <= rel['Offset'] < finish:
         i = (rel['Offset'] - start) // ptr_size
         assert i < len(data[name])
         data[name][i] = 'reloc', rel
@@ -400,7 +400,7 @@ Examples:
   cfg.read(target_dir + '/config.ini')
 
   ptr_size = int(cfg['Arch']['PointerSize'])
-  symbol_reloc_type = cfg['Arch']['SymbolReloc']
+  symbol_reloc_types = set(re.split(r'\s*,\s*', cfg['Arch']['SymbolReloc']))
 
   def is_exported(s):
     return (s['Bind'] != 'LOCAL'
@@ -489,7 +489,7 @@ Examples:
         sym_add = rel['Symbol\'s Name + Addend']
         print(f"  {rel['Offset']}: {sym_add}")
 
-    cls_data = collect_relocated_data(cls_syms, bites, rels, ptr_size, symbol_reloc_type)
+    cls_data = collect_relocated_data(cls_syms, bites, rels, ptr_size, symbol_reloc_types)
     if verbose:
       print("Class data:")
       for name, data in sorted(cls_data.items()):
