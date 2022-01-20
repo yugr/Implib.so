@@ -496,7 +496,7 @@ Examples:
         demangled_name = cls_syms[name]['Demangled Name']
         print(f"  {name} ({demangled_name}):")
         for typ, val in data:
-          print("    " + (val if typ != 'reloc' else val['Symbol\'s Name + Addend']))
+          print("    " + str(val if typ != 'reloc' else val['Symbol\'s Name + Addend']))
 
   # Generate assembly code
 
