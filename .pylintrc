@@ -7,6 +7,7 @@ disable = trailing-whitespace,    # In copyrights
           unspecified-encoding,   # Rely on default UTF-8
           unused-argument,        # Intentional
           too-many-locals, too-many-branches, too-many-boolean-expressions, too-many-statements,
+          too-few-public-methods,
 
 [FORMAT]
 

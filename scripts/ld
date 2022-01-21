@@ -4,10 +4,12 @@
 # 
 # Use of this source code is governed by MIT license that can be
 # found in the LICENSE.txt file.
-#
-# Wrapper for ld which automatically calls implib-gen.
-# To enable, add it to PATH.
-# Flags are passed via env variable IMPLIBSO_LD_OPTIONS.
+
+"""
+Wrapper for ld which automatically calls implib-gen.
+To enable, add it to PATH.
+Flags are passed via env variable IMPLIBSO_LD_OPTIONS.
+"""
 
 import sys
 import os
@@ -59,7 +61,7 @@ def run(cmd):
     sys.exit(p.returncode)
   return p.returncode, out, err
 
-def which(exe, all=False):
+def which(exe, alll=False):
   """
   Analog if which(1).
   """
@@ -70,7 +72,7 @@ def which(exe, all=False):
     if os.path.isfile(f):
       exes.append(f)
   first = exes[0] if exes else None
-  return exes if all else first
+  return exes if alll else first
 
 def is_system_library(name):
   """
@@ -79,6 +81,8 @@ def is_system_library(name):
   return name in ['c', 'm', 'dl', 'rt', 'pthread', 'gcc', 'gcc_s']
 
 def main():
+  "Entry point"
+
   parser = argparse.ArgumentParser(description="""\
 Ld wrapper to simplify application of implib-gen.
 
@@ -103,7 +107,7 @@ Flags can be specified directly or via IMPLIBSO_LD_OPTIONS environment variable.
   env_argv = env_opts.split(' ') if env_opts else []
   env_args = parser.parse_args(env_argv)
 
-  global v
+  global v  # pylint: disable=global-statement
   v = env_args.verbose
 
   if env_args.outdir:
@@ -131,7 +135,7 @@ Flags can be specified directly or via IMPLIBSO_LD_OPTIONS environment variable.
     elif arg.startswith('-o'):
       out_filename = arg[2:]
 
-  all_lds = which(sys.argv[0], all=True)
+  all_lds = which(sys.argv[0], alll=True)
   if not all_lds:
     error("no ld executables in PATH")
   elif len(all_lds) == 1:
@@ -157,6 +161,7 @@ Flags can be specified directly or via IMPLIBSO_LD_OPTIONS environment variable.
   sys.stderr.write(err)
 
   class WrapperInfo:
+    "Holds info about replaceable library"
     def __init__(self, name, path):
       self.name = name
       self.path = path
@@ -191,7 +196,7 @@ Flags can be specified directly or via IMPLIBSO_LD_OPTIONS environment variable.
         note("skipping library in used-defined blacklist: %s" % l)
       continue
     if v > 0:
-        note("wrappable library: %s (%s)" % (name, path))
+      note("wrappable library: %s (%s)" % (name, path))
     libs[name] = WrapperInfo(name, path)
 
   # Compile wrappers
@@ -210,7 +215,7 @@ Flags can be specified directly or via IMPLIBSO_LD_OPTIONS environment variable.
         o, _ = os.path.splitext(f)
         o += '.o'
         if v > 0:
-            note("compiling wrapper for %s in %s" % (f, o))
+          note("compiling wrapper for %s in %s" % (f, o))
         rc, out, err = run('gcc -Wall -Wextra -O2 -c -o %s %s' % (o, f))
         if rc != 0:
           error("implib-gen failed: %s" % err)
