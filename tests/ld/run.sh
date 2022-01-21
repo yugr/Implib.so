@@ -28,8 +28,8 @@ $INTERP ./a.out 2>&1 | tee ref.log
 ${PYTHON:-} ../../implib-gen.py -q --target $TARGET libinterposed.so
 ln -sf ../../scripts/ld ${PREFIX}ld
 trap "rm -f $PWD/${PREFIX}ld" EXIT
-if $CC --version | grep -q clang; then
-  # Clang does not allow overriding ld via playing with PATH
+if $CC --version | grep -q 'clang\|^lcc'; then
+  # Some compilers do not allow overriding ld via playing with PATH
   CFLAGS="$CFLAGS -B."
 fi
 PATH=.:../..:$PATH $CC $CFLAGS -Wno-deprecated main.c -L. -linterposed
