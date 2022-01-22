@@ -23,10 +23,10 @@ $sym:
   // Read table address
   {
     rrd %ip, %g0
-    addd 0x0, [ _f64,_lts0 _GLOBAL_OFFSET_TABLE_ ], %g1
+    addd 0x0, [ _f64 _GLOBAL_OFFSET_TABLE_ ], %g1
   }
   addd %g0, %g1, %g0
-  addd %g0, [ _f64,_lts0 _${lib_suffix}_tramp_table@GOTOFF ], %g0
+  addd %g0, [ _f64 _${lib_suffix}_tramp_table@GOTOFF ], %g0
 
   // Read current function address
   ldd [%g0 + $offset], %g0
@@ -44,7 +44,7 @@ $sym:
 
 2:
   // Initialize parameter
-  addd 0x0, _f16s,_lts1lo $number, %g0
+  addd 0x0, _f16s $number, %g0
 
   // Call resolver
   disp  %ctpr1, _${lib_suffix}_save_regs_and_resolve
