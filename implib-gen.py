@@ -345,7 +345,8 @@ Examples:
                       dest='vtables', action='store_false')
   parser.add_argument('--target',
                       help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi "
-                           "(atm x86_64, i[0-9]86, arm/armhf, aarch64 and e2k are supported)",
+                           "(atm x86_64, i[0-9]86, arm/armhf/armeabi, aarch64/armv8 "
+                           "and e2k are supported)",
                       default=os.uname()[-1])
   parser.add_argument('--symbol-list',
                       help="Path to file with symbols that should be present in wrapper "
@@ -370,7 +371,7 @@ Examples:
   lazy_load = args.lazy_load
   load_name = args.library_load_name or os.path.basename(input_name)
   if args.target.startswith('arm'):
-    target = 'arm'  # Handle armhf-...
+    target = 'arm'  # Handle armhf-..., armel-...
   elif re.match(r'^i[0-9]86', args.target):
     target = 'i386'
   else:

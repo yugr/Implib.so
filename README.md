@@ -7,7 +7,7 @@
 
 In a nutshell, Implib.so is a simple equivalent of [Windows DLL import libraries](http://www.digitalmars.com/ctg/implib.html) for POSIX shared libraries.
 
-On Linux, if you link against shared library you normally use `-lxyz` compiler option which makes your application depend on `libxyz.so`. This would cause `libxyz.so` to be forcedly loaded at program startup (and its constructors to be executed) even if you never call any of its functions.
+On Linux/Android, if you link against shared library you normally use `-lxyz` compiler option which makes your application depend on `libxyz.so`. This would cause `libxyz.so` to be forcedly loaded at program startup (and its constructors to be executed) even if you never call any of its functions.
 
 If you instead want to delay loading of `libxyz.so` (e.g. its unlikely to be used and you don't want to waste resources on it or [slow down startup time](https://lwn.net/Articles/341309/) or you want to select best platform-specific implementation at runtime), you can remove dependency from `LDFLAGS` and issue `dlopen` call manually. But this would cause `ld` to err because it won't be able to statically resolve symbols which are supposed to come from this shared library. At this point you have only two choices:
 * emit normal calls to library functions and suppress link errors from `ld` via `-Wl,-z,nodefs`; this is undesired because you loose ability to detect link errors for other libraries statically
@@ -35,9 +35,16 @@ $ implib-gen.py libxyz.so
 This will generate code for host platform (presumably x86\_64). For other targets do
 
 ```
-# TARGET can be x86_64-linux-gnu, i686-linux-gnu, arm-linux-gnueabi (or armel-linux-gnueabi), aarch64-linux-gnu, e2k-linux-gnu
 $ implib-gen.py --target $TARGET libxyz.so
 ```
+
+where `TARGET` can be any of
+  * x86\_64-linux-gnu, x86\_64-none-linux-android
+  * i686-linux-gnu, i686-none-linux-android
+  * arm-linux-gnueabi, armel-linux-gnueabi, armv7-none-linux-androideabi
+  * arm-linux-gnueabihf (ARM hardfp ABI)
+  * aarch64-linux-gnu, aarch64-none-linux-android
+  * e2k-linux-gnu
 
 Script generates two files: `libxyz.so.tramp.S` and `libxyz.so.init.c` which need to be linked to your application (instead of `-lxyz`):
 
@@ -195,7 +202,7 @@ The tool does not transparently support all features of POSIX shared libraries. 
 The tool also lacks the following very important features:
 * proper support for multi-threading
 * symbol versions are not handled at all
-* support Android and OSX
+* support OSX
 (none should be hard to add so let me know if you need it).
 
 Finally, Implib.so is only lightly tested and there are some minor TODOs in code.

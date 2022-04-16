@@ -48,7 +48,10 @@ _${lib_suffix}_save_regs_and_resolve:
   PUSH_REG(lr)
   PUSH_REG(lr)  // Align to 8 bytes
 
-#ifdef __ARM_PCS_VFP  // arm-gnueabihf
+  // Arguments can be passed in VFP registers only when hard-float ABI is used
+  // for arm-gnueabihf target // (http://android-doc.github.io/ndk/guides/abis.html#v7a).
+  // Use compiler macro to detect this case.
+#ifdef __ARM_PCS_VFP
   PUSH_DREG_PAIR(d0, d1)
   PUSH_DREG_PAIR(d2, d3)
   PUSH_DREG_PAIR(d4, d5)
@@ -61,7 +64,7 @@ _${lib_suffix}_save_regs_and_resolve:
 
   bl _${lib_suffix}_tramp_resolve(PLT)
 
-#ifdef __ARM_PCS_VFP  // arm-gnueabihf
+#ifdef __ARM_PCS_VFP
   POP_DREG_PAIR(d14, d15)
   POP_DREG_PAIR(d12, d13)
   POP_DREG_PAIR(d10, d11)
