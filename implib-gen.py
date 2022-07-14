@@ -541,7 +541,7 @@ Examples:
         load_name=load_name,
         dlopen_callback=dlopen_callback,
         has_dlopen_callback=int(bool(dlopen_callback)),
-        no_dlopen=not int(dlopen),
+        no_dlopen=int(not dlopen),
         lazy_load=int(lazy_load),
         sym_names=sym_names)
       f.write(init_text)
