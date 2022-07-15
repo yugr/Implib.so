@@ -1,11 +1,15 @@
 /*
- * Copyright 2018-2020 Yury Gribov
+ * Copyright 2018-2022 Yury Gribov
  *
  * The MIT License (MIT)
  *
  * Use of this source code is governed by MIT license that can be
  * found in the LICENSE.txt file.
  */
+
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE // For RTLD_DEFAULT
+#endif
 
 #include <dlfcn.h>
 #include <stdlib.h>
@@ -38,6 +42,7 @@ extern "C" {
 static void *lib_handle;
 static int is_lib_loading;
 
+__attribute__((unused))
 static void *load_library() {
   if(lib_handle)
     return lib_handle;
@@ -67,10 +72,12 @@ static void __attribute__((constructor)) load_lib() {
 }
 #endif
 
+#if ! NO_DLOPEN
 static void __attribute__((destructor)) unload_lib() {
   if(lib_handle)
     dlclose(lib_handle);
 }
+#endif
 
 // TODO: convert to single 0-separated string
 static const char *const sym_names[] = {
@@ -88,9 +95,14 @@ void _${lib_suffix}_tramp_resolve(int i) {
 
   void *h = 0;
 #if NO_DLOPEN
-  // FIXME: instead of RTLD_NEXT we should search for loaded lib_handle
-  // as in https://github.com/jethrogb/ssltrace/blob/bf17c150a7/ssltrace.cpp#L74-L112
+// Library with implementations has already been loaded.
+// If shim symbols are hidden we should search for first available definition of symbol
+// in library list, otherwise look for next available definition
+# ifdef IMPLIB_HIDDEN_SHIMS
+  h = RTLD_DEFAULT;
+# else
   h = RTLD_NEXT;
+# endif
 #elif LAZY_LOAD
   h = load_library();
 #else

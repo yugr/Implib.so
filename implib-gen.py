@@ -320,22 +320,22 @@ Examples:
                       help="Print diagnostic info",
                       action='count',
                       default=0)
-  parser.add_argument('--dlopen-callback',
-                      help="Call user-provided custom callback to load library instead of dlopen",
-                      default='')
   parser.add_argument('--dlopen',
                       help="Emit dlopen call (default)",
                       dest='dlopen', action='store_true', default=True)
   parser.add_argument('--no-dlopen',
-                      help="Do not emit dlopen call (user must load library himself)",
+                      help="Do not emit dlopen call (user must load/unload library himself)",
                       dest='dlopen', action='store_false')
+  parser.add_argument('--dlopen-callback',
+                      help="Call user-provided custom callback to load library instead of dlopen",
+                      default='')
   parser.add_argument('--library-load-name',
                       help="Use custom name for dlopened library (default is LIB)")
   parser.add_argument('--lazy-load',
-                      help="Load library lazily on first call to one of it's functions (default)",
+                      help="Load library on first call to any of it's functions (default)",
                       dest='lazy_load', action='store_true', default=True)
   parser.add_argument('--no-lazy-load',
-                      help="Load library eagerly at program start",
+                      help="Load library at program start",
                       dest='lazy_load', action='store_false')
   parser.add_argument('--vtables',
                       help="Intercept virtual tables (EXPERIMENTAL)",

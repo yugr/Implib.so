@@ -33,3 +33,4 @@ if ! echo "$ARCH" | grep -q 'i[0-9]86'; then
 fi
 tests/hidden/run.sh $ARCH
 tests/verbose/run.sh $ARCH
+tests/no_dlopen/run.sh $ARCH
