@@ -13,6 +13,7 @@
 
 #include <dlfcn.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -42,23 +43,20 @@ extern "C" {
 static void *lib_handle;
 static int is_lib_loading;
 
-__attribute__((unused))
+#if ! NO_DLOPEN
 static void *load_library() {
   if(lib_handle)
     return lib_handle;
 
   is_lib_loading = 1;
 
-  // TODO: dlopen and users callback must be protected w/ critical section (to avoid dlopening lib twice)
-#if NO_DLOPEN
-  CHECK(0, "internal error"); // We shouldn't get here
-#elif CALL_USER_CALLBACK
+#if CALL_USER_CALLBACK
   extern void *$dlopen_callback(const char *lib_name);
   lib_handle = $dlopen_callback("$load_name");
-  CHECK(lib_handle, "callback '$dlopen_callback' failed to load library");
+  CHECK(lib_handle, "failed to load library via callback '$dlopen_callback'");
 #else
   lib_handle = dlopen("$load_name", RTLD_LAZY | RTLD_GLOBAL);
-  CHECK(lib_handle, "failed to load library: %s", dlerror());
+  CHECK(lib_handle, "failed to load library via dlopen: %s", dlerror());
 #endif
 
   is_lib_loading = 0;
@@ -66,16 +64,15 @@ static void *load_library() {
   return lib_handle;
 }
 
-#if ! NO_DLOPEN && ! LAZY_LOAD
-static void __attribute__((constructor)) load_lib() {
-  load_library();
-}
-#endif
-
-#if ! NO_DLOPEN
 static void __attribute__((destructor)) unload_lib() {
   if(lib_handle)
     dlclose(lib_handle);
+}
+#endif
+
+#if ! NO_DLOPEN && ! LAZY_LOAD
+static void __attribute__((constructor)) load_lib() {
+  load_library();
 }
 #endif
 
@@ -85,11 +82,13 @@ static const char *const sym_names[] = {
   0
 };
 
+#define SYM_COUNT (sizeof(sym_names)/sizeof(sym_names[0]) - 1)
+
 extern void *_${lib_suffix}_tramp_table[];
 
 // Can be sped up by manually parsing library symtab...
 void _${lib_suffix}_tramp_resolve(int i) {
-  assert((unsigned)i + 1 < sizeof(sym_names) / sizeof(sym_names[0]));
+  assert((unsigned)i < SYM_COUNT);
 
   CHECK(!is_lib_loading, "library function '%s' called during library load", sym_names[i]);
 
@@ -103,10 +102,8 @@ void _${lib_suffix}_tramp_resolve(int i) {
 # else
   h = RTLD_NEXT;
 # endif
-#elif LAZY_LOAD
-  h = load_library();
 #else
-  h = lib_handle;
+  h = load_library();
   CHECK(h, "failed to resolve symbol '%s', library failed to load", sym_names[i]);
 #endif
 
@@ -118,8 +115,15 @@ void _${lib_suffix}_tramp_resolve(int i) {
 // Helper for user to resolve all symbols
 void _${lib_suffix}_tramp_resolve_all(void) {
   size_t i;
-  for(i = 0; i + 1 < sizeof(sym_names) / sizeof(sym_names[0]); ++i)
+  for(i = 0; i < SYM_COUNT; ++i)
     _${lib_suffix}_tramp_resolve(i);
+}
+
+// Resets all resolved symbols. This is needed in case
+// client code wants to reload interposed library multiple times.
+void _${lib_suffix}_tramp_reset(void) {
+  memset(_${lib_suffix}_tramp_table, 0, SYM_COUNT * sizeof(_${lib_suffix}_tramp_table[0]));
+  lib_handle = 0;
 }
 
 #ifdef __cplusplus
