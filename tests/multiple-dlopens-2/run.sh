@@ -31,7 +31,7 @@ LIBS='-ldl'
 $CC $CFLAGS -shared -fPIC interposed.c -o libinterposed.so
 
 # Prepare implib
-${PYTHON:-} ../../implib-gen.py -q --target $TARGET --no-dlopen libinterposed.so
+${PYTHON:-} ../../implib-gen.py -q --target $TARGET --dlopen-callback=my_load_library libinterposed.so
 
 # Build app
 $CC $CFLAGS -fPIE main.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS

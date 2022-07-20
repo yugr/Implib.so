@@ -34,3 +34,5 @@ fi
 tests/hidden/run.sh $ARCH
 tests/verbose/run.sh $ARCH
 tests/no_dlopen/run.sh $ARCH
+tests/multiple-dlopens/run.sh $ARCH
+tests/multiple-dlopens-2/run.sh $ARCH

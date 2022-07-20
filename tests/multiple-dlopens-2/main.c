@@ -25,20 +25,29 @@ void test() {
   printf("Results: %x %x\n", x, y);
 }
 
-extern void _libinterposed_so_tramp_reset(void);
+static void *handle;
+
+void *my_load_library(const char *name) {
+  if (!handle)
+    handle = dlopen(name, RTLD_LOCAL | RTLD_LAZY);
+  return handle;
+}
+
+void my_unload_library() {
+  dlclose(handle);
+  handle = 0;
+  assert(dlopen("libinterposed.so", RTLD_NOLOAD) == 0);
+
+  extern void _libinterposed_so_tramp_reset(void);
+  _libinterposed_so_tramp_reset();
+}
 
 int main() {
-  void *h = dlopen("libinterposed.so", RTLD_GLOBAL | RTLD_LAZY);
   test();
-  dlclose(h);
-  assert(dlopen("libinterposed.so", RTLD_NOLOAD) == 0);
-  _libinterposed_so_tramp_reset();
+  my_unload_library();
 
-  h = dlopen("libinterposed.so", RTLD_GLOBAL | RTLD_LAZY);
   test();
-  dlclose(h);
-  assert(dlopen("libinterposed.so", RTLD_NOLOAD) == 0);
-  _libinterposed_so_tramp_reset();
+  my_unload_library();
 
   return 0;
 }
