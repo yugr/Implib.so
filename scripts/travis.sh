@@ -36,3 +36,4 @@ tests/verbose/run.sh $ARCH
 tests/no_dlopen/run.sh $ARCH
 tests/multiple-dlopens/run.sh $ARCH
 tests/multiple-dlopens-2/run.sh $ARCH
+tests/multiple-dlopens-3/run.sh $ARCH

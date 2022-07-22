@@ -25,12 +25,16 @@ void test() {
   printf("Results: %x %x\n", x, y);
 }
 
-extern void _libinterposed_so_tramp_reset(void);
-
 int main() {
+  extern void _libinterposed_so_tramp_set_handle(void *handle);
+  extern void _libinterposed_so_tramp_reset(void);
+
   for (int i = 0; i < 2; ++i) {
-    void *h = dlopen("libinterposed.so", RTLD_GLOBAL | RTLD_LAZY);
+    void *h = dlopen("libinterposed.so", RTLD_LOCAL | RTLD_LAZY);
+    _libinterposed_so_tramp_set_handle(h);
+
     test();
+
     dlclose(h);
     assert(dlopen("libinterposed.so", RTLD_NOLOAD) == 0);
     _libinterposed_so_tramp_reset();

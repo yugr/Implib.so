@@ -33,21 +33,16 @@ void *my_load_library(const char *name) {
   return handle;
 }
 
-void my_unload_library() {
-  dlclose(handle);
-  handle = 0;
-  assert(dlopen("libinterposed.so", RTLD_NOLOAD) == 0);
-
-  extern void _libinterposed_so_tramp_reset(void);
-  _libinterposed_so_tramp_reset();
-}
-
 int main() {
-  test();
-  my_unload_library();
+  extern void _libinterposed_so_tramp_reset(void);
 
-  test();
-  my_unload_library();
+  for (int i = 0; i < 2; ++i) {
+    test();
+    dlclose(handle);
+    handle = 0;
+    assert(dlopen("libinterposed.so", RTLD_NOLOAD) == 0);
+    _libinterposed_so_tramp_reset();
+  }
 
   return 0;
 }

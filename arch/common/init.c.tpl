@@ -41,6 +41,7 @@ extern "C" {
 #define LAZY_LOAD $lazy_load
 
 static void *lib_handle;
+static int do_dlclose;
 static int is_lib_loading;
 
 #if ! NO_DLOPEN
@@ -59,13 +60,14 @@ static void *load_library() {
   CHECK(lib_handle, "failed to load library via dlopen: %s", dlerror());
 #endif
 
+  do_dlclose = 1;
   is_lib_loading = 0;
 
   return lib_handle;
 }
 
 static void __attribute__((destructor)) unload_lib() {
-  if(lib_handle)
+  if(do_dlclose && lib_handle)
     dlclose(lib_handle);
 }
 #endif
@@ -94,14 +96,20 @@ void _${lib_suffix}_tramp_resolve(int i) {
 
   void *h = 0;
 #if NO_DLOPEN
-// Library with implementations has already been loaded.
-// If shim symbols are hidden we should search for first available definition of symbol
-// in library list, otherwise look for next available definition
-# ifdef IMPLIB_HIDDEN_SHIMS
-  h = RTLD_DEFAULT;
-# else
-  h = RTLD_NEXT;
-# endif
+  // Library with implementations must have already been loaded.
+  if (lib_handle) {
+    // User has specified loaded library
+    h = lib_handle;
+  } else {
+    // User hasn't provided us the loaded library so search the global namespace.
+    // If shim symbols are hidden we should search for first available definition of symbol
+    // in library list, otherwise look for next available definition
+#   ifdef IMPLIB_HIDDEN_SHIMS
+    h = RTLD_DEFAULT;
+#   else
+    h = RTLD_NEXT;
+#   endif
+  }
 #else
   h = load_library();
   CHECK(h, "failed to resolve symbol '%s', library failed to load", sym_names[i]);
@@ -119,11 +127,18 @@ void _${lib_suffix}_tramp_resolve_all(void) {
     _${lib_suffix}_tramp_resolve(i);
 }
 
+// Allows user to specify manually loaded implementation library.
+void _${lib_suffix}_tramp_set_handle(void *handle) {
+  lib_handle = handle;
+  do_dlclose = 0;
+}
+
 // Resets all resolved symbols. This is needed in case
 // client code wants to reload interposed library multiple times.
 void _${lib_suffix}_tramp_reset(void) {
   memset(_${lib_suffix}_tramp_table, 0, SYM_COUNT * sizeof(_${lib_suffix}_tramp_table[0]));
   lib_handle = 0;
+  do_dlclose = 0;
 }
 
 #ifdef __cplusplus
