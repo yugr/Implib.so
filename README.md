@@ -199,13 +199,13 @@ The tool does not transparently support all features of POSIX shared libraries. 
 * it may change semantics if there are multiple definitions of same symbol in different loaded shared objects (runtime symbol interposition is considered a bad practice though)
 * it may change semantics because shared library constructors are delayed until when library is loaded
 
-The tool also lacks the following very important features:
+The tool also lacks the following important features:
 * proper support for multi-threading
 * symbol versions are not handled at all
 * support OSX
 (none should be hard to add so let me know if you need it).
 
-Finally, Implib.so is only lightly tested and there are some minor TODOs in code.
+Finally, there are some minor TODOs in code.
 
 # Related work
 
