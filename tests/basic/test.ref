@@ -1,3 +1,4 @@
+Calling foo from libtest: 1 1
 Calling foo from libtest: 25 0.5
 Calling bar from libtest: 11 22 33
 Results: f00 ba7

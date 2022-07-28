@@ -21,3 +21,8 @@ int bar(int x, int y, int z) {
   printf("Calling bar from libtest: %d %d %d\n", x, y, z);
   return 0xba7;
 }
+
+__attribute__((constructor))
+void dummy() {
+  foo(1, 1);
+}

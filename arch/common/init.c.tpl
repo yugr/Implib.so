@@ -102,11 +102,12 @@ void _${lib_suffix}_tramp_resolve(int i) {
     h = lib_handle;
   } else {
     // User hasn't provided us the loaded library so search the global namespace.
-    // If shim symbols are hidden we should search for first available definition of symbol
-    // in library list, otherwise look for next available definition
-#   ifdef IMPLIB_HIDDEN_SHIMS
+#   ifndef IMPLIB_EXPORT_SHIMS
+    // If shim symbols are hidden we should search
+    // for first available definition of symbol in library list
     h = RTLD_DEFAULT;
 #   else
+    // Otherwise look for next available definition
     h = RTLD_NEXT;
 #   endif
   }

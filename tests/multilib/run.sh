@@ -34,7 +34,7 @@ $CC $CFLAGS $LIB_CFLAGS b.c -o libB.so
 ${PYTHON:-} ../../implib-gen.py -q --target $TARGET --symbol-list libA_syms.txt libA.so
 ${PYTHON:-} ../../implib-gen.py -q --target $TARGET --symbol-list libB_syms.txt libB.so
 
-$CC $CFLAGS $LIB_CFLAGS libA.so.* libB.so.* -o libC.so
+$CC $CFLAGS $LIB_CFLAGS -DIMPLIB_EXPORT_SHIMS libA.so.* libB.so.* -o libC.so
 
 # Use it in final app
 

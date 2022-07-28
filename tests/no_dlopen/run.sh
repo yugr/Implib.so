@@ -39,21 +39,21 @@ ${PYTHON:-} ../../implib-gen.py -q --target $TARGET --no-dlopen libinterposed.so
 
 # Build app
 $CC $CFLAGS main.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
-readelf -sW --dyn-syms a.out | grep -q GLOBAL.*foo
+! (readelf -sW --dyn-syms a.out | grep -q GLOBAL.*foo)
 
 LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
 diff test.ref a.out.log
 
 #########################################
-# Standalone executables (hidden shims) #
+# Standalone executables (public shims) #
 #########################################
 
 # Prepare implib
 ${PYTHON:-} ../../implib-gen.py -q --target $TARGET --no-dlopen libinterposed.so
 
 # Build app
-$CC $CFLAGS -DIMPLIB_HIDDEN_SHIMS main.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
-! (readelf -sW --dyn-syms a.out | grep -q GLOBAL.*foo)
+$CC $CFLAGS -DIMPLIB_EXPORT_SHIMS main.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
+readelf -sW --dyn-syms a.out | grep -q GLOBAL.*foo
 
 LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
 diff test.ref a.out.log
@@ -67,7 +67,7 @@ ${PYTHON:-} ../../implib-gen.py -q --target $TARGET --no-dlopen libinterposed.so
 
 # Build shlib
 $CC $CFLAGS -shared -fPIC shlib.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS -o shlib.so
-readelf -sW --dyn-syms shlib.so | grep -q GLOBAL.*foo
+! (readelf -sW --dyn-syms shlib.so | grep -q GLOBAL.*foo)
 
 # Build app
 $CC $CFLAGS main.c shlib.so $LIBS
@@ -76,15 +76,15 @@ LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
 diff test.ref a.out.log
 
 #########################
-# Shlibs (hidden shims) #
+# Shlibs (public shims) #
 #########################
 
 # Prepare implib
 ${PYTHON:-} ../../implib-gen.py -q --target $TARGET --no-dlopen libinterposed.so
 
 # Build shlib
-$CC $CFLAGS -DIMPLIB_HIDDEN_SHIMS -shared -fPIC shlib.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS -o shlib.so
-! (readelf -sW --dyn-syms shlib.so | grep -q GLOBAL.*foo)
+$CC $CFLAGS -DIMPLIB_EXPORT_SHIMS -shared -fPIC shlib.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS -o shlib.so
+readelf -sW --dyn-syms shlib.so | grep -q GLOBAL.*foo
 
 # Build app
 $CC $CFLAGS main.c shlib.so $LIBS

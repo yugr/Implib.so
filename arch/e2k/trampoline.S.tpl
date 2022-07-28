@@ -11,7 +11,7 @@
   .p2align 3
   .ignore strict_delay
   .type $sym, %function
-#ifdef IMPLIB_HIDDEN_SHIMS
+#ifndef IMPLIB_EXPORT_SHIMS
   .hidden $sym
 #endif
 $sym:
