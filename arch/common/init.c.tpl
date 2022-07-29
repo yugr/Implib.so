@@ -36,7 +36,8 @@ extern "C" {
     } \
   } while(0)
 
-#define CALL_USER_CALLBACK $has_dlopen_callback
+#define HAS_DLOPEN_CALLBACK $has_dlopen_callback
+#define HAS_DLSYM_CALLBACK $has_dlsym_callback
 #define NO_DLOPEN $no_dlopen
 #define LAZY_LOAD $lazy_load
 
@@ -51,7 +52,7 @@ static void *load_library() {
 
   is_lib_loading = 1;
 
-#if CALL_USER_CALLBACK
+#if HAS_DLOPEN_CALLBACK
   extern void *$dlopen_callback(const char *lib_name);
   lib_handle = $dlopen_callback("$load_name");
   CHECK(lib_handle, "failed to load library via callback '$dlopen_callback'");
@@ -116,8 +117,13 @@ void _${lib_suffix}_tramp_resolve(int i) {
   CHECK(h, "failed to resolve symbol '%s', library failed to load", sym_names[i]);
 #endif
 
+#if HAS_DLSYM_CALLBACK
+  extern void *$dlsym_callback(void*, const char *lib_name);
+  _${lib_suffix}_tramp_table[i] = $dlsym_callback(h, sym_names[i]);
+#else
   // Dlsym is thread-safe so don't need to protect it.
   _${lib_suffix}_tramp_table[i] = dlsym(h, sym_names[i]);
+#endif
   CHECK(_${lib_suffix}_tramp_table[i], "failed to resolve symbol '%s'", sym_names[i]);
 }
 

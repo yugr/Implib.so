@@ -329,6 +329,10 @@ Examples:
   parser.add_argument('--dlopen-callback',
                       help="Call user-provided custom callback to load library instead of dlopen",
                       default='')
+  parser.add_argument('--dlsym-callback',
+                      help="Call user-provided custom callback to resolve a symbol, "
+                           "instead of dlsym",
+                      default='')
   parser.add_argument('--library-load-name',
                       help="Use custom name for dlopened library (default is LIB)")
   parser.add_argument('--lazy-load',
@@ -367,6 +371,7 @@ Examples:
   input_name = args.library
   verbose = args.verbose
   dlopen_callback = args.dlopen_callback
+  dlsym_callback = args.dlsym_callback
   dlopen = args.dlopen
   lazy_load = args.lazy_load
   load_name = args.library_load_name or os.path.basename(input_name)
@@ -540,7 +545,9 @@ Examples:
         lib_suffix=lib_suffix,
         load_name=load_name,
         dlopen_callback=dlopen_callback,
+        dlsym_callback=dlsym_callback,
         has_dlopen_callback=int(bool(dlopen_callback)),
+        has_dlsym_callback=int(bool(dlsym_callback)),
         no_dlopen=int(not dlopen),
         lazy_load=int(lazy_load),
         sym_names=sym_names)
