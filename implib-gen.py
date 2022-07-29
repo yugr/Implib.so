@@ -430,7 +430,7 @@ Examples:
   all_funs = set()
   warn_versioned = False
   for s in orig_funs:
-    if s['Version'] is not None:
+    if not s['Default']:
       # TODO: support versions
       if not warn_versioned:
         warn(f"library {input_name} contains versioned symbols which are NYI")
