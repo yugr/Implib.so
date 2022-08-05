@@ -46,12 +46,7 @@ static int do_dlclose;
 static int is_lib_loading;
 
 #if ! NO_DLOPEN
-static void *load_library() {
-  if(lib_handle)
-    return lib_handle;
-
-  is_lib_loading = 1;
-
+static void *do_load_library() {
 #if HAS_DLOPEN_CALLBACK
   extern void *$dlopen_callback(const char *lib_name);
   lib_handle = $dlopen_callback("$load_name");
@@ -62,10 +57,32 @@ static void *load_library() {
 #endif
 
   do_dlclose = 1;
+
+  return lib_handle;
+}
+
+#if __cplusplus > 201103L
+// Use static variable initializer to guard library loading.
+static void *load_library() {
+  static void *handle = do_load_library();
+  return handle;
+}
+#else
+// WARNING: C version is not thread-safve and may error output
+// if library loading happens from multiple threads simultaneously.
+static void *load_library() {
+  if(lib_handle)
+    return lib_handle;
+
+  is_lib_loading = 1;
+
+  do_load_library();
+
   is_lib_loading = 0;
 
   return lib_handle;
 }
+#endif
 
 static void __attribute__((destructor)) unload_lib() {
   if(do_dlclose && lib_handle)
