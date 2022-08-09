@@ -19,6 +19,7 @@ $sym:
   // "make the fall-through code following a conditional branch be the likely target for a branch with a forward target"
   // to hint static predictor.
   cmpq $$0, _${lib_suffix}_tramp_table+$offset(%rip)
+  .cfi_adjust_cfa_offset 8  // Return address
   je 2f
 1:
   jmp *_${lib_suffix}_tramp_table+$offset(%rip)

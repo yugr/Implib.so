@@ -18,6 +18,7 @@ $sym:
   // x86 has no support for PC-relative addressing so code is not very efficient.
   // We also trash EAX here (it's call-clobbered in cdecl).
   call __implib.x86.get_pc_thunk.ax
+  .cfi_def_cfa_offset 4  // Return address
   addl $$_GLOBAL_OFFSET_TABLE_, %eax
   movl $offset+_${lib_suffix}_tramp_table@GOTOFF(%eax), %eax
   cmp $$0, %eax

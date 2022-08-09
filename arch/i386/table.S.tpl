@@ -35,6 +35,7 @@ _${lib_suffix}_save_regs_and_resolve:
   // For Dwarf directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
 
   PUSH_REG(eax)
+  .cfi_adjust_cfa_offset 4  // Return address
   PUSH_REG(ebx)
   PUSH_REG(ecx)
   PUSH_REG(edx)  // 16

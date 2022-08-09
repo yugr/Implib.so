@@ -43,6 +43,7 @@ _${lib_suffix}_save_regs_and_resolve:
   // FIXME: AVX (YMM, ZMM) registers are NOT saved to simplify code.
 
   PUSH_REG(rdi)  // 16
+  .cfi_adjust_cfa_offset 8  // Return address
   mov 0x10(%rsp), %rdi
   PUSH_REG(rax)
   PUSH_REG(rbx)  // 16
