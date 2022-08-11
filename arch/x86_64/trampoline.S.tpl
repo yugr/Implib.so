@@ -15,6 +15,7 @@
 #endif
 $sym:
   .cfi_startproc
+  .cfi_def_cfa_offset 8  // Return address
   // Intel opt. manual says to
   // "make the fall-through code following a conditional branch be the likely target for a branch with a forward target"
   // to hint static predictor.

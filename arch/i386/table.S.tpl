@@ -34,6 +34,8 @@ _${lib_suffix}_save_regs_and_resolve:
   // (except XMM/x87 regs in hope they are not used in resolving code).
   // For Dwarf directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
 
+  .cfi_def_cfa_offset 8  // Return address
+
   PUSH_REG(eax)
   PUSH_REG(ebx)
   PUSH_REG(ecx)
