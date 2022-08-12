@@ -15,7 +15,7 @@
 #endif
 $sym:
   .cfi_startproc
-  .cfi_def_cfa_offset 8  // Return address
+  .cfi_def_cfa_offset 4  // Return address
   // add $$0, %rsp  Why GDB fails to step over call without this?!
   // x86 has no support for PC-relative addressing so code is not very efficient.
   // We also trash EAX here (it's call-clobbered in cdecl).
