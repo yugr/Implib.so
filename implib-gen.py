@@ -349,8 +349,8 @@ Examples:
                       dest='vtables', action='store_false')
   parser.add_argument('--target',
                       help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi "
-                           "(atm x86_64, i[0-9]86, arm/armhf/armeabi, aarch64/armv8 "
-                           "and e2k are supported)",
+                           "(atm x86_64, i[0-9]86, arm/armhf/armeabi, aarch64/armv8, "
+                           "mips/mipsel and e2k are supported)",
                       default=os.uname()[-1])
   parser.add_argument('--symbol-list',
                       help="Path to file with symbols that should be present in wrapper "
@@ -379,6 +379,8 @@ Examples:
     target = 'arm'  # Handle armhf-..., armel-...
   elif re.match(r'^i[0-9]86', args.target):
     target = 'i386'
+  elif args.target.startswith('mips'):
+    target = 'mips'  # Handle mips-..., mipsel-..., mipsle-...
   else:
     target = args.target.split('-')[0]
   quiet = args.quiet
