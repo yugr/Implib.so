@@ -31,17 +31,17 @@ $sym:
 
 2:
   // Fast path
-  move $$25, $$AT
   j $$AT
-  nop
+  move $$25, $$AT
 
 3:
   // Slow path
 
-  addiu $$sp, $$sp, -4; .cfi_adjust_cfa_offset 4
-  sw $$25, 4($$sp); .cfi_rel_offset $$25, 0
-  addiu $$sp, $$sp, -4; .cfi_adjust_cfa_offset 4
-  sw $$ra, 4($$sp); .cfi_rel_offset $$ra, 0
+  PUSH_REG($$25)
+  PUSH_REG($$ra)
+
+  // Reserve space for 4 operands according to ABI
+  addiu $$sp, $$sp, -16; .cfi_adjust_cfa_offset 16
 
   li $$AT, $number
   lw $$25, %call16(_${lib_suffix}_save_regs_and_resolve)($$gp)
@@ -49,10 +49,10 @@ $sym:
 4: jalr $$25
   nop
 
-  addiu $$sp, $$sp, 4; .cfi_adjust_cfa_offset 4
-  lw $$ra, 0($$sp); .cfi_restore $$ra, 0
-  addiu $$sp, $$sp, 4; .cfi_adjust_cfa_offset 4
-  lw $$25, 0($$sp); .cfi_restore $$25
+  addiu $$sp, $$sp, 16; .cfi_adjust_cfa_offset -16
+
+  POP_REG($$ra)
+  POP_REG($$25)
 
   j 1b
   nop
