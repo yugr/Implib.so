@@ -157,3 +157,13 @@ jobs:
       run: sudo apt-get install qemu-user gcc-mipsel-linux-gnu g++-mipsel-linux-gnu binutils-mipsel-linux-gnu libc6-mipsel-cross libc6-dev-mipsel-cross
     - name: Run tests
       run: scripts/travis.sh
+  mips64el:
+    runs-on: ubuntu-latest
+    env:
+      ARCH: mips64el-linux-gnu
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install deps
+      run: sudo apt-get install qemu-user gcc-mips64el-linux-gnuabi64 g++-mips64el-linux-gnuabi64 binutils-mips64el-linux-gnuabi64 libc6-mips64el-cross libc6-dev-mips64el-cross
+    - name: Run tests
+      run: scripts/travis.sh

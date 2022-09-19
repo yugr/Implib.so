@@ -49,6 +49,11 @@ else
     PREFIX=mipsel-linux-gnu-
     INTERP="qemu-mipsel -L /usr/mipsel-linux-gnu -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     ;;
+  mips64el | mips64el-*)
+    TARGET=mips64el
+    PREFIX=mips64el-linux-gnuabi64-
+    INTERP="qemu-mips64el -L /usr/mips64el-linux-gnuabi64 -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    ;;
   *)
     echo >&2 "Unsupported target: $ARCH"
     exit 1

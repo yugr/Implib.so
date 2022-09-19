@@ -129,7 +129,9 @@ def collect_relocs(f):
       continue
     if line == 'There are no relocations in this file.':
       return []
-    if re.match(r'^\s*Offset', line):  # Header?
+    if re.match(r'^\s*Type[0-9]:', line):  # Spurious lines for MIPS
+      continue
+    elif re.match(r'^\s*Offset', line):  # Header?
       if toc is not None:
         error("multiple headers in output of readelf")
       words = re.split(r'\s\s+', line)  # "Symbol's Name + Addend"
@@ -350,7 +352,7 @@ Examples:
   parser.add_argument('--target',
                       help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi "
                            "(atm x86_64, i[0-9]86, arm/armhf/armeabi, aarch64/armv8, "
-                           "mips/mipsel and e2k are supported)",
+                           "mips/mipsel, mips64/mip64el and e2k are supported)",
                       default=os.uname()[-1])
   parser.add_argument('--symbol-list',
                       help="Path to file with symbols that should be present in wrapper "
@@ -379,6 +381,8 @@ Examples:
     target = 'arm'  # Handle armhf-..., armel-...
   elif re.match(r'^i[0-9]86', args.target):
     target = 'i386'
+  elif args.target.startswith('mips64'):
+    target = 'mips64'  # Handle mips64-..., mips64el-..., mips64le-...
   elif args.target.startswith('mips'):
     target = 'mips'  # Handle mips-..., mipsel-..., mipsle-...
   else:
