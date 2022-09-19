@@ -131,7 +131,7 @@ def collect_relocs(f):
       return []
     if re.match(r'^\s*Type[0-9]:', line):  # Spurious lines for MIPS
       continue
-    elif re.match(r'^\s*Offset', line):  # Header?
+    if re.match(r'^\s*Offset', line):  # Header?
       if toc is not None:
         error("multiple headers in output of readelf")
       words = re.split(r'\s\s+', line)  # "Symbol's Name + Addend"
