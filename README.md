@@ -44,6 +44,8 @@ where `TARGET` can be any of
   * arm-linux-gnueabi, armel-linux-gnueabi, armv7-none-linux-androideabi
   * arm-linux-gnueabihf (ARM hardfp ABI)
   * aarch64-linux-gnu, aarch64-none-linux-android
+  * mipsel-linux-gnu
+  * mips64el-linux-gnuabi64
   * e2k-linux-gnu
 
 Script generates two files: `libxyz.so.tramp.S` and `libxyz.so.init.c` which need to be linked to your application (instead of `-lxyz`):
