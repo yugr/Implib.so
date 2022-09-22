@@ -118,7 +118,7 @@ void _${lib_suffix}_tramp_resolve(int i) {
 #endif
 
 #if HAS_DLSYM_CALLBACK
-  extern void *$dlsym_callback(void*, const char *lib_name);
+  extern void *$dlsym_callback(void *handle, const char *sym_name);
   _${lib_suffix}_tramp_table[i] = $dlsym_callback(h, sym_names[i]);
   CHECK(_${lib_suffix}_tramp_table[i], "failed to resolve symbol '%s' via callback $dlsym_callback", sym_names[i]);
 #else

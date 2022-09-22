@@ -102,6 +102,10 @@ $ implib-gen.py --dlopen-callback=mycallback libxyz.so
 
 (callback must have signature `void *(*)(const char *lib_name)` and return handle of loaded library).
 
+Normally symbols are located via `dlsym` function but this can be overriden with custom callback
+by using `--dlsym-callback` (which must have signature
+`void *(*)(void *handle, const char *sym_name)`).
+
 Finally to force library load and resolution of all symbols, call
 
     void _LIBNAME_tramp_resolve_all(void);
