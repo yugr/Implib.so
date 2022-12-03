@@ -349,6 +349,9 @@ Examples:
   parser.add_argument('--no-vtables',
                       help="Do not intercept virtual tables (default)",
                       dest='vtables', action='store_false')
+  parser.add_argument('--no-weak-symbols',
+                      help="Don't bind weak symbols", dest='no_weak_symbols',
+                      action='store_true', default=False)
   parser.add_argument('--target',
                       help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi "
                            "(atm x86_64, i[0-9]86, arm/armhf/armeabi, aarch64/armv8, "
@@ -415,10 +418,10 @@ Examples:
   symbol_reloc_types = set(re.split(r'\s*,\s*', cfg['Arch']['SymbolReloc']))
 
   def is_exported(s):
-    return (s['Bind'] != 'LOCAL'
-            and s['Type'] != 'NOTYPE'
-            and s['Ndx'] != 'UND'
-            and s['Name'] not in ['', '_init', '_fini'])
+    conditions = [s['Bind'] != 'LOCAL', s['Type'] != 'NOTYPE', s['Ndx'] != 'UND', s['Name'] not in ['', '_init', '_fini']]
+    if args.no_weak_symbols:
+      conditions.append(s['Bind'] != 'WEAK')
+    return all(conditions)
 
   syms = list(filter(is_exported, collect_syms(input_name)))
 
