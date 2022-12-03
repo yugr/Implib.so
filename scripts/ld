@@ -28,20 +28,20 @@ def warn(msg):
   """
   Print nicely formatted warning message.
   """
-  sys.stderr.write('%s: warning: %s\n' % (me, msg))
+  sys.stderr.write(f'{me}: warning: {msg}\n')
 
 def error(msg):
   """
   Print nicely formatted error message and exit.
   """
-  sys.stderr.write('%s: error: %s\n' % (me, msg))
+  sys.stderr.write(f'{me}: error: {msg}\n')
   sys.exit(1)
 
 def note(msg):
   """
   Print nicely formatted message.
   """
-  sys.stderr.write('%s: %s\n' % (me, msg))
+  sys.stderr.write(f'{me}: {msg}\n')
 
 def run(cmd):
   """
@@ -50,16 +50,16 @@ def run(cmd):
   if isinstance(cmd, str):
     cmd = cmd.split(' ')
   if v > 0:
-    note("running %s..." % cmd)
-  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  out, err = p.communicate()
-  out = out.decode('utf-8')
-  err = err.decode('utf-8')
-  if p.returncode != 0:
-    sys.stdout.write(out)
-    sys.stderr.write(err)
-    sys.exit(p.returncode)
-  return p.returncode, out, err
+    note(f"running {cmd}...")
+  with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
+    out, err = p.communicate()
+    out = out.decode('utf-8')
+    err = err.decode('utf-8')
+    if p.returncode != 0:
+      sys.stdout.write(out)
+      sys.stderr.write(err)
+      sys.exit(p.returncode)
+    return p.returncode, out, err
 
 def which(exe, alll=False):
   """
@@ -154,10 +154,10 @@ Flags can be specified directly or via IMPLIBSO_LD_OPTIONS environment variable.
     sys.exit(rc)
 
   # Analyze ldd output to see which runtime libs were linked
-  rc, out, err = run('ldd %s' % out_filename)
+  rc, out, err = run(f'ldd {out_filename}')
   os.unlink(out_filename)  # Remove output in case we fail later
   if rc != 0:
-    error("ldd failed: %s" % err)
+    error(f"ldd failed: {err}")
   sys.stderr.write(err)
 
   class WrapperInfo:
@@ -175,35 +175,35 @@ Flags can be specified directly or via IMPLIBSO_LD_OPTIONS environment variable.
       continue
     if re.search(r'linux-vdso|ld-linux', l):
       if v > 0:
-        note("skipping system library: %s" % l)
+        note(f"skipping system library: {l}")
       continue
     m = re.search(r'^lib(\S*)\.so(\.[0-9]+)? => (\S*)', l)
     if m is None:
-      warn("failed to parse ldd output: %s" % l)
+      warn(f"failed to parse ldd output: {l}")
       continue
     name = m.group(1)
     path = m.group(3)
     if is_system_library(name):
       if v > 0:
-        note("skipping system library: %s" % l)
+        note(f"skipping system library: {l}")
       continue
     if wrap_libs and name not in wrap_libs:
       if v > 0:
-        note("skipping library not in used-defined whitelist: %s" % l)
+        note(f"skipping library not in used-defined whitelist: {l}")
       continue
     if no_wrap_libs and name in no_wrap_libs:
       if v > 0:
-        note("skipping library in used-defined blacklist: %s" % l)
+        note(f"skipping library in used-defined blacklist: {l}")
       continue
     if v > 0:
-      note("wrappable library: %s (%s)" % (name, path))
+      note(f"wrappable library: {name} ({path})")
     libs[name] = WrapperInfo(name, path)
 
   # Compile wrappers
   for _, info in sorted(libs.items()):
-    rc, out, err = run('implib-gen.py --outdir %s %s' % (tmpd, info.path))
+    rc, out, err = run(f'implib-gen.py --outdir {tmpd} {info.path}')
     if rc != 0:
-      error("implib-gen failed: %s" % err)
+      error(f"implib-gen failed: {err}")
     sys.stderr.write(err)
     for l in out.split('\n'):
       l = l.strip()
@@ -215,10 +215,10 @@ Flags can be specified directly or via IMPLIBSO_LD_OPTIONS environment variable.
         o, _ = os.path.splitext(f)
         o += '.o'
         if v > 0:
-          note("compiling wrapper for %s in %s" % (f, o))
-        rc, out, err = run('gcc -Wall -Wextra -O2 -c -o %s %s' % (o, f))
+          note(f"compiling wrapper for {f} in {o}")
+        rc, out, err = run(f'gcc -Wall -Wextra -O2 -c -o {o} {f}')
         if rc != 0:
-          error("implib-gen failed: %s" % err)
+          error(f"implib-gen failed: {err}")
         sys.stderr.write(err)
         info.wrappers.append(o)
 

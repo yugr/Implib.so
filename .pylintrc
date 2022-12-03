@@ -8,6 +8,7 @@ disable = trailing-whitespace,    # In copyrights
           unused-argument,        # Intentional
           too-many-locals, too-many-branches, too-many-boolean-expressions, too-many-statements,
           too-few-public-methods,
+          consider-using-enumerate,
 
 [FORMAT]
 
