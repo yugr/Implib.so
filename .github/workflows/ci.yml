@@ -23,8 +23,12 @@ jobs:
         exclude:
           - os: ubuntu-22.04
             py: python3.6
+          - os: ubuntu-latest
+            py: python3.6
           - os: ubuntu-22.04
             cc: [clang, clang++]  # Disable due to https://sourceware.org/bugzilla/show_bug.cgi?id=28981
+          - os: ubuntu-latest
+            cc: [clang, clang++]  # Ditto
     runs-on: ${{ matrix.os }}
     env:
       CC: ${{ matrix.cc[0] }}

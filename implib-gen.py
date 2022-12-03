@@ -418,7 +418,11 @@ Examples:
   symbol_reloc_types = set(re.split(r'\s*,\s*', cfg['Arch']['SymbolReloc']))
 
   def is_exported(s):
-    conditions = [s['Bind'] != 'LOCAL', s['Type'] != 'NOTYPE', s['Ndx'] != 'UND', s['Name'] not in ['', '_init', '_fini']]
+    conditions = [
+      s['Bind'] != 'LOCAL',
+      s['Type'] != 'NOTYPE',
+      s['Ndx'] != 'UND',
+      s['Name'] not in ['', '_init', '_fini']]
     if args.no_weak_symbols:
       conditions.append(s['Bind'] != 'WEAK')
     return all(conditions)
