@@ -21,7 +21,7 @@ else
     TARGET=armhf
     PREFIX=arm-linux-gnueabihf-
     INTERP="qemu-arm -L /usr/arm-linux-gnueabihf -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-    CFLAGS="$CFLAGS -mthumb-interwork"
+    CFLAGS="$CFLAGS -mthumb-interwork -mfpu=neon"
     ;;
   arm | arm-* | armel-*)
     TARGET=arm

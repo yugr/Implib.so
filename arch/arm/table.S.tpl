@@ -60,6 +60,7 @@ _${lib_suffix}_save_regs_and_resolve:
   PUSH_DREG_PAIR(d10, d11)
   PUSH_DREG_PAIR(d12, d13)
   PUSH_DREG_PAIR(d14, d15)
+  // FIXME: NEON actually supports 32 D-registers but it's unclear how to detect this
 #endif
 
   bl _${lib_suffix}_tramp_resolve(PLT)
