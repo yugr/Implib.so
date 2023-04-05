@@ -35,7 +35,7 @@ jobs:
       CXX: ${{ matrix.cc[1] }}
       PYTHON: ${{ matrix.py }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install deps
       run: |
         sudo add-apt-repository ppa:deadsnakes/ppa
@@ -49,7 +49,7 @@ jobs:
     env:
       PYTHON: pypy3
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install deps
       run: sudo apt-get install ${PYTHON}
     - name: Run tests
@@ -57,7 +57,7 @@ jobs:
   Pylint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install deps
       run: sudo apt-get install pylint
     - name: Run tests
@@ -72,7 +72,7 @@ jobs:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       PYTHON: 'coverage run -a'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install deps
       run: |
         sudo apt-get install python3 python3-pip
@@ -92,7 +92,7 @@ jobs:
     env:
       ARCH: i386-linux-gnueabi
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install deps
       run: sudo apt-get install gcc-multilib g++-multilib
     - name: Run tests
@@ -103,7 +103,7 @@ jobs:
       ARCH: arm-linux-gnueabi
       CFLAGS: -marm
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install deps
       run: sudo apt-get install qemu-user gcc-arm-linux-gnueabi g++-arm-linux-gnueabi binutils-arm-linux-gnueabi libc6-armel-cross libc6-dev-armel-cross
     - name: Run tests
@@ -114,7 +114,7 @@ jobs:
       ARCH: arm-linux-gnueabi
       CFLAGS: -mthumb
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install deps
       run: sudo apt-get install qemu-user gcc-arm-linux-gnueabi g++-arm-linux-gnueabi binutils-arm-linux-gnueabi libc6-armel-cross libc6-dev-armel-cross
     - name: Run tests
@@ -125,7 +125,7 @@ jobs:
       ARCH: arm-linux-gnueabihf
       CFLAGS: -marm
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install deps
       run: sudo apt-get install qemu-user gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross
     - name: Run tests
@@ -136,7 +136,7 @@ jobs:
       ARCH: arm-linux-gnueabihf
       CFLAGS: -mthumb
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install deps
       run: sudo apt-get install qemu-user gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross
     - name: Run tests
@@ -146,7 +146,7 @@ jobs:
     env:
       ARCH: aarch64-linux-gnueabi
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install deps
       run: sudo apt-get install qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu libc6-arm64-cross libc6-dev-arm64-cross
     - name: Run tests
@@ -156,7 +156,7 @@ jobs:
     env:
       ARCH: mipsel-linux-gnu
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install deps
       run: sudo apt-get install qemu-user gcc-mipsel-linux-gnu g++-mipsel-linux-gnu binutils-mipsel-linux-gnu libc6-mipsel-cross libc6-dev-mipsel-cross
     - name: Run tests
@@ -166,7 +166,7 @@ jobs:
     env:
       ARCH: mips64el-linux-gnu
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install deps
       run: sudo apt-get install qemu-user gcc-mips64el-linux-gnuabi64 g++-mips64el-linux-gnuabi64 binutils-mips64el-linux-gnuabi64 libc6-mips64el-cross libc6-dev-mips64el-cross
     - name: Run tests
