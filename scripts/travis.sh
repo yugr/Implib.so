@@ -37,3 +37,7 @@ tests/no_dlopen/run.sh $ARCH
 tests/multiple-dlopens/run.sh $ARCH
 tests/multiple-dlopens-2/run.sh $ARCH
 tests/multiple-dlopens-3/run.sh $ARCH
+if ! echo "$ARCH" | grep -q 'mips'; then
+  # TODO: fix for MIPS too
+  tests/many-functions/run.sh $ARCH
+fi

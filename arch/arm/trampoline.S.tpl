@@ -22,7 +22,7 @@ $sym:
   ldr ip, 3f
 2:
   add ip, pc, ip
-  ldr ip, [ip, #$offset]
+  ldr ip, [ip]
 
   cmp ip, #0
 
@@ -39,8 +39,12 @@ $sym:
   add sp, #4
   .cfi_adjust_cfa_offset -4
   b 1b
+
+  // Force constant pool for ldr above
+  .ltorg
+
   .cfi_endproc
 
 3:
-  .word _${lib_suffix}_tramp_table - (2b + 8)
+  .word _${lib_suffix}_tramp_table - (2b + 8) + $offset
 
