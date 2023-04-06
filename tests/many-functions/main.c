@@ -7,8 +7,8 @@
  * found in the LICENSE.txt file.
  */
 
-extern int foo8192();
+extern int foo999();
 
 int main() {
-  return foo8192() == 8192 ? 0 : 1;
+  return foo999() == 999 ? 0 : 1;
 }

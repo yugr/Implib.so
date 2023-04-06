@@ -35,6 +35,8 @@ _${lib_suffix}_save_regs_and_resolve:
   // Registers are saved acc. to "Procedure Call Standard for the MIPS Architecture".
   // For DWARF directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
 
+  // TODO: push two regs at once here and in trampoline to avoid temporarily unaligned stack
+
 #define PUSH_REG(reg) daddiu $$sp, $$sp, -8; .cfi_adjust_cfa_offset 8; sd reg, 0($$sp); .cfi_rel_offset reg, 0
 #define POP_REG(reg) ld reg, 0($$sp); .cfi_restore reg; daddiu $$sp, $$sp, 8; .cfi_adjust_cfa_offset -8
 

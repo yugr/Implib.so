@@ -18,15 +18,27 @@ $sym:
 
   .set noreorder
   .cpload $$25
+
   .set nomacro
   .set noat
 
 1:
   // Load address
+#if $offset < 32768
   lw $$AT, %got(_${lib_suffix}_tramp_table)($$gp)
   lw $$AT, $offset($$AT)
+#else
+  PUSH_REG($$2)
+  lw $$AT, %got(_${lib_suffix}_tramp_table)($$gp)
+  .set macro
+  .set at=$$2
+  lw $$AT, $offset($$AT)
+  .set nomacro
+  .set noat
+  POP_REG($$2)
+#endif
 
-  beq $$AT, $$0, 3f
+  beqz $$AT, 3f
   nop
 
 2:

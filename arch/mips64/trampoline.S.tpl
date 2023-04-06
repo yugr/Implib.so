@@ -23,13 +23,27 @@ $sym:
 
 1:
   // Load address
+#if $offset < 32768
   lui $$AT, %hi(%neg(%gp_rel($sym)))
   daddu $$AT, $$AT, $$25
   daddiu $$AT, $$AT, %lo(%neg(%gp_rel($sym)))
   ld $$AT, %got_disp(_${lib_suffix}_tramp_table)($$AT)
   ld $$AT, $offset($$AT)
+#else
+  PUSH_REG($$2)
+  lui $$AT, %hi(%neg(%gp_rel($sym)))
+  daddu $$AT, $$AT, $$25
+  daddiu $$AT, $$AT, %lo(%neg(%gp_rel($sym)))
+  ld $$AT, %got_disp(_${lib_suffix}_tramp_table)($$AT)
+  .set macro
+  .set at=$$2
+  ld $$AT, $offset($$AT)
+  .set nomacro
+  .set noat
+  POP_REG($$2)
+#endif
 
-  beq $$AT, $$0, 3f
+  beqz $$AT, 3f
   nop
 
 2:
