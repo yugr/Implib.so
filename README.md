@@ -186,8 +186,8 @@ Atm linker wrapper is only meant for testing.
 
 Implib.so overhead on a fast path boils down to
 * predictable direct jump to wrapper
-* predictable untaken direct branch to initialization code
 * load from trampoline table
+* predictable untaken direct branch to initialization code
 * predictable indirect jump to real function
 
 This is very similar to normal shlib call:
@@ -208,7 +208,7 @@ The tool does not transparently support all features of POSIX shared libraries. 
 The tool also lacks the following important features:
 * proper support for multi-threading
 * symbol versions are not handled at all
-* support OSX
+* support OSX and RISC-V
 * keep fast paths of shims together to reduce I$ pressure
 (none should be hard to add so let me know if you need it).
 
