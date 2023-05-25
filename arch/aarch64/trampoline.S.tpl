@@ -31,7 +31,7 @@ $sym:
   // Slow path
   mov ip0, $number & 0xffff
 #if $number > 0xffff
-  movk ip0, ($number & 0xffff0000) >> 16, lsl #16
+  movk ip0, $number >> 16, lsl #16
 #endif
   stp ip0, lr, [sp, #-16]!; .cfi_adjust_cfa_offset 16; .cfi_rel_offset ip0, 0; .cfi_rel_offset lr, 8;
   bl _${lib_suffix}_save_regs_and_resolve
