@@ -304,6 +304,20 @@ const {type_name} {name} = {init};
 
   return ''.join(ss)
 
+def read_soname(f):
+  out, _ = run(['readelf', '-d', f])
+
+  for line in out.splitlines():
+    line = line.strip()
+    if not line:
+      continue
+    # 0x000000000000000e (SONAME)             Library soname: [libndp.so.0]
+    soname_match = re.search(r'\(SONAME\).*\[(.+)\]', line)
+    if soname_match is not None:
+      return soname_match[1]
+
+  return None
+
 def main():
   """Driver function"""
   parser = argparse.ArgumentParser(description="Generate wrappers for shared library functions.",
@@ -336,7 +350,7 @@ Examples:
                            "instead of dlsym",
                       default='')
   parser.add_argument('--library-load-name',
-                      help="Use custom name for dlopened library (default is LIB)")
+                      help="Use custom name for dlopened library (default is SONAME)")
   parser.add_argument('--lazy-load',
                       help="Load library on first call to any of it's functions (default)",
                       dest='lazy_load', action='store_true', default=True)
@@ -379,7 +393,6 @@ Examples:
   dlsym_callback = args.dlsym_callback
   dlopen = args.dlopen
   lazy_load = args.lazy_load
-  load_name = args.library_load_name or os.path.basename(input_name)
   if args.target.startswith('arm'):
     target = 'arm'  # Handle armhf-..., armel-...
   elif re.match(r'^i[0-9]86', args.target):
@@ -403,6 +416,13 @@ Examples:
         line = line.strip()
         if line:
           funs.append(line)
+
+  if args.library_load_name is not None:
+    load_name = args.library_load_name
+  else:
+    load_name = read_soname(input_name)
+    if load_name is None:
+      load_name = os.path.basename(input_name)
 
   # Collect target info
 
@@ -519,7 +539,7 @@ Examples:
 
   # Generate assembly code
 
-  suffix = os.path.basename(load_name)
+  suffix = os.path.basename(input_name)
   lib_suffix = re.sub(r'[^a-zA-Z_0-9]+', '_', suffix)
 
   tramp_file = f'{suffix}.tramp.S'
