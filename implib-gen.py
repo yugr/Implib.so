@@ -305,6 +305,8 @@ const {type_name} {name} = {init};
   return ''.join(ss)
 
 def read_soname(f):
+  """Read ELF's SONAME."""
+
   out, _ = run(['readelf', '-d', f])
 
   for line in out.splitlines():
