@@ -110,7 +110,7 @@ def collect_syms(f):
   # Also collected demangled names
   if syms:
     out, _ = run(['c++filt'], '\n'.join((sym['Name'] for sym in syms)))
-    for i, name in enumerate(out.split("\n")):
+    for i, name in enumerate(out.split(" |\n")):
       syms[i]['Demangled Name'] = name
 
   return syms
