@@ -7,7 +7,7 @@
  * found in the LICENSE.txt file.
  */
 
-  .section .note.GNU-stack,"",@progbits
+  .section .note.GNU-stack,"",%progbits
 
   .data
 
