@@ -20,7 +20,7 @@ Implib.so provides an easy solution - link your program with a _wrapper_ which
 
 Generated wrapper code (often also called "shim" code or "shim" library) is analogous to Windows import libraries which achieve the same functionality for DLLs.
 
-Implib.so can also be used to [reduce API provided by existing shared library](doc/ReduceLibraryInterface.md) or [rename it's exported symbols](doc/RenameLibraryInterface.md).
+Implib.so can also be used to [reduce API provided by existing shared library](doc/ReduceLibraryInterface.md) or [rename it's exported symbols](doc/RenameLibraryInterface.md). See [this page](doc/CMakeIntegration.md) for info on integrating Implib.so into a CMake project.
 
 Implib.so was originally inspired by Stackoverflow question [Is there an elegant way to avoid dlsym when using dlopen in C?](https://stackoverflow.com/questions/45917816/is-there-an-elegant-way-to-avoid-dlsym-when-using-dlopen-in-c/47221180).
 
