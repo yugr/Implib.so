@@ -20,7 +20,7 @@ Implib.so provides an easy solution - link your program with a _wrapper_ which
 
 Generated wrapper code (often also called "shim" code or "shim" library) is analogous to Windows import libraries which achieve the same functionality for DLLs.
 
-Implib.so can also be used to [reduce API provided by existing shared library](#reducing-external-interface-of-closed-source-library) or [rename it's exported symbols](#renaming-exported-interface-of-closed-source-library).
+Implib.so can also be used to [reduce API provided by existing shared library](doc/ReduceLibraryInterface.md) or [rename it's exported symbols](doc/RenameLibraryInterface.md).
 
 Implib.so was originally inspired by Stackoverflow question [Is there an elegant way to avoid dlsym when using dlopen in C?](https://stackoverflow.com/questions/45917816/is-there-an-elegant-way-to-avoid-dlsym-when-using-dlopen-in-c/47221180).
 
@@ -115,54 +115,6 @@ Finally to force library load and resolution of all symbols, call
 By default the tool does not try to wrap vtables exported from the library. This can be enabled via `--vtables` flag:
 ```
 $ implib-gen.py --vtables ...
-```
-
-# Reducing external interface of closed-source library
-
-Sometimes you may want to reduce public interface of existing shared library (e.g. if it's a third-party lib which erroneously exports too many unrelated symbols).
-
-To achieve this you can generate a wrapper with limited number of symbols and override the callback which loads the library to use `dlmopen` instead of `dlopen` (and thus does not pollute the global namespace):
-
-```
-$ cat mysymbols.txt
-foo
-bar
-$ cat mycallback.c
-#define _GNU_SOURCE
-#include <dlfcn.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#ifdef __cplusplus
-extern "C"
-#endif
-
-// Dlopen callback that loads library to dedicated namespace
-void *mycallback(const char *lib_name) {
-  void *h = dlmopen(LM_ID_NEWLM, lib_name, RTLD_LAZY | RTLD_DEEPBIND);
-  if (h)
-    return h;
-  fprintf(stderr, "dlmopen failed: %s\n", dlerror());
-  exit(1);
-}
-
-$ implib-gen.py --dlopen-callback=mycallback --symbol-list=mysymbols.txt libxyz.so
-$ ... # Link your app with libxyz.tramp.S, libxyz.init.c and mycallback.c
-```
-
-Similar approach can be used if you want to provide a common interface for several libraries with partially intersecting interfaces (see [this example](tests/multilib/run.sh) for more details).
-
-# Renaming exported interface of closed-source library
-
-Sometimes you may need to rename API of existing shared library to avoid name clashes.
-
-To achieve this you can generate a wrapper with _renamed_ symbols which call to old, non-renamed symbols in original library loaded via `dlmopen` instead of `dlopen` (to avoid polluting global namespace):
-
-```
-$ cat mycallback.c
-... Same as before ...
-$ implib-gen.py --dlopen-callback=mycallback --symbol_prefix=MYPREFIX_ libxyz.so
-$ ... # Link your app with libxyz.tramp.S, libxyz.init.c and mycallback.c
 ```
 
 # Linker wrapper
