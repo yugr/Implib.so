@@ -8,7 +8,7 @@
 # found in the LICENSE.txt file.
 
 set -eu
-set -x
+#set -x
 
 cd $(dirname $0)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2017-2023 Yury Gribov
+# Copyright 2017-2024 Yury Gribov
 #
 # The MIT License (MIT)
 #
@@ -374,7 +374,7 @@ Examples:
   parser.add_argument('--target',
                       help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi "
                            "(atm x86_64, i[0-9]86, arm/armhf/armeabi, aarch64/armv8, "
-                           "mips/mipsel, mips64/mip64el and e2k are supported)",
+                           "mips/mipsel, mips64/mip64el, e2k and powerpc64 are supported)",
                       default=os.uname()[-1])
   parser.add_argument('--symbol-list',
                       help="Path to file with symbols that should be present in wrapper "
@@ -406,6 +406,8 @@ Examples:
     target = 'mips64'  # Handle mips64-..., mips64el-..., mips64le-...
   elif args.target.startswith('mips'):
     target = 'mips'  # Handle mips-..., mipsel-..., mipsle-...
+  elif args.target.startswith('ppc64'):
+    target = 'powerpc64'
   else:
     target = args.target.split('-')[0]
   quiet = args.quiet

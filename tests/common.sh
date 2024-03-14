@@ -54,6 +54,11 @@ else
     PREFIX=mips64el-linux-gnuabi64-
     INTERP="qemu-mips64el -L /usr/mips64el-linux-gnuabi64 -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     ;;
+  ppc64 | powerpc64 | powerpc64-*)
+    TARGET=powerpc64
+    PREFIX=powerpc64-linux-gnu-
+    INTERP="qemu-ppc64 -L /usr/powerpc64-linux-gnu -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    ;;
   *)
     echo >&2 "Unsupported target: $ARCH"
     exit 1
