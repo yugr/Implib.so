@@ -181,3 +181,13 @@ jobs:
       run: sudo apt-get update && sudo apt-get install qemu-user gcc-powerpc64-linux-gnu g++-powerpc64-linux-gnu binutils-powerpc64-linux-gnu libc6-ppc64-powerpc-cross libc6-dev-ppc64-powerpc-cross
     - name: Run tests
       run: scripts/travis.sh
+  powerpc64le:
+    runs-on: ubuntu-latest
+    env:
+      ARCH: powerpc64le-linux-gnu
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install deps
+      run: sudo apt-get update && sudo apt-get install qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu binutils-powerpc64le-linux-gnu libc6-ppc64el-cross libc6-dev-ppc64el-cross
+    - name: Run tests
+      run: scripts/travis.sh
