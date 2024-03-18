@@ -7,6 +7,8 @@
  * found in the LICENSE.txt file.
  */
 
+  .machine power7
+
   .section .note.GNU-stack,"",@progbits
 
   .data
@@ -72,6 +74,8 @@ _${lib_suffix}_save_regs_and_resolve:
   stfd 11, -152(1)
   stfd 12, -160(1)
   stfd 13, -168(1)
+
+  // TODO: also save Altivec registers
 
   stdu 1, -256(1)
 

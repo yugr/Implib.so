@@ -67,7 +67,7 @@ $sym:
   std 0, -8(1)
 
   stdu 1, -128(1)
-  .cfi_def_cfa_offset 112
+  .cfi_def_cfa_offset 128
   .cfi_offset lr, 16
 
   bl _${lib_suffix}_save_regs_and_resolve
