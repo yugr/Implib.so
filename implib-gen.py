@@ -75,14 +75,20 @@ def collect_syms(f):
   toc = None
   syms = []
   syms_set = set()
+
   for line in out.splitlines():
     line = line.strip()
-    line = re.sub(r'\[<localentry>: [0-9]+\]', '', line)  # Strip out strange markers in powerpc64le ELFs
+
+    # Strip out strange markers in powerpc64le ELFs
+    line = re.sub(r'\[<localentry>: [0-9]+\]', '', line)
+
     if not line:
       # Next symtab
       toc = None
       continue
+
     words = re.split(r' +', line)
+
     if line.startswith('Num'):  # Header?
       if toc is not None:
         error("multiple headers in output of readelf")
