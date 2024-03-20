@@ -34,7 +34,10 @@ $sym:
   beq 3f
 
 2: // "Fast" path
-  // TODO: can we get rid of prologue/epilogue here?
+
+  // TODO:
+  // We need to somehow get rid of additional stack frame
+  // because it breaks arguments which are passed on stack
 
   mflr 0
   std 0, 16(1)
