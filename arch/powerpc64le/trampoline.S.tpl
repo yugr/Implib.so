@@ -14,12 +14,23 @@
   .hidden $sym
 #endif
 
+  // Force callers to save r2
+  .localentry $sym, 1
+
 $sym:
   .cfi_startproc
-.$sym.LCF0:
-  addis 2, 12, .TOC. - .$sym.LCF0@ha
-  addi 2, 2, .TOC. - .$sym.LCF0@l
-  .localentry $sym, . - $sym
+
+  // Get function address
+  mflr 11
+  bcl 20, 31, $$+4
+0:
+  mflr 12
+  mtlr 11
+  addi 12, 12, ($sym - 0b)
+
+  // Get TOC address
+  addis 2, 12, .TOC. - $sym@ha
+  addi 2, 2, .TOC. - $sym@l
 
 1:
   // Load address
@@ -31,26 +42,9 @@ $sym:
   beq 3f
 
 2: // "Fast" path
-  // TODO: can we get rid of prologue/epilogue here?
-
-  mflr 0
-  std 0, 16(1)
-  stdu 1, -112(1)
-  .cfi_def_cfa_offset 112
-  .cfi_offset lr, 16
-
-  std 2, 24(1)
 
   mtctr 12
-  bctrl
-
-  ld 2, 24(1)
-  addi 1, 1, 112
-  .cfi_def_cfa_offset 0
-  ld 0, 16(1)
-  mtlr 0
-  .cfi_restore lr
-  blr
+  bctr
 
 3: // Slow path
 
