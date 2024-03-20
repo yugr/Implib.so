@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 Yury Gribov
+ * Copyright 2022-2024 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -52,6 +52,10 @@ _${lib_suffix}_save_regs_and_resolve:
   PUSH_REG($$a1)
   PUSH_REG($$a2)
   PUSH_REG($$a3)
+  PUSH_REG($$a4)
+  PUSH_REG($$a5)
+  PUSH_REG($$a6)
+  PUSH_REG($$a7)
 
   PUSH_FREG($$f12, 44)
   PUSH_FREG($$f13, 45)
@@ -74,6 +78,10 @@ _${lib_suffix}_save_regs_and_resolve:
   POP_FREG($$f13, 45)
   POP_FREG($$f12, 44)
 
+  POP_REG($$a7)
+  POP_REG($$a6)
+  POP_REG($$a5)
+  POP_REG($$a4)
   POP_REG($$a3)
   POP_REG($$a2)
   POP_REG($$a1)
