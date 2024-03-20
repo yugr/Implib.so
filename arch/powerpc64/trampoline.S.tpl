@@ -82,4 +82,7 @@ $sym:
 
   b 1b
 
+  .long 0
+  .quad 0
+
   .cfi_endproc

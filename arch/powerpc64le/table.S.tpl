@@ -158,4 +158,7 @@ _${lib_suffix}_save_regs_and_resolve:
 
   blr
 
+  .long 0
+  .quad 0
+
   .cfi_endproc
