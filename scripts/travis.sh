@@ -40,7 +40,4 @@ tests/multiple-dlopens-3/run.sh $ARCH
 if ! echo "$ARCH" | grep -q powerpc; then
   tests/many-functions/run.sh $ARCH
 fi
-if ! echo "$ARCH" | grep -q 'powerpc64-'; then
-  # FIXME: enable for all platforms !
-  tests/stack-args/run.sh $ARCH
-fi
+tests/stack-args/run.sh $ARCH

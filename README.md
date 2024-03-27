@@ -47,7 +47,8 @@ where `TARGET` can be any of
   * mipsel-linux-gnu
   * mips64el-linux-gnuabi64
   * e2k-linux-gnu
-  * powerpc64-linux-gnu, powerpc64le-linux-gnu (preliminary support)
+  * powerpc64le-linux-gnu
+  * powerpc64-linux-gnu (limited support)
 
 Script generates two files: `libxyz.so.tramp.S` and `libxyz.so.init.c` which need to be linked to your application (instead of `-lxyz`):
 

@@ -37,15 +37,35 @@ $sym:
 
   // TODO:
   // We need to somehow get rid of additional stack frame
-  // because it breaks arguments which are passed on stack
+  // because it breaks arguments which are passed on stack.
+  // Currently we work around this by duplicating parameters
+  // in new stack frame but this supports only 16 parameters
+  // and is very inefficient.
 
   mflr 0
   std 0, 16(1)
-  stdu 1, -112(1)
-  .cfi_def_cfa_offset 112
+  stdu 1, -176(1)
+  .cfi_def_cfa_offset 176
   .cfi_offset lr, 16
 
   std 2, 40(1)
+
+  ld 0, 176+112(1)
+  std 0, 112(1)
+  ld 0, 176+120(1)
+  std 0, 120(1)
+  ld 0, 176+128(1)
+  std 0, 128(1)
+  ld 0, 176+136(1)
+  std 0, 136(1)
+  ld 0, 176+144(1)
+  std 0, 144(1)
+  ld 0, 176+152(1)
+  std 0, 152(1)
+  ld 0, 176+160(1)
+  std 0, 160(1)
+  ld 0, 176+168(1)
+  std 0, 168(1)
 
   ld 2, 8(11)
   ld 11, 0(11)
@@ -54,7 +74,7 @@ $sym:
   bctrl
 
   ld 2, 40(1)
-  addi 1, 1, 112
+  addi 1, 1, 176
   .cfi_def_cfa_offset 0
   ld 0, 16(1)
   mtlr 0
