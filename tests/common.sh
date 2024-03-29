@@ -64,6 +64,11 @@ else
     PREFIX=powerpc64le-linux-gnu-
     INTERP="qemu-ppc64le -L /usr/powerpc64le-linux-gnu -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     ;;
+  rv64 | riscv4 | riscv64-*)
+    TARGET=riscv64
+    PREFIX=riscv64-linux-gnu-
+    INTERP="qemu-riscv64 -L /usr/riscv64-linux-gnu -E LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    ;;
   *)
     echo >&2 "Unsupported target: $ARCH"
     exit 1

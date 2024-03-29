@@ -417,6 +417,8 @@ Examples:
     target = 'powerpc64le'
   elif args.target.startswith('ppc64'):
     target = 'powerpc64'
+  elif args.target.startswith('rv64'):
+    target = 'riscv64'
   else:
     target = args.target.split('-')[0]
   quiet = args.quiet
