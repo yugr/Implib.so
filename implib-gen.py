@@ -381,7 +381,8 @@ Examples:
   parser.add_argument('--target',
                       help="Target platform triple e.g. x86_64-unknown-linux-gnu or arm-none-eabi "
                            "(atm x86_64, i[0-9]86, arm/armhf/armeabi, aarch64/armv8, "
-                           "mips/mipsel, mips64/mip64el, e2k, powerpc64/powerpc64le are supported)",
+                           "mips/mipsel, mips64/mip64el, e2k, powerpc64/powerpc64le, "
+                           "riscv64 are supported)",
                       default=os.uname()[-1])
   parser.add_argument('--symbol-list',
                       help="Path to file with symbols that should be present in wrapper "
