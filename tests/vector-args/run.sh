@@ -7,7 +7,7 @@
 # Use of this source code is governed by MIT license that can be
 # found in the LICENSE.txt file.
 
-# This is a simple test that verifies that parameters are correctly passed on stack.
+# This test verifies that Implib trampolines save/restore vector regs correctly.
 # Run it like
 #   ./run.sh ARCH
 
@@ -24,7 +24,7 @@ fi
 CFLAGS="-g -O2 $CFLAGS"
 
 # Build shlib to test against
-$CC $CFLAGS -shared -fPIC interposed.c -o libinterposed.so
+$CC $CFLAGS -shared -fPIC interposed.c dummy.c -o libinterposed.so
 
 # Prepare implib
 ${PYTHON:-} ../../implib-gen.py -q --target $TARGET libinterposed.so

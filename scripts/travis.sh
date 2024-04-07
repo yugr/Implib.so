@@ -41,3 +41,7 @@ if ! echo "$ARCH" | grep -q powerpc; then
   tests/many-functions/run.sh $ARCH
 fi
 tests/stack-args/run.sh $ARCH
+if ! echo "$ARCH" | grep -q 'powerpc\|mips\|riscv'; then
+  # TODO: support vector types for remaining platforms
+  tests/vector-args/run.sh $ARCH
+fi

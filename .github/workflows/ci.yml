@@ -87,6 +87,22 @@ jobs:
           fi
         done
         codecov --required
+  avx:
+    runs-on: ubuntu-latest
+    env:
+      CFLAGS: -mavx
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run tests
+      run: scripts/travis.sh
+#  avx2:
+#    runs-on: ubuntu-latest
+#    env:
+#      CFLAGS: -mavx2 -mavx512f
+#    steps:
+#    - uses: actions/checkout@v3
+#    - name: Run tests
+#      run: scripts/travis.sh
   x86:
     runs-on: ubuntu-latest
     env:

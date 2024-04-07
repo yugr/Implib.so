@@ -34,8 +34,19 @@ _${lib_suffix}_save_regs_and_resolve:
 #define DEC_STACK(d) subq $$d, %rsp; .cfi_adjust_cfa_offset d
 #define INC_STACK(d) addq $$d, %rsp; .cfi_adjust_cfa_offset -d
 
+#define PUSH_MMX_REG(reg) DEC_STACK(8); movq %reg, (%rsp); .cfi_rel_offset reg, 0
+#define POP_MMX_REG(reg) movq (%rsp), %reg; .cfi_restore reg; INC_STACK(8)
+
 #define PUSH_XMM_REG(reg) DEC_STACK(16); movdqa %reg, (%rsp); .cfi_rel_offset reg, 0
 #define POP_XMM_REG(reg) movdqa (%rsp), %reg; .cfi_restore reg; INC_STACK(16)
+
+// TODO: cfi_offset/cfi_restore
+#define PUSH_YMM_REG(reg) DEC_STACK(32); vmovdqu %reg, (%rsp)
+#define POP_YMM_REG(reg) vmovdqu (%rsp), %reg; INC_STACK(32)
+
+// TODO: cfi_offset/cfi_restore
+#define PUSH_ZMM_REG(reg) DEC_STACK(64); vmovdqu32 %reg, (%rsp)
+#define POP_ZMM_REG(reg) vmovdqu32 (%rsp), %reg; INC_STACK(64)
 
   // Slow path which calls dlsym, taken only on first call.
   // All registers are stored to handle arbitrary calling conventions
@@ -43,8 +54,6 @@ _${lib_suffix}_save_regs_and_resolve:
   // For Dwarf directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
 
   .cfi_def_cfa_offset 8  // Return address
-
-  // FIXME: AVX (YMM, ZMM) registers are NOT saved to simplify code.
 
   PUSH_REG(rdi)  // 16
   mov 0x10(%rsp), %rdi
@@ -62,6 +71,26 @@ _${lib_suffix}_save_regs_and_resolve:
   PUSH_REG(r13)  // 16
   PUSH_REG(r14)
   PUSH_REG(r15)  // 16
+
+#ifdef __AVX2__
+  PUSH_ZMM_REG(zmm0)
+  PUSH_ZMM_REG(zmm1)
+  PUSH_ZMM_REG(zmm2)
+  PUSH_ZMM_REG(zmm3)
+  PUSH_ZMM_REG(zmm4)
+  PUSH_ZMM_REG(zmm5)
+  PUSH_ZMM_REG(zmm6)
+  PUSH_ZMM_REG(zmm7)
+#elif defined __AVX__
+  PUSH_YMM_REG(ymm0)
+  PUSH_YMM_REG(ymm1)
+  PUSH_YMM_REG(ymm2)
+  PUSH_YMM_REG(ymm3)
+  PUSH_YMM_REG(ymm4)
+  PUSH_YMM_REG(ymm5)
+  PUSH_YMM_REG(ymm6)
+  PUSH_YMM_REG(ymm7)
+#elif defined __SSE__
   PUSH_XMM_REG(xmm0)
   PUSH_XMM_REG(xmm1)
   PUSH_XMM_REG(xmm2)
@@ -70,10 +99,39 @@ _${lib_suffix}_save_regs_and_resolve:
   PUSH_XMM_REG(xmm5)
   PUSH_XMM_REG(xmm6)
   PUSH_XMM_REG(xmm7)
+#elif defined __MMX__
+  PUSH_MMX_REG(mm0)
+  PUSH_MMX_REG(mm1)
+  PUSH_MMX_REG(mm2)
+  PUSH_MMX_REG(mm3)
+  PUSH_MMX_REG(mm4)
+  PUSH_MMX_REG(mm5)
+  PUSH_MMX_REG(mm6)
+  PUSH_MMX_REG(mm7)
+#endif
 
   // Stack is just 8-byte aligned but callee will re-align to 16
   call _${lib_suffix}_tramp_resolve
 
+#ifdef __AVX2__
+  POP_ZMM_REG(zmm7)
+  POP_ZMM_REG(zmm6)
+  POP_ZMM_REG(zmm5)
+  POP_ZMM_REG(zmm4)
+  POP_ZMM_REG(zmm3)
+  POP_ZMM_REG(zmm2)
+  POP_ZMM_REG(zmm1)
+  POP_ZMM_REG(zmm0)  // 16
+#elif defined __AVX__
+  POP_YMM_REG(ymm7)
+  POP_YMM_REG(ymm6)
+  POP_YMM_REG(ymm5)
+  POP_YMM_REG(ymm4)
+  POP_YMM_REG(ymm3)
+  POP_YMM_REG(ymm2)
+  POP_YMM_REG(ymm1)
+  POP_YMM_REG(ymm0)  // 16
+#elif defined __SSE__
   POP_XMM_REG(xmm7)
   POP_XMM_REG(xmm6)
   POP_XMM_REG(xmm5)
@@ -82,6 +140,17 @@ _${lib_suffix}_save_regs_and_resolve:
   POP_XMM_REG(xmm2)
   POP_XMM_REG(xmm1)
   POP_XMM_REG(xmm0)  // 16
+#elif defined __MMX__
+  POP_MMX_REG(mm7)
+  POP_MMX_REG(mm6)
+  POP_MMX_REG(mm5)
+  POP_MMX_REG(mm4)
+  POP_MMX_REG(mm3)
+  POP_MMX_REG(mm2)
+  POP_MMX_REG(mm1)
+  POP_MMX_REG(mm0)  // 16
+#endif
+
   POP_REG(r15)
   POP_REG(r14)  // 16
   POP_REG(r13)
