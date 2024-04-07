@@ -7,11 +7,11 @@ on:
   push:
     paths-ignore:
     - 'LICENSE.txt'
-    - 'README.md'
+    - '**.md'
   pull_request:
     paths-ignore:
     - 'LICENSE.txt'
-    - 'README.md'
+    - '**.md'
 jobs:
   Baseline:
     strategy:
