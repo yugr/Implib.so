@@ -99,16 +99,9 @@ _${lib_suffix}_save_regs_and_resolve:
   PUSH_XMM_REG(xmm5)
   PUSH_XMM_REG(xmm6)
   PUSH_XMM_REG(xmm7)
-#elif defined __MMX__
-  PUSH_MMX_REG(mm0)
-  PUSH_MMX_REG(mm1)
-  PUSH_MMX_REG(mm2)
-  PUSH_MMX_REG(mm3)
-  PUSH_MMX_REG(mm4)
-  PUSH_MMX_REG(mm5)
-  PUSH_MMX_REG(mm6)
-  PUSH_MMX_REG(mm7)
 #endif
+
+  // MMX registers are not used to pass arguments so we do not save them
 
   // Stack is just 8-byte aligned but callee will re-align to 16
   call _${lib_suffix}_tramp_resolve
@@ -140,15 +133,6 @@ _${lib_suffix}_save_regs_and_resolve:
   POP_XMM_REG(xmm2)
   POP_XMM_REG(xmm1)
   POP_XMM_REG(xmm0)  // 16
-#elif defined __MMX__
-  POP_MMX_REG(mm7)
-  POP_MMX_REG(mm6)
-  POP_MMX_REG(mm5)
-  POP_MMX_REG(mm4)
-  POP_MMX_REG(mm3)
-  POP_MMX_REG(mm2)
-  POP_MMX_REG(mm1)
-  POP_MMX_REG(mm0)  // 16
 #endif
 
   POP_REG(r15)
