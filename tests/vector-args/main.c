@@ -18,9 +18,9 @@
 #elif VECTOR_SIZE == 4
 # define VECTOR_INIT {1, 2, 3, 4}
 #elif VECTOR_SIZE == 8
-# define VECTOR_INIT {1, 2, 3, 4, 5, 6, 7}
+# define VECTOR_INIT {1, 2, 3, 4, 5, 6, 7, 8}
 #elif VECTOR_SIZE == 16
-# define VECTOR_INIT {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+# define VECTOR_INIT {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
 #else
 # error "Unsupported vector size"
 #endif
