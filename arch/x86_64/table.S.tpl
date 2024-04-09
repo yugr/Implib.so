@@ -72,7 +72,8 @@ _${lib_suffix}_save_regs_and_resolve:
   PUSH_REG(r14)
   PUSH_REG(r15)  // 16
 
-#ifdef __AVX2__
+  // Maybe use cpuid instead of macro to detect current vector size...
+#ifdef __AVX512F__
   PUSH_ZMM_REG(zmm0)
   PUSH_ZMM_REG(zmm1)
   PUSH_ZMM_REG(zmm2)
@@ -106,7 +107,7 @@ _${lib_suffix}_save_regs_and_resolve:
   // Stack is just 8-byte aligned but callee will re-align to 16
   call _${lib_suffix}_tramp_resolve
 
-#ifdef __AVX2__
+#ifdef __AVX512F__
   POP_ZMM_REG(zmm7)
   POP_ZMM_REG(zmm6)
   POP_ZMM_REG(zmm5)
