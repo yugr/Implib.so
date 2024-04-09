@@ -11,24 +11,16 @@
 
 #include "interposed.h"
 
-#if VECTOR_SIZE == 1
-# define VECTOR_INIT {1}
-#elif VECTOR_SIZE == 2
-# define VECTOR_INIT {1, 2}
-#elif VECTOR_SIZE == 4
-# define VECTOR_INIT {1, 2, 3, 4}
-#elif VECTOR_SIZE == 8
-# define VECTOR_INIT {1, 2, 3, 4, 5, 6, 7, 8}
-#elif VECTOR_SIZE == 16
-# define VECTOR_INIT {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
-#else
-# error "Unsupported vector size"
-#endif
-
 int main() {
-  vector_type x = VECTOR_INIT, res = foo(x), ref = 3 * x;
+  vector_type x;
+  int n = sizeof(x) / sizeof(x[0]);
+
   int i;
-  for (i = 0; i < VECTOR_SIZE; ++i) {
+  for (i = 0; i < n; ++i)
+    x[i] = i;
+
+  vector_type res = foo(x), ref = 3 * x;
+  for (i = 0; i < n; ++i) {
     if (res[i] != ref[i]) {
       printf("NOT OK\n");
       return 1;

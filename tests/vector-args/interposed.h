@@ -13,23 +13,23 @@
 // Determine number of 32-bit ints in native vector type
 // for each supported platform
 #if defined __AVX2__ /* ZMM regs */
-# define VECTOR_SIZE 16
+# define VECTOR_BITSIZE 512
 #elif defined __AVX__ /* YMM regs */
-# define VECTOR_SIZE 8
+# define VECTOR_BITSIZE 256
 #elif defined __SSE__ /* XMM regs */ \
     || defined __aarch64__ /* NEON regs */
-# define VECTOR_SIZE 4
+# define VECTOR_BITSIZE 128
 #elif defined __MMX__ /* MMX regs */ \
     || defined __arm__  /* NEON regs */
-# define VECTOR_SIZE 2
+# define VECTOR_BITSIZE 64
 #elif defined __i386__
   // x86 has no vectors by default
-# define VECTOR_SIZE 1
+# define VECTOR_BITSIZE 32
 #else
 # error "Unknown platform"
 #endif
 
-typedef int vector_type __attribute__((vector_size(sizeof(int) * VECTOR_SIZE)));
+typedef int vector_type __attribute__((vector_size(VECTOR_BITSIZE / 8)));
 
 extern vector_type foo(vector_type x);
 
