@@ -19,10 +19,11 @@ int main() {
   for (i = 0; i < n; ++i)
     x[i] = i;
 
-  vector_type res = foo(x), ref = 3 * x;
+  vector_type res = foo(x);
   for (i = 0; i < n; ++i) {
-    if (res[i] != ref[i]) {
-      printf("NOT OK\n");
+    int ref = 3 * x[i];
+    if (res[i] != ref) {
+      printf("%d: %d (expecting %d)\n", i, res[i], ref);
       return 1;
     }
   }
