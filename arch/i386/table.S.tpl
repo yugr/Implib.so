@@ -52,6 +52,8 @@ _${lib_suffix}_save_regs_and_resolve:
   .cfi_adjust_cfa_offset 8
   PUSH_REG(eax)
 
+  // TODO: save vector regs
+
   call _${lib_suffix}_tramp_resolve@PLT  // Stack will be aligned at 16 in call
 
   addl $$12, %esp

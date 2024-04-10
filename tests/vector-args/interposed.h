@@ -12,7 +12,7 @@
 
 // Determine number of 32-bit ints in native vector type
 // for each supported platform
-#if defined __AVX2__ /* ZMM regs */
+#if defined __AVX512H__ /* ZMM regs */
 # define VECTOR_BITSIZE 512
 #elif defined __AVX__ /* YMM regs */
 # define VECTOR_BITSIZE 256
