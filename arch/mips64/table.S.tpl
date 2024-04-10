@@ -61,6 +61,10 @@ _${lib_suffix}_save_regs_and_resolve:
   PUSH_FREG($$f13, 45)
   PUSH_FREG($$f14, 46)
   PUSH_FREG($$f15, 47)
+  PUSH_FREG($$f16, 48)
+  PUSH_FREG($$f17, 49)
+  PUSH_FREG($$f18, 50)
+  PUSH_FREG($$f19, 51)
 
   // Vector arguments are passed on stack so we don't save vector regs
 
@@ -75,6 +79,10 @@ _${lib_suffix}_save_regs_and_resolve:
 1: jalr $$25
   nop
 
+  POP_FREG($$f19, 51)
+  POP_FREG($$f18, 50)
+  POP_FREG($$f17, 49)
+  POP_FREG($$f16, 48)
   POP_FREG($$f15, 47)
   POP_FREG($$f14, 46)
   POP_FREG($$f13, 45)

@@ -43,8 +43,8 @@ _${lib_suffix}_save_regs_and_resolve:
 #define POP_REG(reg) addiu $$sp, $$sp, 4; .cfi_adjust_cfa_offset -4; lw reg, 0($$sp); .cfi_restore reg
 
 // dwarf_num = 32 + reg_num
-#define PUSH_FREG(reg, dwarf_num) addiu $$sp, $$sp, -4; .cfi_adjust_cfa_offset 4; swc1 reg, 4($$sp); .cfi_rel_offset dwarf_num, 0
-#define POP_FREG(reg, dwarf_num) addiu $$sp, $$sp, 4; .cfi_adjust_cfa_offset -4; lwc1 reg, 0($$sp); .cfi_restore dwarf_num
+#define PUSH_FREG(reg, dwarf_num) addiu $$sp, $$sp, -8; .cfi_adjust_cfa_offset 8; sdc1 reg, 8($$sp); .cfi_rel_offset dwarf_num, 0
+#define POP_FREG(reg, dwarf_num) addiu $$sp, $$sp, 8; .cfi_adjust_cfa_offset -8; ldc1 reg, 0($$sp); .cfi_restore dwarf_num
 
   PUSH_REG($$ra)
   PUSH_REG($$a0)
@@ -53,13 +53,8 @@ _${lib_suffix}_save_regs_and_resolve:
   PUSH_REG($$a3)
   PUSH_REG($$a3)  // For alignment
 
-#if 0
-  // FIXME: GCC complains about odd FP regs without -modd-spreg
   PUSH_FREG($$f12, 44)
-  PUSH_FREG($$f13, 45)
   PUSH_FREG($$f14, 46)
-  PUSH_FREG($$f15, 47)
-#endif
 
   // Vector arguments are passed on stack so we don't save vector regs
 
@@ -70,12 +65,8 @@ _${lib_suffix}_save_regs_and_resolve:
 1: jalr $$25
   nop
 
-#if 0
-  POP_FREG($$f15, 47)
   POP_FREG($$f14, 46)
-  POP_FREG($$f13, 45)
   POP_FREG($$f12, 44)
-#endif
 
   POP_REG($$a3)
   POP_REG($$a3)
