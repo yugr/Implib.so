@@ -62,6 +62,8 @@ _${lib_suffix}_save_regs_and_resolve:
   PUSH_FREG($$f14, 46)
   PUSH_FREG($$f15, 47)
 
+  // Vector arguments are passed on stack so we don't save vector regs
+
   lui $$gp, %hi(%neg(%gp_rel(_${lib_suffix}_save_regs_and_resolve)))
   daddu $$gp, $$gp, $$25
   daddiu $$gp, $$gp, %lo(%neg(%gp_rel(_${lib_suffix}_save_regs_and_resolve)))

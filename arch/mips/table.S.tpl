@@ -61,6 +61,8 @@ _${lib_suffix}_save_regs_and_resolve:
   PUSH_FREG($$f15, 47)
 #endif
 
+  // Vector arguments are passed on stack so we don't save vector regs
+
   move $$a0, $$AT
 
   lw $$25, %call16(_${lib_suffix}_tramp_resolve)($$gp)
