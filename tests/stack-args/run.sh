@@ -24,7 +24,7 @@ fi
 CFLAGS="-g -O2 $CFLAGS"
 
 # Build shlib to test against
-$CC $CFLAGS -shared -fPIC interposed.c -o libinterposed.so
+$CC $CFLAGS -shared -fPIC interposed.c dummy.c -o libinterposed.so
 
 # Prepare implib
 ${PYTHON:-} ../../implib-gen.py -q --target $TARGET libinterposed.so

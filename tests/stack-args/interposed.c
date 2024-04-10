@@ -49,3 +49,11 @@ void bar(float x0, float x1, float x2, float x3, float x4, float x5, float x6, f
   printf("%g ", x14);
   printf("%g\n", x15);
 }
+
+int dummy1(int x0, int x1, int x2, int x3, int x4, int x5, int x6, int x7, int x8, int x9, int x10, int x11, int x12, int x13, int x14, int x15);
+double dummy2(double x0, double x1, double x2, double x3, double x4, double x5, double x6, double x7, double x8, double x9, double x10, double x11, double x12, double x13, double x14, double x15);
+
+__attribute__((constructor)) void touch_regs() {
+  dummy1(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  dummy2(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+}
