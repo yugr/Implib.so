@@ -31,7 +31,7 @@ void foo(int x0, int x1, int x2, int x3, int x4, int x5, int x6, int x7, int x8,
 }
 
 __attribute__((visibility("default")))
-void bar(float x0, float x1, float x2, float x3, float x4, float x5, float x6, float x7, float x8, float x9, float x10, float x11, float x12, float x13, float x14, float x15) {
+void bar(double x0, double x1, double x2, double x3, double x4, double x5, double x6, double x7, double x8, double x9, double x10, double x11, double x12, double x13, double x14, double x15) {
   printf("%g ", x0);
   printf("%g ", x1);
   printf("%g ", x2);
