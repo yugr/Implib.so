@@ -410,6 +410,8 @@ Examples:
     target = 'arm'  # Handle armhf-..., armel-...
   elif re.match(r'^i[0-9]86', args.target):
     target = 'i386'
+  elif args.target.startswith('amd64'):
+    target = 'x86_64'
   elif args.target.startswith('mips64'):
     target = 'mips64'  # Handle mips64-..., mips64el-..., mips64le-...
   elif args.target.startswith('mips'):

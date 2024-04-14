@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright 2020 Yury Gribov
+# Copyright 2020-2024 Yury Gribov
 #
 # The MIT License (MIT)
 # 
@@ -38,7 +38,7 @@ $CC $CFLAGS $LIB_CFLAGS -DIMPLIB_EXPORT_SHIMS libA.so.* libB.so.* -o libC.so
 
 # Use it in final app
 
-$CC $CFLAGS main.c -L. -lC -ldl
+$CC $CFLAGS main.c -L. -lC $LIBS
 $INTERP ./a.out >out.log 2>&1
 
 if ! diff out.ref out.log; then

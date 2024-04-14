@@ -1,6 +1,6 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
-# Copyright 2020-2021 Yury Gribov
+# Copyright 2020-2024 Yury Gribov
 # 
 # Use of this source code is governed by MIT license that can be
 # found in the LICENSE.txt file.
@@ -154,6 +154,7 @@ Flags can be specified directly or via IMPLIBSO_LD_OPTIONS environment variable.
     sys.exit(rc)
 
   # Analyze ldd output to see which runtime libs were linked
+  # TODO: support BSD's ldd output format
   rc, out, err = run(f'ldd {out_filename}')
   os.unlink(out_filename)  # Remove output in case we fail later
   if rc != 0:

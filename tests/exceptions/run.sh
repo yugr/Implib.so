@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright 2019-2020 Yury Gribov
+# Copyright 2019-2024 Yury Gribov
 #
 # The MIT License (MIT)
 # 
@@ -9,6 +9,8 @@
 
 # This test checks that exceptions are successfully propagated
 # through implib wrappers.
+#
+# TODO: known to fail on BSD
 
 set -eu
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright 2023 Yury Gribov
+# Copyright 2023-2024 Yury Gribov
 #
 # The MIT License (MIT)
 # 
@@ -26,6 +26,6 @@ $CC $CFLAGS -shared -fPIC test.c -o libtest.so
 
 ${PYTHON:-} ../../implib-gen.py -q --target $TARGET libtest.so
 
-$CC $CFLAGS libtest.so.* main.c -ldl
+$CC $CFLAGS libtest.so.* main.c $LIBS
 
 LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out

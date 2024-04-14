@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright 2020-2021 Yury Gribov
+# Copyright 2020-2024 Yury Gribov
 #
 # The MIT License (MIT)
 # 
@@ -28,7 +28,7 @@ $INTERP ./a.out 2>&1 | tee ref.log
 ${PYTHON:-} ../../implib-gen.py -q --target $TARGET libinterposed.so
 ln -sf ../../scripts/ld ${PREFIX}ld
 trap "rm -f $PWD/${PREFIX}ld" EXIT
-if $CC --version | grep -q 'clang\|^lcc'; then
+if $CC --version | grep -qE 'clang|^lcc'; then
   # Some compilers do not allow overriding ld via playing with PATH
   CFLAGS="$CFLAGS -B."
 fi

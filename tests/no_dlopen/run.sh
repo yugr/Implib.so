@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright 2022 Yury Gribov
+# Copyright 2022-2024 Yury Gribov
 #
 # The MIT License (MIT)
 # 
@@ -25,7 +25,6 @@ fi
 . ../common.sh
 
 CFLAGS="-g -O2 $CFLAGS"
-LIBS='-ldl'
 
 # Build shlib to test against
 $CC $CFLAGS -shared -fPIC interposed.c -o libinterposed.so
