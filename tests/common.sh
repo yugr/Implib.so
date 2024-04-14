@@ -77,8 +77,14 @@ else
 fi
 
 CFLAGS="-Wall -Wextra -Werror ${CFLAGS:-}"
-CC=$PREFIX${CC:-cc}
-CXX=$PREFIX${CXX:-c++}
+
+if uname | grep -q BSD; then
+  CC=$PREFIX${CC:-cc}
+  CXX=$PREFIX${CXX:-c++}
+else
+  CC=$PREFIX${CC:-gcc}
+  CXX=$PREFIX${CXX:-g++}
+fi
 
 if uname | grep -q BSD; then
   LIBS=
