@@ -146,6 +146,19 @@ def collect_relocs(f):
         error("multiple headers in output of readelf")
       words = re.split(r'\s\s+', line)  # "Symbol's Name + Addend"
       toc = make_toc(words)
+    elif re.match(r'^\s*r_offset', line):  # FreeBSD header?
+      if toc is not None:
+        error("multiple headers in output of readelf")
+      words = re.split(r'\s\s+', line)  # "st_name + r_addend"
+      toc = make_toc(words)
+      rename = {
+        'r_offset'           : 'Offset',
+        'r_info'             : 'Info',
+        'r_type'             : 'Type',
+        'st_value'           : 'Symbol\'s Value',
+        'st_name + r_addend' : 'Symbol\'s Name + Addend',
+      }
+      toc = {idx : rename[name] for idx, name in toc.items()}
     elif toc is not None:
       line = re.sub(r' \+ ', '+', line)
       words = re.split(r'\s+', line)

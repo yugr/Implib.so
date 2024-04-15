@@ -25,6 +25,7 @@ fi
 . ../common.sh
 
 CFLAGS="-g -O2 $CFLAGS"
+CFLAGS="-Wno-unused-command-line-argument $CFLAGS"  # For -no-pie on BSD
 
 # Build shlib to test against
 $CC $CFLAGS -shared -fPIC interposed.c -o libinterposed.so
