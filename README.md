@@ -147,7 +147,7 @@ The tool also lacks the following important features:
 * proper support for multi-threading
 * symbol versions are not handled at all
 * keep fast paths of shims together to reduce I$ pressure
-* support for macOS and BSDs
+* support for macOS and BSDs (actually BSDs mostly work)
 
 Finally, there are some minor TODOs in code.
 
