@@ -5,8 +5,6 @@
 
 # Motivation
 
-In a nutshell, Implib.so is a simple equivalent of [Windows DLL import libraries](http://www.digitalmars.com/ctg/implib.html) for POSIX shared libraries.
-
 On Linux/Android, if you link against shared library you normally use `-lxyz` compiler option which makes your application depend on `libxyz.so`. This would cause `libxyz.so` to be forcedly loaded at program startup (and its constructors to be executed) even if you never call any of its functions.
 
 If you instead want to delay loading of `libxyz.so` (e.g. its unlikely to be used and you don't want to waste resources on it or [slow down startup time](https://lwn.net/Articles/341309/) or you want to select best platform-specific implementation at runtime), you can remove dependency from `LDFLAGS` and issue `dlopen` call manually. But this would cause `ld` to err because it won't be able to statically resolve symbols which are supposed to come from this shared library. At this point you have only two choices:
