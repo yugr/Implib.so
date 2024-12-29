@@ -26,6 +26,13 @@ fi
 
 CFLAGS="-g -O2 $CFLAGS"
 
+if uname | grep -q BSD; then
+  # readelf does not have --dyn-syms on BSDs
+  READELF=llvm-readelf
+else
+  READELF=readelf
+fi
+
 # Build shlib to test against
 $CC $CFLAGS -shared -fPIC interposed.c -o libinterposed.so
 
@@ -38,7 +45,7 @@ ${PYTHON:-} ../../implib-gen.py -q --target $TARGET --no-dlopen libinterposed.so
 
 # Build app
 $CC $CFLAGS main.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
-! (readelf -sW --dyn-syms a.out | grep -q GLOBAL.*foo)
+! ($READELF -sW --dyn-syms a.out | grep -q GLOBAL.*foo)
 
 LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
 diff test.ref a.out.log
@@ -52,7 +59,7 @@ ${PYTHON:-} ../../implib-gen.py -q --target $TARGET --no-dlopen libinterposed.so
 
 # Build app
 $CC $CFLAGS -DIMPLIB_EXPORT_SHIMS main.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
-readelf -sW --dyn-syms a.out | grep -q GLOBAL.*foo
+$READELF -sW --dyn-syms a.out | grep -q GLOBAL.*foo
 
 LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
 diff test.ref a.out.log
@@ -66,7 +73,7 @@ ${PYTHON:-} ../../implib-gen.py -q --target $TARGET --no-dlopen libinterposed.so
 
 # Build shlib
 $CC $CFLAGS -shared -fPIC shlib.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS -o shlib.so
-! (readelf -sW --dyn-syms shlib.so | grep -q GLOBAL.*foo)
+! ($READELF -sW --dyn-syms shlib.so | grep -q GLOBAL.*foo)
 
 # Build app
 $CC $CFLAGS main.c shlib.so $LIBS
@@ -83,7 +90,7 @@ ${PYTHON:-} ../../implib-gen.py -q --target $TARGET --no-dlopen libinterposed.so
 
 # Build shlib
 $CC $CFLAGS -DIMPLIB_EXPORT_SHIMS -shared -fPIC shlib.c test.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS -o shlib.so
-readelf -sW --dyn-syms shlib.so | grep -q GLOBAL.*foo
+$READELF -sW --dyn-syms shlib.so | grep -q GLOBAL.*foo
 
 # Build app
 $CC $CFLAGS main.c shlib.so $LIBS
