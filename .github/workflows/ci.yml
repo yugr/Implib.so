@@ -1,6 +1,5 @@
 # TODO:
 # * Android
-# * FreeBSD
 
 name: CI
 on:
