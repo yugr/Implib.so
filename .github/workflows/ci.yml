@@ -225,5 +225,6 @@ jobs:
       with:
         usesh: true
         copyback: false
-        prepare: scripts/install-freebsd-prereqs.sh
-        run: scripts/travis.sh
+        run: |
+          scripts/install-freebsd-prereqs.sh
+          scripts/travis.sh

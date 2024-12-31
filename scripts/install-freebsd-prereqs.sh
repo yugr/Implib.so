@@ -3,5 +3,5 @@
 set -eu
 
 pkg update
-pkg upgrade
-pkg install gcc g++ binutils python3
+pkg upgrade -y
+pkg install -y gcc g++ binutils python3
