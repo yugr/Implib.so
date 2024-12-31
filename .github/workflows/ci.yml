@@ -217,7 +217,7 @@ jobs:
       run: sudo apt-get update && sudo apt-get install qemu-user gcc-riscv64-linux-gnu g++-riscv64-linux-gnu binutils-riscv64-linux-gnu libc6-riscv64-cross libc6-dev-riscv64-cross
     - name: Run tests
       run: scripts/travis.sh
-  freebSD:
+  freebsd:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
