@@ -249,6 +249,7 @@ Flags can be specified directly or via IMPLIBSO_LD_OPTIONS environment variable.
       info.replaced = True
   if changed:
     args.append('-ldl')
+    args.append('-lpthread')
 
   for name, info in sorted(libs.items()):
     if not info.replaced:
