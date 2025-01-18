@@ -46,7 +46,7 @@ extern "C" {
     } \
   } while(0)
 
-static volatile void *lib_handle;
+static void *lib_handle;
 static int do_dlclose;
 
 #if ! NO_DLOPEN
@@ -117,7 +117,7 @@ static void load_library() {
 
 static void __attribute__((destructor)) unload_lib() {
   if(do_dlclose && lib_handle)
-    dlclose((void *)lib_handle);
+    dlclose(lib_handle);
 }
 #endif
 
@@ -146,7 +146,7 @@ void _${lib_suffix}_tramp_resolve(int i) {
   // Library with implementations must have already been loaded.
   if (lib_handle) {
     // User has specified loaded library
-    h = (void *)lib_handle;
+    h = lib_handle;
   } else {
     // User hasn't provided us the loaded library so search the global namespace.
 #   ifndef IMPLIB_EXPORT_SHIMS
@@ -160,7 +160,7 @@ void _${lib_suffix}_tramp_resolve(int i) {
   }
 #else
   load_library();
-  h = (void *)lib_handle;
+  h = lib_handle;
   CHECK(h, "failed to resolve symbol '%s', library failed to load", sym_names[i]);
 #endif
 
