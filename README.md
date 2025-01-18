@@ -52,10 +52,10 @@ where `TARGET` can be any of
 Script generates two files: `libxyz.so.tramp.S` and `libxyz.so.init.c` which need to be linked to your application (instead of `-lxyz`):
 
 ```
-$ gcc myfile1.c myfile2.c ... libxyz.so.tramp.S libxyz.so.init.c ... -ldl
+$ gcc myfile1.c myfile2.c ... libxyz.so.tramp.S libxyz.so.init.c ... -ldl -pthread
 ```
 
-Note that you need to link against libdl.so. On ARM in case your app is compiled to Thumb code (which e.g. Ubuntu's `arm-linux-gnueabihf-gcc` does by default) you'll also need to add `-mthumb-interwork`.
+Note that you need to link against libdl.so and libpthread.so (unless you disable thread safety via `--no-thread-safe`). On ARM in case your app is compiled to Thumb code (which e.g. Ubuntu's `arm-linux-gnueabihf-gcc` does by default) you'll also need to add `-mthumb-interwork`.
 
 Application can then freely call functions from `libxyz.so` _without linking to it_. Library will be loaded (via `dlopen`) on first call to any of its functions. If you want to forcedly resolve all symbols (e.g. if you want to avoid delays further on) you can call `void libxyz_init_all()`.
 

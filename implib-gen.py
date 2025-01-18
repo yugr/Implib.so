@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2017-2024 Yury Gribov
+# Copyright 2017-2025 Yury Gribov
 #
 # The MIT License (MIT)
 #
@@ -382,6 +382,12 @@ Examples:
   parser.add_argument('--no-lazy-load',
                       help="Load library at program start",
                       dest='lazy_load', action='store_false')
+  parser.add_argument('--thread-safe',
+                      help="Ensure thread-safety (default)",
+                      dest='thread_safe', action='store_true', default=True)
+  parser.add_argument('--no-thread-safe',
+                      help="Do not ensure thread-safety",
+                      dest='thread_safe', action='store_false')
   parser.add_argument('--vtables',
                       help="Intercept virtual tables (EXPERIMENTAL)",
                       dest='vtables', action='store_true', default=False)
@@ -419,6 +425,7 @@ Examples:
   dlsym_callback = args.dlsym_callback
   dlopen = args.dlopen
   lazy_load = args.lazy_load
+  thread_safe = args.thread_safe
   if args.target.startswith('arm'):
     target = 'arm'  # Handle armhf-..., armel-...
   elif re.match(r'^i[0-9]86', args.target):
@@ -617,6 +624,7 @@ Examples:
         has_dlsym_callback=int(bool(dlsym_callback)),
         no_dlopen=int(not dlopen),
         lazy_load=int(lazy_load),
+        thread_safe=int(thread_safe),
         sym_names=sym_names)
       f.write(init_text)
     if args.vtables:
