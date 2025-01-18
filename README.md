@@ -142,7 +142,6 @@ The tool does not transparently support all features of POSIX shared libraries. 
 * it may change semantics because shared library constructors are delayed until when library is loaded
 
 The tool also lacks the following important features:
-* proper support for multi-threading
 * symbol versions are not handled at all
 * keep fast paths of shims together to reduce I$ pressure
 * support for macOS and BSDs (actually BSDs mostly work)
