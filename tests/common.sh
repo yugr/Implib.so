@@ -87,7 +87,7 @@ else
 fi
 
 if uname | grep -q BSD; then
-  LIBS=
+  LIBS='-pthread'
 else
-  LIBS=-ldl
+  LIBS='-ldl -pthread'
 fi
