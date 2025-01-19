@@ -17,7 +17,17 @@
 
 #include "interposed.h"
 
+#define N 128
+
+static int args[N];
+static pthread_t tids[N];
+static pthread_barrier_t bar;
+
 void *run(void *arg_) {
+  int rc = pthread_barrier_wait(&bar);
+  if (PTHREAD_BARRIER_SERIAL_THREAD != rc && 0 != rc)
+    abort();
+
   int *arg = (int *)arg_;
 
   int (*foo)(int);
@@ -61,17 +71,15 @@ void *run(void *arg_) {
   return 0;
 }
 
-#define N 128
-
-int args[N];
-pthread_t tids[N];
-
 int main() {
   int exp = 0;
   for (int i = 0; i < N; ++i) {
     args[i] = i;
-    exp += i + (i % 10);
+    exp += 1 + i + (i % 10);
   }
+
+  if (0 != pthread_barrier_init(&bar, 0, N))
+    abort();
 
   for (int i = 0; i < N; ++i) {
     if (0 != pthread_create(&tids[i], 0, run, &args[i]))
