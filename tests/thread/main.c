@@ -100,7 +100,9 @@ int main() {
   for (int i = 0; i < N; ++i)
     res += args[i];
 
-  if (res == exp)
+  if (res != exp)
+    printf("Result: %d (%d exp)\n", res, exp);
+  else
     printf("Correct result\n");
 
   return 0;
