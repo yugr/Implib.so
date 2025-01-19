@@ -98,8 +98,8 @@ static void load_library() {
   }
 
   // With (non-default) IMPLIB_EXPORT_SHIMS we may call dlopen more than once,
-  // not sure if this is a problem. We could fix this with first checking
-  // with RTLD_NOLOAD?
+  // not sure if this is a problem. We could fix this by keeping atomic
+  // count of dlopens.
 
 #if HAS_DLOPEN_CALLBACK
   extern void *$dlopen_callback(const char *lib_name);
