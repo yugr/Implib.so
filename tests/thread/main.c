@@ -17,7 +17,12 @@
 
 #include "interposed.h"
 
+#if defined __mips && __mips == 32
+// For some reason pthread_create fails with EAGAIN
+#define N 32
+#else
 #define N 128
+#endif
 
 static int args[N];
 static pthread_t tids[N];

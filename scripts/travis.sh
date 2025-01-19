@@ -45,7 +45,4 @@ if ! echo "$ARCH" | grep -q 'powerpc\|mips\|riscv'; then
   # TODO: support vector types for remaining platforms
   tests/vector-args/run.sh $ARCH
 fi
-if ! echo "$ARCH" | grep -q 'mipsel'; then
-  # TODO: investigate mipsel (can't repro locally...)
-  tests/thread/run.sh $ARCH
-fi
+tests/thread/run.sh $ARCH
