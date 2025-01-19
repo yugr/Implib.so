@@ -164,6 +164,11 @@ void _${lib_suffix}_tramp_resolve(int i) {
   CHECK(h, "failed to resolve symbol '%s', library failed to load", sym_names[i]);
 #endif
 
+  // Make sure preceeding writes by library ctors have been delivered
+  // before publishing address
+  asm("" ::: "memory");
+__sync_synchronize();
+
 #if HAS_DLSYM_CALLBACK
   extern void *$dlsym_callback(void *handle, const char *sym_name);
   _${lib_suffix}_tramp_table[i] = $dlsym_callback(h, sym_names[i]);
