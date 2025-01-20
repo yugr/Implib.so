@@ -1,14 +1,13 @@
 #!/bin/sh
 
-# Copyright 2021 Yury Gribov
+# Copyright 2021-2025 Yury Gribov
 #
 # The MIT License (MIT)
 # 
 # Use of this source code is governed by MIT license that can be
 # found in the LICENSE.txt file.
 
-# This test checks that exceptions are successfully propagated
-# through implib wrappers.
+# This test checks that IMPLIB_EXPORT_SHIMS works as expected.
 
 set -eu
 
