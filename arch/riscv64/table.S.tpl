@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Yury Gribov
+ * Copyright 2024-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -81,6 +81,7 @@ _${lib_suffix}_save_regs_and_resolve:
   // Stack is aligned at 16 bytes
 
   call _${lib_suffix}_tramp_resolve
+  mv t0, a0
 
   fld fa7, 128(sp)
   .cfi_restore fa7

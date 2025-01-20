@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Yury Gribov
+ * Copyright 2024-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -103,7 +103,7 @@ $sym:
   mtlr 0
   .cfi_restore lr
 
-  b 1b
+  b 2b
 
   .long 0
   .quad 0

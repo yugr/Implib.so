@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 Yury Gribov
+ * Copyright 2018-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -38,7 +38,7 @@ $sym:
   POP_REG(lr)
   add sp, #4
   .cfi_adjust_cfa_offset -4
-  b 1b
+  bx ip
 
   // Force constant pool for ldr above
   .ltorg

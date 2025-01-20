@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 Yury Gribov
+ * Copyright 2018-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -66,6 +66,7 @@ _${lib_suffix}_save_regs_and_resolve:
 #endif
 
   bl _${lib_suffix}_tramp_resolve(PLT)
+  mov ip, r0
 
 #ifdef __ARM_PCS_VFP
   POP_DREG_PAIR(d14, d15)

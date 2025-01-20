@@ -57,9 +57,10 @@ static int do_dlclose;
 // - different threads calling intercepted APIs in parallel
 // - same thread calling 2 intercepted APIs recursively
 //   due to dlopen calling library constructors
-//   (only if IMPLIB_EXPORT_SHIMS is used)
+//   (usually happens only under IMPLIB_EXPORT_SHIMS)
 
 static pthread_mutex_t mtx;
+static int rec_count;
 
 static void init_lock(void) {
   // We need recursive lock because dlopen will call library constructors
@@ -74,32 +75,36 @@ static void init_lock(void) {
   CHECK(0 == pthread_mutex_init(&mtx, &attr), "failed to init mutex");
 }
 
-static void lock(void) {
+static int lock(void) {
   static pthread_once_t once = PTHREAD_ONCE_INIT;
   CHECK(0 == pthread_once(&once, init_lock), "failed to init lock");
 
   CHECK(0 == pthread_mutex_lock(&mtx), "failed to lock mutex");
+
+  return 0 == __sync_fetch_and_add(&rec_count, 1);
 }
 
 static void unlock(void) {
+  __sync_fetch_and_add(&rec_count, -1);
   CHECK(0 == pthread_mutex_unlock(&mtx), "failed to unlock mutex");
 }
 #else
-static void lock(void) {}
+static int lock(void) {
+  return 1;
+}
 static void unlock(void) {}
 #endif
 
-static void load_library(void) {
-  lock();
+static int load_library(void) {
+  int publish = lock();
 
   if (lib_handle) {
     unlock();
-    return;
+    return publish;
   }
 
   // With (non-default) IMPLIB_EXPORT_SHIMS we may call dlopen more than once,
-  // not sure if this is a problem. We could fix this by keeping atomic
-  // count of dlopens.
+  // not sure if this is a problem. We could fix this by dlclosing if !publish.
 
 #if HAS_DLOPEN_CALLBACK
   extern void *$dlopen_callback(const char *lib_name);
@@ -113,6 +118,8 @@ static void load_library(void) {
   do_dlclose = 1;
 
   unlock();
+
+  return publish;
 }
 
 static void __attribute__((destructor)) unload_lib(void) {
@@ -138,8 +145,10 @@ static const char *const sym_names[] = {
 extern void *_${lib_suffix}_tramp_table[];
 
 // Can be sped up by manually parsing library symtab...
-void _${lib_suffix}_tramp_resolve(int i) {
+void *_${lib_suffix}_tramp_resolve(int i) {
   assert((unsigned)i < SYM_COUNT);
+
+  int publish = 1;
 
   void *h = 0;
 #if NO_DLOPEN
@@ -159,25 +168,32 @@ void _${lib_suffix}_tramp_resolve(int i) {
 #   endif
   }
 #else
-  load_library();
+  publish = load_library();
   h = lib_handle;
   CHECK(h, "failed to resolve symbol '%s', library failed to load", sym_names[i]);
 #endif
 
-  // Make sure preceeding writes by library ctors have been delivered
-  // before publishing address
-  asm("" ::: "memory");
-__sync_synchronize();
-
+  void *addr;
 #if HAS_DLSYM_CALLBACK
   extern void *$dlsym_callback(void *handle, const char *sym_name);
-  _${lib_suffix}_tramp_table[i] = $dlsym_callback(h, sym_names[i]);
-  CHECK(_${lib_suffix}_tramp_table[i], "failed to resolve symbol '%s' via callback $dlsym_callback", sym_names[i]);
+  addr = $dlsym_callback(h, sym_names[i]);
+  CHECK(addr, "failed to resolve symbol '%s' via callback $dlsym_callback", sym_names[i]);
 #else
   // Dlsym is thread-safe so don't need to protect it.
-  _${lib_suffix}_tramp_table[i] = dlsym(h, sym_names[i]);
-  CHECK(_${lib_suffix}_tramp_table[i], "failed to resolve symbol '%s' via dlsym: %s", sym_names[i], dlerror());
+  addr = dlsym(h, sym_names[i]);
+  CHECK(addr, "failed to resolve symbol '%s' via dlsym: %s", sym_names[i], dlerror());
 #endif
+
+  if (publish) {
+    // Make sure preceeding writes by library ctors have been delivered
+    // before publishing address
+    asm("" ::: "memory");
+    __sync_synchronize();
+
+    _${lib_suffix}_tramp_table[i] = addr;
+  }
+
+  return addr;
 }
 
 // Helper for user to resolve all symbols

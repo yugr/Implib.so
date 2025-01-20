@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 Yury Gribov
+ * Copyright 2018-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -29,6 +29,6 @@ $sym:
   call _${lib_suffix}_save_regs_and_resolve
   addq $$8, %rsp
   .cfi_adjust_cfa_offset -8
-  jmp 1b
+  jmp *%rax
   .cfi_endproc
 

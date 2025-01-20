@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Yury Gribov
+ * Copyright 2024-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -49,5 +49,5 @@ $sym:
   addi sp, sp, 16
   .cfi_def_cfa_offset 0
 
-  j 1b
+  jr t0
   .cfi_endproc

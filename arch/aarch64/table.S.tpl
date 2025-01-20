@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 Yury Gribov
+ * Copyright 2018-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -60,6 +60,7 @@ _${lib_suffix}_save_regs_and_resolve:
   // Stack is aligned at 16 bytes
 
   bl _${lib_suffix}_tramp_resolve
+  mov ip0, x0
 
   // TODO: pop pc?
 

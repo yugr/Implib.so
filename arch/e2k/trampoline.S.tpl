@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Yury Gribov
+ * Copyright 2022-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -50,8 +50,7 @@ $sym:
   disp  %ctpr1, _${lib_suffix}_save_regs_and_resolve
   call %ctpr1, wbs = 0x8
 
-  // Return to fast path
-  ibranch 1b
+  ct %ctpr1
 
   .cfi_endproc
 
