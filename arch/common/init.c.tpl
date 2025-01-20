@@ -190,7 +190,8 @@ void *_${lib_suffix}_tramp_resolve(int i) {
     asm("" ::: "memory");
     __sync_synchronize();
 
-    _${lib_suffix}_tramp_table[i] = addr;
+    // Use atomic just to please Tsan
+    (void)__sync_val_compare_and_swap(&_${lib_suffix}_tramp_table[i], 0, addr);
   }
 
   return addr;
