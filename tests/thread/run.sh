@@ -7,7 +7,7 @@
 # Use of this source code is governed by MIT license that can be
 # found in the LICENSE.txt file.
 
-# This is a test for manual loading of destination library (--no-dlopen flag).
+# This is a test for checking thread safety of Implib's shims.
 # Run it like
 #   ./run.sh ARCH
 # where ARCH stands for any supported arch (arm, x86_64, etc., see `implib-gen -h' for full list).
