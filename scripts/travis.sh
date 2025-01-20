@@ -46,3 +46,4 @@ if ! echo "$ARCH" | grep -q 'powerpc\|mips\|riscv'; then
   tests/vector-args/run.sh $ARCH
 fi
 tests/thread/run.sh $ARCH
+tests/thread-2/run.sh $ARCH
