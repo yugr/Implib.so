@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 Yury Gribov
+ * Copyright 2018-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -57,7 +57,7 @@ _${lib_suffix}_save_regs_and_resolve:
 
   PUSH_REG(rdi)  // 16
   mov 0x10(%rsp), %rdi
-  PUSH_REG(rax)
+  PUSH_REG(rbx)
   PUSH_REG(rbx)  // 16
   PUSH_REG(rcx)
   PUSH_REG(rdx)  // 16
@@ -149,7 +149,7 @@ _${lib_suffix}_save_regs_and_resolve:
   POP_REG(rdx)
   POP_REG(rcx)  // 16
   POP_REG(rbx)
-  POP_REG(rax)  // 16
+  POP_REG(rbx)  // 16
   POP_REG(rdi)
 
   ret

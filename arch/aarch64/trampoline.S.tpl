@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2023 Yury Gribov
+ * Copyright 2018-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -33,9 +33,9 @@ $sym:
 #if $number > 0xffff
   movk ip0, $number >> 16, lsl #16
 #endif
-  stp ip0, lr, [sp, #-16]!; .cfi_adjust_cfa_offset 16; .cfi_rel_offset ip0, 0; .cfi_rel_offset lr, 8;
+  stp ip0, lr, [sp, #-16]!; .cfi_adjust_cfa_offset 16; .cfi_rel_offset lr, 8
   bl _${lib_suffix}_save_regs_and_resolve
-  ldp ip0, lr, [sp], #16; .cfi_adjust_cfa_offset -16; .cfi_restore lr; .cfi_restore ip0
-  b 1b
+  ldp xzr, lr, [sp], #16; .cfi_adjust_cfa_offset -16; .cfi_restore lr
+  br ip0
   .cfi_endproc
 

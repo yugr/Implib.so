@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 Yury Gribov
+ * Copyright 2019-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -29,5 +29,5 @@ $sym:
 2:
   mov $$$number, %eax
   call _${lib_suffix}_save_regs_and_resolve
-  jmp $sym
+  jmp *%eax
   .cfi_endproc

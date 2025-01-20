@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 Yury Gribov
+ * Copyright 2022-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -71,8 +71,8 @@ $sym:
   POP_REG($$ra)
   POP_REG($$25)
 
-  j 1b
-  nop
+  j $$v0
+  move $$25, $$v0
 
   .set macro
   .set reorder

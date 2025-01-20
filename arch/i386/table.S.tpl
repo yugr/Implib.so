@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 Yury Gribov
+ * Copyright 2019-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -32,13 +32,13 @@ _${lib_suffix}_save_regs_and_resolve:
 #define POP_REG(reg) popl %reg ; .cfi_adjust_cfa_offset -4; .cfi_restore reg
 
   // Slow path which calls dlsym, taken only on first call.
-  // All registers are stored to handle arbitrary calling conventions
+  // All registers except EAX are stored to handle arbitrary calling conventions
   // (except XMM/x87 regs in hope they are not used in resolving code).
   // For Dwarf directives, read https://www.imperialviolet.org/2017/01/18/cfi.html.
 
   .cfi_def_cfa_offset 4  // Return address
 
-  PUSH_REG(eax)
+  PUSH_REG(ebx)
   PUSH_REG(ebx)
   PUSH_REG(ecx)
   PUSH_REG(edx)  // 16
@@ -67,7 +67,7 @@ _${lib_suffix}_save_regs_and_resolve:
   POP_REG(edx)
   POP_REG(ecx)
   POP_REG(ebx)
-  POP_REG(eax)
+  POP_REG(ebx)
 
   ret
 

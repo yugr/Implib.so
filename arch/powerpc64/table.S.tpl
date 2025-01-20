@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Yury Gribov
+ * Copyright 2024-2025 Yury Gribov
  *
  * The MIT License (MIT)
  *
@@ -106,6 +106,8 @@ _${lib_suffix}_save_regs_and_resolve:
 
   bl _${lib_suffix}_tramp_resolve
   nop
+
+  mr 11, 3
 
   addi 1, 1, 256
   .cfi_def_cfa_offset 0

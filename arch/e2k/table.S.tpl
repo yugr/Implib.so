@@ -34,6 +34,8 @@ _${lib_suffix}_save_regs_and_resolve:
   disp  %ctpr1, _${lib_suffix}_tramp_resolve
   call %ctpr1, wbs = 0
 
+  movtd %r0, %ctpr1
+
   return %ctpr3
   ct %ctpr3
 
