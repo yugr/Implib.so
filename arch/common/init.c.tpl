@@ -61,7 +61,7 @@ static int do_dlclose;
 
 static pthread_mutex_t mtx;
 
-static void init_lock() {
+static void init_lock(void) {
   // We need recursive lock because dlopen will call library constructors
   // which may call other intercepted APIs that will call load_library again.
   // PTHREAD_RECURSIVE_MUTEX_INITIALIZER is not portable
@@ -74,22 +74,22 @@ static void init_lock() {
   CHECK(0 == pthread_mutex_init(&mtx, &attr), "failed to init mutex");
 }
 
-static void lock() {
+static void lock(void) {
   static pthread_once_t once = PTHREAD_ONCE_INIT;
   CHECK(0 == pthread_once(&once, init_lock), "failed to init lock");
 
   CHECK(0 == pthread_mutex_lock(&mtx), "failed to lock mutex");
 }
 
-static void unlock() {
+static void unlock(void) {
   CHECK(0 == pthread_mutex_unlock(&mtx), "failed to unlock mutex");
 }
 #else
-static void lock() {}
-static void unlock() {}
+static void lock(void) {}
+static void unlock(void) {}
 #endif
 
-static void load_library() {
+static void load_library(void) {
   lock();
 
   if (lib_handle) {
@@ -115,14 +115,14 @@ static void load_library() {
   unlock();
 }
 
-static void __attribute__((destructor)) unload_lib() {
+static void __attribute__((destructor)) unload_lib(void) {
   if(do_dlclose && lib_handle)
     dlclose(lib_handle);
 }
 #endif
 
 #if ! NO_DLOPEN && ! LAZY_LOAD
-static void __attribute__((constructor)) load_lib() {
+static void __attribute__((constructor)) load_lib(void) {
   load_library();
 }
 #endif
