@@ -46,9 +46,8 @@ for i in $(seq 1 10); do
 done
 
 # Test with Tsan
-# (do not bother with non-amd64 targets)
 
-if test -z "$INTERP" && uname | grep -q Linux; then
+if test -n "$TSAN_AVAILABLE"; then
   # ASLR keeps breaking Tsan mmaps
   if test $(cat /proc/sys/kernel/randomize_va_space) != 0; then
     echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
