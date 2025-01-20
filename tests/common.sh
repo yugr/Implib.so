@@ -91,3 +91,13 @@ if uname | grep -q BSD; then
 else
   LIBS='-ldl -pthread'
 fi
+
+# Do not bother with non-native targets
+if test -z "$INTERP" \
+    && uname | grep -q Linux \
+    && uname -m | grep -q 'aarch64\|x86_64' \
+    && echo 'int main() {}' | $CC -fsanitize=thread -x c - -o /dev/null 2> /dev/null; then
+  TSAN_AVAILABLE=1
+else
+  TSAN_AVAILABLE=
+fi
