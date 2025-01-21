@@ -104,7 +104,8 @@ static int load_library(void) {
   }
 
   // With (non-default) IMPLIB_EXPORT_SHIMS we may call dlopen more than once,
-  // not sure if this is a problem. We could fix this by dlclosing if !publish.
+  // not sure if this is a problem. We could fix this by dlclosing if !publish
+  // or if we are not the first one to set lib_handle (via __sync_val_compare_and_swap).
 
 #if HAS_DLOPEN_CALLBACK
   extern void *$dlopen_callback(const char *lib_name);
