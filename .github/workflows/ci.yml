@@ -7,10 +7,12 @@ on:
     paths-ignore:
     - 'LICENSE.txt'
     - '**.md'
+    - 'specs/**'
   pull_request:
     paths-ignore:
     - 'LICENSE.txt'
     - '**.md'
+    - 'specs/**'
 jobs:
   Baseline:
     strategy:
