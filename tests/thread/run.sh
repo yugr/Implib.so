@@ -25,6 +25,7 @@ fi
 . ../common.sh
 
 CFLAGS="-g -O2 $CFLAGS"
+N=10
 
 # Build shlib to test against
 $CC $CFLAGS -shared -fPIC interposed.c -o libinterposed.so
@@ -36,7 +37,7 @@ ${PYTHON:-} ../../implib-gen.py -q --target $TARGET libinterposed.so
 
 $CC $CFLAGS -fPIE main.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
 
-for i in $(seq 1 10); do
+for i in $(seq 1 $N); do
   LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
   diff test.ref a.out.log
 done
@@ -45,7 +46,7 @@ done
 
 $CC $CFLAGS -DIMPLIB_EXPORT_SHIMS -fPIE main.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
 
-for i in $(seq 1 10); do
+for i in $(seq 1 $N); do
   LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
   diff test.ref a.out.log
 done
@@ -59,11 +60,11 @@ if test -n "$TSAN_AVAILABLE"; then
   fi
 
   $CC $CFLAGS -g -fsanitize=thread -fPIE main.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
-fi
 
-for i in $(seq 1 10); do
-  LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
-  diff test.ref a.out.log
-done
+  for i in $(seq 1 $N); do
+    LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
+    diff test.ref a.out.log
+  done
+fi
 
 echo SUCCESS
