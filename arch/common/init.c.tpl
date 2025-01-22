@@ -186,12 +186,8 @@ void *_${lib_suffix}_tramp_resolve(int i) {
 #endif
 
   if (publish) {
-    // Make sure preceeding writes by library ctors have been delivered
-    // before publishing address
-    asm("" ::: "memory");
-    __sync_synchronize();
-
-    // Use atomic just to please Tsan
+    // Use atomic to please Tsan and ensure that preceeding writes
+    // in library ctors have been delivered before publishing address
     (void)__sync_val_compare_and_swap(&_${lib_suffix}_tramp_table[i], 0, addr);
   }
 
