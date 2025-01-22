@@ -2,19 +2,20 @@
 
 (*
   TODO:
-  - allow functions to call other functions (need callstacks and concept of program as sequence of calls)
   - add library initialization
+  - allow nested function calls
 *)
 
 EXTENDS
-  Integers, FiniteSets, Sequences
+  Integers, FiniteSets, Sequences, TLC
 
 CONSTANTS
-  THREADS, FUNS, CALLS
+  THREADS, FUNS, CALLS, DEPTH
 
 ASSUME
   /\ Cardinality(FUNS) > 0
   /\ CALLS \in Nat
+  /\ DEPTH \in Nat \ {0}
 
 NoThread == CHOOSE t : t \notin THREADS
 
@@ -24,7 +25,7 @@ VARIABLES
 \* STATES
 
 PC == {
-  (* Driver program *) "START", "LOOP", "END",
+  (* Driver program *) "START", "DRIVER", "END",
   (* At start of interceptor *) "SHIM_START",
   (* In real function *) "FUNC_START", "FUNC_END",
   (* At start of resolver *) "RESOLVER_START",
@@ -44,6 +45,8 @@ Callees == FUNS \union {""}
 
 StackFrame == [pc : PC, calls : 0..CALLS, callee : Callees]
 
+CallStack == UNION { [1..len -> StackFrame] : len \in 1..DEPTH }
+
 \* HELPERS
 
 Last(s) == s[Len(s)]
@@ -51,8 +54,8 @@ Last(s) == s[Len(s)]
 \* INVARIANTS AND PROPERTIES
 
 TypeInvariant ==
-  /\ threads \in [THREADS -> Seq(StackFrame)]
-  /\ \A t \in threads: Len(t) > 0
+  /\ threads \in [THREADS -> CallStack]
+  /\ \A t \in THREADS: Len(threads[t]) > 0
   /\ shim_table \in [FUNS -> BOOLEAN]
   /\ lib_handle_set \in BOOLEAN
   /\ lib_state \in LibraryState
@@ -78,7 +81,7 @@ LibHandleCorrectness == lib_handle_set => lib_state \in {"LOADING", "LOADED"}
 
 \* All threads terminate and lock is released
 Termination == <>[]
-  /\ \A t \in THREADS: Len(threads[t]) == 1 /\ Head(threads[t]).pc = "END"
+  /\ \A t \in THREADS: Len(threads[t]) = 1 /\ Head(threads[t]).pc = "END"
   /\ rec_lock.owner = NoThread /\ rec_lock.count = 0
 
 \* Library never UN-loaded
@@ -114,19 +117,19 @@ Goto(t, s) == [threads EXCEPT ![t] = [
 \* Thread starts execution
 Start(t) ==
   /\ Last(threads[t]).pc = "START"
-  /\ threads' = Goto(t, "LOOP")
+  /\ threads' = Goto(t, "DRIVER")
   /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
 
 \* Thread calls shim
 Call(t) ==
-  /\ threads[t].pc = "LOOP"
-  /\ threads[t].calls > 0
+  /\ Last(threads[t]).pc = "DRIVER"
+  /\ Last(threads[t]).calls > 0
   /\ \E f \in FUNS:
     /\ threads' = [threads EXCEPT ![t] = [
-      @ EXCEPT ![Len(t)] = [
-        pc |-> "SHIM_START", calls |-> @.calls - 1, callee |-> f]
+        @ EXCEPT ![Len(@)] = [
+          pc |-> "SHIM_START", calls |-> @.calls - 1, callee |-> f]
+        ]
       ]
-    ]
   /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
 
 \* Shim is already resolved so call real function
@@ -219,15 +222,15 @@ ReCall(t) ==
 Return(t) ==
   /\ Last(threads[t]).pc = "FUNC_START"
   /\ threads' = [threads EXCEPT ![t] = [
-    @ EXCEPT ![Len(@) =[
-      @ !.pc = "LOOP", !.callee = ""]
+      @ EXCEPT ![Len(@)] = [
+        @ EXCEPT !.pc = "DRIVER", !.callee = ""]
+      ]
     ]
-  ]
   /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
 
 \* Thread completes
 Finish(t) ==
-  /\ Last(threads[t]).pc = "LOOP"
+  /\ Last(threads[t]).pc = "DRIVER"
   /\ Last(threads[t]).calls = 0
   /\ threads' = Goto(t, "END")
   /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
