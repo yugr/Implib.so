@@ -2,8 +2,7 @@
 
 (*
   TODO:
-  - add library initialization
-  - allow nested function calls
+  - allow nested function calls ?
 *)
 
 EXTENDS
@@ -45,35 +44,42 @@ Callees == FUNS \union {""}
 
 StackFrame == [pc : PC, calls : 0..CALLS, callee : Callees]
 
-CallStack == UNION { [1..len -> StackFrame] : len \in 1..DEPTH }
+CallStack == UNION {[1..len -> StackFrame] : len \in 1..DEPTH}
+
+MaxLock == 3
 
 \* HELPERS
 
 Last(s) == s[Len(s)]
 
+Goto(t, pc) == [threads EXCEPT ![t] = [
+  @ EXCEPT ![Len(@)] = [
+    @ EXCEPT !.pc = pc]
+  ]
+]
+
 \* INVARIANTS AND PROPERTIES
 
 TypeInvariant ==
   /\ threads \in [THREADS -> CallStack]
-  /\ \A t \in THREADS: Len(threads[t]) > 0
+  /\ \A t \in THREADS : Len(threads[t]) > 0
   /\ shim_table \in [FUNS -> BOOLEAN]
   /\ lib_handle_set \in BOOLEAN
   /\ lib_state \in LibraryState
-  \* FIXME: why can't use Nat for 'count' ?
-  /\ rec_lock \in [owner : THREADS \union {NoThread}, count : 0..10]
+  /\ rec_lock \in [owner : THREADS \union {NoThread}, count : 0..MaxLock]
 
 LockInvariant ==
   /\
     \/ (rec_lock.owner = NoThread /\ rec_lock.count = 0)
     \/ (rec_lock.owner # NoThread /\ rec_lock.count > 0)
   /\
-    \A t \in THREADS: Last(threads[t]).pc \in {"LOCKED", "DLOPENING", "DLOPENED", "HANDLE_SET", "RESOLVED"} => rec_lock.owner = t
+    \A t \in THREADS : Last(threads[t]).pc \in {"LOCKED", "DLOPENING", "DLOPENED", "WROTE_HANDLE", "RESOLVED"} => rec_lock.owner = t
 
 \* Library must be initialized before clients can call any of its functions via fast path
 LoadBeforeUse ==
-  \A f \in FUNS: shim_table[f] => lib_state = "LOADED"
+  \A f \in FUNS : shim_table[f] => lib_state = "LOADED"
 LoadBeforeUse2 ==
-  \A t \in THREADS:
+  \A t \in THREADS :
     Last(threads[t]).pc = "FUNC_START" => lib_state \in (IF Len(threads[t]) > 1 THEN {"LOADING", "LOADED"} ELSE {"LOADED"})
 
 \* Library handle set only if library is loaded (not necessarily initialized)
@@ -81,7 +87,7 @@ LibHandleCorrectness == lib_handle_set => lib_state \in {"LOADING", "LOADED"}
 
 \* All threads terminate and lock is released
 Termination == <>[]
-  /\ \A t \in THREADS: Len(threads[t]) = 1 /\ Head(threads[t]).pc = "END"
+  /\ \A t \in THREADS : Len(threads[t]) = 1 /\ Head(threads[t]).pc = "END"
   /\ rec_lock.owner = NoThread /\ rec_lock.count = 0
 
 \* Library never UN-loaded
@@ -94,7 +100,7 @@ NoLibResets ==
 \* Shims are never reset
 NoShimResets ==
   [][
-    \A f \in FUNS: shim_table[f] => shim_table'[f]
+    \A f \in FUNS : shim_table[f] => shim_table'[f]
   ]_shim_table
 
 \* SPECIFICATION
@@ -107,13 +113,6 @@ Init ==
   /\ lib_state = "UNLOADED"
   /\ rec_lock = [owner |-> NoThread, count |-> 0]
 
-\* Helper function
-Goto(t, s) == [threads EXCEPT ![t] = [
-  @ EXCEPT ![Len(@)] = [
-    @ EXCEPT !.pc = s]
-  ]
-]
-
 \* Thread starts execution
 Start(t) ==
   /\ Last(threads[t]).pc = "START"
@@ -124,7 +123,7 @@ Start(t) ==
 Call(t) ==
   /\ Last(threads[t]).pc = "DRIVER"
   /\ Last(threads[t]).calls > 0
-  /\ \E f \in FUNS:
+  /\ \E f \in FUNS :
     /\ threads' = [threads EXCEPT ![t] = [
         @ EXCEPT ![Len(@)] = [
           pc |-> "SHIM_START", calls |-> @.calls - 1, callee |-> f]
@@ -166,12 +165,14 @@ LoadLibraryFirstTime(t) ==
   /\ Last(threads[t]).pc = "LOCKED"
   /\ ~lib_handle_set
   /\ lib_state = "UNLOADED"
-  /\ threads' = Goto(t, "DLOPENING")
+  /\ threads' = [threads EXCEPT ![t] = Append(
+      [@ EXCEPT ![Len(@)] = [@ EXCEPT !.pc = "DLOPENING"]],
+      [pc |-> "DRIVER", calls |-> CALLS, callee |-> ""]
+    )]
   /\ lib_state' = "LOADING"
   /\ UNCHANGED <<shim_table, lib_handle_set, rec_lock>>
 
 \* Initialize library
-\* TODO: handle ctor
 \* TODO: LOADED may be set before DLOPENED
 InitializeLibrary(t) ==
   /\ Last(threads[t]).pc = "DLOPENING"
@@ -186,8 +187,8 @@ LoadLibraryRecursive(t) ==
   /\ Last(threads[t]).pc = "LOCKED"
   /\ ~lib_handle_set
   /\ lib_state \in {"LOADING", "LOADED"}
-  /\ threads' = Goto(t, "DLOPENED")  \* TODO: DLOPENING ?
-  /\ UNCHANGED <<shim_table, lib_handle_set, rec_lock>>
+  /\ threads' = Goto(t, "DLOPENED")
+  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
 
 \* Set lib_handle
 WriteHandle(t) ==
@@ -215,8 +216,7 @@ Unlock(t) ==
 ReCall(t) ==
   /\ Last(threads[t]).pc = "UNLOCKED"
   /\ threads' = Goto(t, "FUNC_START")
-  /\ shim_table' = [shim_table EXCEPT ![Last(threads[t]).callee] = TRUE]
-  /\ UNCHANGED <<lib_handle_set, lib_state, rec_lock>>
+  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
 
 \* Thread returns from function
 Return(t) ==
@@ -228,20 +228,30 @@ Return(t) ==
     ]
   /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
 
-\* Thread completes
-Finish(t) ==
+\* Thread returns
+PopFrame(t) ==
   /\ Last(threads[t]).pc = "DRIVER"
   /\ Last(threads[t]).calls = 0
+  /\ Len(threads[t]) > 1
+  /\ threads' = [threads EXCEPT ![t] = SubSeq(@, 1, Len(@) - 1)]
+  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
+
+\* Thread completes
+\* TODO: consider joining this with PopFrame and get rid of END state
+Terminate(t) ==
+  /\ Last(threads[t]).pc = "DRIVER"
+  /\ Last(threads[t]).calls = 0
+  /\ Len(threads[t]) = 1
   /\ threads' = Goto(t, "END")
   /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
 
 \* Program completes
 Stop ==
-  /\ \A t \in THREADS: Len(threads[t]) = 1 /\ Head(threads[t]).pc = "END"
+  /\ \A t \in THREADS : Len(threads[t]) = 1 /\ Head(threads[t]).pc = "END"
   /\ UNCHANGED <<threads, shim_table, lib_handle_set, lib_state, rec_lock>>
 
 Next ==
-  \/ \E t \in THREADS:
+  \/ \E t \in THREADS :
     \/ Start(t)
     \/ Call(t)
       \/ FastPath(t)
@@ -250,7 +260,8 @@ Next ==
         \/ LoadLibrarySimple(t) \/ LoadLibraryFirstTime(t) \/ InitializeLibrary(t) \/ LoadLibraryRecursive(t) \/ WriteHandle(t)
         \/ Resolve(t) \/ Unlock(t) \/ ReCall(t)
     \/ Return(t)
-    \/ Finish(t)
+    \/ PopFrame(t)
+    \/ Terminate(t)
   \/ Stop
 
 Spec ==

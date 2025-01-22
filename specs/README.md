@@ -7,6 +7,7 @@ To run
 - download tla2tools.jar from https://github.com/tlaplus/tlaplus
 - execute
 ```
-java -jar tla2tools.jar -workers $(nproc) Init.tla
+$ rm -rf states
+$ java -jar tla2tools.jar -workers $(nproc) Init.tla
 ```
-(add `-coverage 0` for coverage stats).
+(add `-coverage 1` for coverage stats).
