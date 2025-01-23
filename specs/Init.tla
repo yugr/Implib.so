@@ -9,7 +9,7 @@ EXTENDS
   Integers, FiniteSets, Sequences, TLC
 
 CONSTANTS
-  THREADS, FUNS, CALLS, DEPTH
+  THREADS, FUNS, CALLS, DEPTH, MAX_LOCK
 
 ASSUME
   /\ Cardinality(FUNS) > 0
@@ -46,7 +46,6 @@ StackFrame == [pc : PC, calls : 0..CALLS, callee : Callees]
 
 CallStack == UNION {[1..len -> StackFrame] : len \in 0..DEPTH}
 
-MaxLock == 3
 
 \* HELPERS
 
@@ -65,7 +64,7 @@ TypeInvariant ==
   /\ shim_table \in [FUNS -> BOOLEAN]
   /\ lib_handle_set \in BOOLEAN
   /\ lib_state \in LibraryState
-  /\ rec_lock \in [owner : THREADS \union {NoThread}, count : 0..MaxLock]
+  /\ rec_lock \in [owner : THREADS \union {NoThread}, count : 0..MAX_LOCK]
 
 LockInvariant ==
   /\
