@@ -9,12 +9,12 @@ EXTENDS
   Integers, FiniteSets, Sequences, TLC
 
 CONSTANTS
-  THREADS, FUNS, CALLS, DEPTH, MAX_LOCK
+  THREADS, FUNS, CALLS, MAX_DEPTH, MAX_LOCK
 
 ASSUME
   /\ Cardinality(FUNS) > 0
   /\ CALLS \in Nat
-  /\ DEPTH \in Nat \ {0}
+  /\ MAX_DEPTH \in Nat \ {0}
 
 NoThread == CHOOSE t : t \notin THREADS
 
@@ -44,7 +44,7 @@ Callees == FUNS \union {""}
 
 StackFrame == [pc : PC, calls : 0..CALLS, callee : Callees]
 
-CallStack == UNION {[1..len -> StackFrame] : len \in 0..DEPTH}
+CallStack == UNION {[1..len -> StackFrame] : len \in 0..MAX_DEPTH}
 
 
 \* HELPERS
@@ -86,10 +86,11 @@ LoadBeforeUse2 ==
 \* Library handle set only if library is loaded (not necessarily initialized)
 LibHandleCorrectness == lib_handle_set => lib_state \in {"LOADING", "LOADED"}
 
-\* All threads terminate and lock is released
+\* All threads terminate, lock is released and library is loaded
 Termination == <>[]
   /\ \A t \in THREADS : Len(threads[t]) = 0
   /\ rec_lock.owner = NoThread /\ rec_lock.count = 0
+  /\ lib_state = "LOADED" /\ lib_handle_set
 
 \* Library never UN-loaded
 NoLibResets ==
@@ -201,7 +202,7 @@ WriteHandle(t) ==
 Resolve(t) ==
   /\ Last(threads[t]).pc = "WROTE_HANDLE"
   /\ threads' = Goto(t, "RESOLVED")
-  \* We publish only in first call (model is imprecise but ok for now)
+  \* We publish only in first call (this is imprecise but ok for now)
   /\ shim_table' = IF rec_lock.count > 1 THEN shim_table ELSE [shim_table EXCEPT ![Last(threads[t]).callee] = TRUE]
   /\ UNCHANGED <<lib_handle_set, lib_state, rec_lock>>
 
