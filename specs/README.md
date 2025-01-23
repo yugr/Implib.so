@@ -1,5 +1,10 @@
-This is a simple specification for Implib.so with `-DIMPLIB_EXPORT_SHIMS`.
-It's an abstracton of arch/common/init.c.tpl.
+This directory contains formal models of Implib.so internal logic
+which should help with verification.
+
+# Initialization
+
+This is a model of Implib.so initialization logic with `-DIMPLIB_EXPORT_SHIMS`
+and is based on arch/common/init.c.tpl.
 
 I have no idea why I didn't use PlusCal to write this...
 
