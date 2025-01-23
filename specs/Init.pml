@@ -1,6 +1,5 @@
 // TODO:
 // - allow nested function calls ?
-// - can we get rid of XXX_LOG2 ?
 
 // SPIN issues:
 // - not printing local variables in traces
@@ -11,42 +10,22 @@
 
 // Number of concurrent threads
 #define THREADS 2
-#define THREADS_LOG2 2
-#if THREADS >= (1 << THREADS_LOG2)
-# error Increase THREADS_LOG2
-#endif
 
 #define NO_THREAD 0
 
 // Number of library functions
 #define FUNS 2
-#define FUNS_LOG2 2
-#if FUNS >= (1 << FUNS_LOG2)
-# error Increase FUNS_LOG2
-#endif
 
 #define NO_FUN 0
 
 // Number of calls in each thread and in library ctor
 #define CALLS 2
-#define CALLS_LOG2 2
-#if CALLS >= (1 << CALLS_LOG2)
-# error Increase CALLS_LOG2
-#endif
 
 // Max callstack size
 #define MAX_DEPTH 2
-#define MAX_DEPTH_LOG2 2
-#if MAX_DEPTH >= (1 << MAX_DEPTH_LOG2)
-# error Increase MAX_DEPTH_LOG2
-#endif
 
 // Max number of recursive mutex locks
 #define MAX_LOCK 4
-#define MAX_LOCK_LOG2 2
-#if MAX_LOCK > (1 << MAX_LOCK_LOG2)
-# error Increase MAX_LOCK_LOG2
-#endif
 
 // Sanity checks
 #if THREADS <= 0 || FUNS <= 0 || CALLS <= 0 || MAX_DEPTH <= 0 || MAX_LOCK <= 0
@@ -62,18 +41,18 @@ mtype {
 }
 
 typedef Lock {
-  unsigned owner : THREADS_LOG2
-  unsigned count : MAX_DEPTH_LOG2
+  int owner;
+  int count;
 }
 
 typedef StackFrame {
-  unsigned calls : CALLS_LOG2
-  unsigned callee : FUNS_LOG2
+  int calls;
+  int callee;
 }
 
 typedef CallStack {
   StackFrame frames[MAX_DEPTH]
-  unsigned n : MAX_DEPTH_LOG2
+  int n;
 }
 
 // Global state
@@ -261,8 +240,8 @@ init {
 never {
   do
     // TypeInvariant(TLA)
-    :: rec_lock.owner > THREADS -> break
-    :: rec_lock.count > MAX_LOCK -> break
+    :: !(0 <= rec_lock.owner && rec_lock.owner <= THREADS) -> break
+    :: !(0 <= rec_lock.count && rec_lock.count <= MAX_LOCK) -> break
 
     // LockInvariant(TLA)
     :: rec_lock.owner == NO_THREAD ^ rec_lock.count == 0 -> break
