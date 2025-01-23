@@ -1,1 +1,6 @@
+# TLC temp files
 states/
+
+# Spin temp files
+pan
+*.pml.trail
