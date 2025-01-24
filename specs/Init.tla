@@ -19,7 +19,16 @@ ASSUME
 NoThread == CHOOSE t : t \notin THREADS
 
 VARIABLES
-  threads, shim_table, lib_handle_set, lib_state, rec_lock
+  \* Thread execution states
+  threads,
+  \* Whether function address has been initialized
+  shim_table,
+  \* Whether library handle is initialized
+  lib_handle,
+  \* Current state the library is in
+  lib_state,
+  \* Initialization lock
+  rec_lock
 
 \* STATES
 
@@ -62,7 +71,7 @@ Goto(t, pc) == [threads EXCEPT ![t] = [
 TypeInvariant ==
   /\ threads \in [THREADS -> CallStack]
   /\ shim_table \in [FUNS -> BOOLEAN]
-  /\ lib_handle_set \in BOOLEAN
+  /\ lib_handle \in BOOLEAN
   /\ lib_state \in LibraryState
   /\ rec_lock \in [owner : THREADS \union {NoThread}, count : 0..MAX_LOCK]
 
@@ -84,13 +93,13 @@ LoadBeforeUse2 ==
     \/ Last(threads[t]).pc = "FUNC_START" => lib_state \in (IF Len(threads[t]) > 1 THEN {"LOADING", "LOADED"} ELSE {"LOADED"})
 
 \* Library handle set only if library is loaded (not necessarily initialized)
-LibHandleCorrectness == lib_handle_set => lib_state \in {"LOADING", "LOADED"}
+LibHandleCorrectness == lib_handle => lib_state \in {"LOADING", "LOADED"}
 
 \* All threads terminate, lock is released and library is loaded
 Termination == <>[]
   /\ \A t \in THREADS : Len(threads[t]) = 0
   /\ rec_lock.owner = NoThread /\ rec_lock.count = 0
-  /\ lib_state = "LOADED" /\ lib_handle_set
+  /\ lib_state = "LOADED" /\ lib_handle
 
 \* Library never UN-loaded
 NoLibResets ==
@@ -110,7 +119,7 @@ NoShimResets ==
 Init ==
   /\ threads = [t \in THREADS |-> <<[pc |-> "START", calls |-> CALLS, callee |-> ""]>>]
   /\ shim_table = [f \in FUNS |-> FALSE]
-  /\ lib_handle_set = FALSE
+  /\ lib_handle = FALSE
   /\ lib_state = "UNLOADED"
   /\ rec_lock = [owner |-> NoThread, count |-> 0]
 
@@ -118,7 +127,7 @@ Init ==
 Start(t) ==
   /\ Last(threads[t]).pc = "START"
   /\ threads' = Goto(t, "DRIVER")
-  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
+  /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Thread calls shim
 Call(t) ==
@@ -130,21 +139,21 @@ Call(t) ==
           pc |-> "SHIM_START", calls |-> @.calls - 1, callee |-> f]
         ]
       ]
-  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
+  /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Shim is already resolved so call real function
 FastPath(t) ==
   /\ Last(threads[t]).pc = "SHIM_START"
   /\ shim_table[Last(threads[t]).callee]
   /\ threads' = Goto(t, "FUNC_START")
-  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
+  /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Shim is unresolved so goto resolver
 SlowPath(t) ==
   /\ Last(threads[t]).pc = "SHIM_START"
   /\ ~shim_table[Last(threads[t]).callee]
   /\ threads' = Goto(t, "RESOLVER_START")
-  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
+  /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Enter critical section
 Lock(t) ==
@@ -152,26 +161,26 @@ Lock(t) ==
   /\ (rec_lock.owner = t \/ rec_lock.count = 0)
   /\ threads' = Goto(t, "LOCKED")
   /\ rec_lock' = [owner |-> t, count |-> rec_lock.count + 1]
-  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state>>
+  /\ UNCHANGED <<shim_table, lib_handle, lib_state>>
 
 \* Load library after handle is already set (simplest case)
 LoadLibrarySimple(t) ==
   /\ Last(threads[t]).pc = "LOCKED"
-  /\ lib_handle_set
+  /\ lib_handle
   /\ threads' = Goto(t, "RESOLVED")
-  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
+  /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Load library for the first time, running global ctors
 LoadLibraryFirstTime(t) ==
   /\ Last(threads[t]).pc = "LOCKED"
-  /\ ~lib_handle_set
+  /\ ~lib_handle
   /\ lib_state = "UNLOADED"
   /\ threads' = [threads EXCEPT ![t] = Append(
       [@ EXCEPT ![Len(@)] = [@ EXCEPT !.pc = "DLOPENING"]],
       [pc |-> "DRIVER", calls |-> CALLS, callee |-> ""]
     )]
   /\ lib_state' = "LOADING"
-  /\ UNCHANGED <<shim_table, lib_handle_set, rec_lock>>
+  /\ UNCHANGED <<shim_table, lib_handle, rec_lock>>
 
 \* Initialize library
 \* TODO: LOADED may be set before DLOPENED
@@ -180,22 +189,22 @@ InitializeLibrary(t) ==
   /\ lib_state = "LOADING"
   /\ threads' = Goto(t, "DLOPENED")
   /\ lib_state' = "LOADED"
-  /\ UNCHANGED <<shim_table, lib_handle_set, rec_lock>>
+  /\ UNCHANGED <<shim_table, lib_handle, rec_lock>>
 
 \* Load library after loaded but before handle is set
 \* Note that this corresponds to two cases: 1) library still initializing, 2) library initialized
 LoadLibraryRecursive(t) ==
   /\ Last(threads[t]).pc = "LOCKED"
-  /\ ~lib_handle_set
+  /\ ~lib_handle
   /\ lib_state \in {"LOADING", "LOADED"}
   /\ threads' = Goto(t, "DLOPENED")
-  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
+  /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Set lib_handle
 WriteHandle(t) ==
   /\ Last(threads[t]).pc = "DLOPENED"
   /\ threads' = Goto(t, "WROTE_HANDLE")
-  /\ lib_handle_set' = TRUE
+  /\ lib_handle' = TRUE
   /\ UNCHANGED <<shim_table, lib_state, rec_lock>>
 
 \* Resolve symbol
@@ -204,20 +213,20 @@ Resolve(t) ==
   /\ threads' = Goto(t, "RESOLVED")
   \* We publish only in first call (this is imprecise but ok for now)
   /\ shim_table' = IF rec_lock.count > 1 THEN shim_table ELSE [shim_table EXCEPT ![Last(threads[t]).callee] = TRUE]
-  /\ UNCHANGED <<lib_handle_set, lib_state, rec_lock>>
+  /\ UNCHANGED <<lib_handle, lib_state, rec_lock>>
 
 \* Exit critical section
 Unlock(t) ==
   /\ Last(threads[t]).pc = "RESOLVED"
   /\ threads' = Goto(t, "UNLOCKED")
   /\ rec_lock' = IF rec_lock.count = 1 THEN [owner |-> NoThread, count |-> 0] ELSE [owner |-> rec_lock.owner, count |-> rec_lock.count - 1]
-  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state>>
+  /\ UNCHANGED <<shim_table, lib_handle, lib_state>>
 
 \* Call after resolution
 ReCall(t) ==
   /\ Last(threads[t]).pc = "UNLOCKED"
   /\ threads' = Goto(t, "FUNC_START")
-  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
+  /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Thread returns from function
 Return(t) ==
@@ -227,19 +236,19 @@ Return(t) ==
         @ EXCEPT !.pc = "DRIVER", !.callee = ""]
       ]
     ]
-  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
+  /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Thread returns
 PopFrame(t) ==
   /\ Last(threads[t]).pc = "DRIVER"
   /\ Last(threads[t]).calls = 0
   /\ threads' = [threads EXCEPT ![t] = SubSeq(@, 1, Len(@) - 1)]
-  /\ UNCHANGED <<shim_table, lib_handle_set, lib_state, rec_lock>>
+  /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Program completes
 Stop ==
   /\ \A t \in THREADS : Len(threads[t]) = 0
-  /\ UNCHANGED <<threads, shim_table, lib_handle_set, lib_state, rec_lock>>
+  /\ UNCHANGED <<threads, shim_table, lib_handle, lib_state, rec_lock>>
 
 Next ==
   \/ \E t \in THREADS :
@@ -257,7 +266,7 @@ Next ==
 
 Spec ==
   /\ Init
-  /\ [][Next]_<<threads, shim_table, lib_handle_set, lib_state, rec_lock>>
+  /\ [][Next]_<<threads, shim_table, lib_handle, lib_state, rec_lock>>
   /\ WF_<<threads>>(Next)
 
 ======================================================================
