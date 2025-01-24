@@ -61,7 +61,7 @@ typedef CallStack {
 // Global state
 
 bit shim_table[FUNS]
-bit lib_handle_set
+bit lib_handle
 mtype lib_state
 Lock rec_lock
 
@@ -133,16 +133,16 @@ recurse:
 
               if
                 // Handle is already set (simplest case) ?
-                :: lib_handle_set -> skip
+                :: lib_handle -> skip
 
                 // Load library after it's already loaded but before handle is set
                 // There are 2 cases: 1) library still initializing, 2) library initialized
-                :: !lib_handle_set && (lib_state == LOADING || lib_state == LOADED) -> {
-                  lib_handle_set = true
+                :: !lib_handle && (lib_state == LOADING || lib_state == LOADED) -> {
+                  lib_handle = true
                 }
 
                 // Load library for the first time, running global ctors
-                :: !lib_handle_set && lib_state == UNLOADED -> {
+                :: !lib_handle && lib_state == UNLOADED -> {
                   // Initialize library
 
 #ifdef INIT
@@ -154,10 +154,10 @@ recurse:
 
                   goto recurse
 return_from_recurse:
-                  lib_handle_set = true
+                  lib_handle = true
 #else
                   lib_state = LOADED
-                  lib_handle_set = true
+                  lib_handle = true
 #endif
                 }
               fi
@@ -210,7 +210,7 @@ init {
     :: else -> break
   od
 
-  lib_handle_set = false
+  lib_handle = false
   lib_state = UNLOADED
   rec_lock.owner = NO_THREAD
   rec_lock.count = 0
@@ -235,7 +235,7 @@ init {
   terminated == THREADS
 
   assert(rec_lock.owner == NO_THREAD && rec_lock.count == 0)
-  assert(lib_state == LOADED && lib_handle_set)
+  assert(lib_state == LOADED && lib_handle)
 }
 
 // Invariants
@@ -251,7 +251,7 @@ never {
     :: rec_lock.owner == NO_THREAD && lib_state == LOADING -> break
 
     // LibHandleCorrectness(TLA): Library handle set only if library is loaded (not necessarily initialized)
-    :: lib_handle_set && lib_state != LOADING && lib_state != LOADED -> break
+    :: lib_handle && lib_state != LOADING && lib_state != LOADED -> break
 
     :: else
   od
