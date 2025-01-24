@@ -42,18 +42,18 @@ mtype:LibraryState = {
 }
 
 typedef Lock {
-  int owner;
-  int count;
+  int owner
+  int count
 }
 
 typedef StackFrame {
-  int calls;
-  int callee;
+  int calls
+  int callee
 }
 
 typedef CallStack {
   StackFrame frames[MAX_DEPTH]
-  int n;
+  int n
 }
 
 // Global state
