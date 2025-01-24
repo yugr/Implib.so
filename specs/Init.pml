@@ -94,6 +94,7 @@ recurse:
 
             // We have finished library init, return to caller
             :: else -> {
+              // For more complex behaviors we'll need to store return adddress
               lib_state = LOADED
               goto return_from_recurse
             }
