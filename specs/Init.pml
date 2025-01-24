@@ -7,7 +7,6 @@
 // - dedicated run for each LTL property
 // - no lexical scoping
 // - no exists/forall quantifiers in LTL properties
-// - no enum types (just single mtype)
 
 #define INIT
 
@@ -38,8 +37,7 @@
 // Types
 
 // LibraryState
-// TODO: is this an abuse of mtype and I should switch to macro instead?
-mtype {
+mtype:LibraryState = {
   UNLOADED, LOADING, LOADED
 }
 
@@ -62,7 +60,7 @@ typedef CallStack {
 
 bit shim_table[FUNS]
 bit lib_handle
-mtype lib_state
+mtype:LibraryState lib_state
 Lock rec_lock
 
 int terminated
