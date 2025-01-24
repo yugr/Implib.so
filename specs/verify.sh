@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -eu
-set -x
+#set -x
 
 rm -rf states
 if ! java -jar ~/Downloads/tla2tools.jar -workers `nproc` -coverage 0 Init.tla \
@@ -18,3 +18,5 @@ for inv in never_0 Prop; do
     exit 1
   fi
 done
+
+echo SUCCESS
