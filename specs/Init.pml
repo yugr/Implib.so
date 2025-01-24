@@ -5,6 +5,9 @@
 // - not printing local variables in traces
 // - no functions
 // - dedicated run for each LTL property
+// - no lexical scoping
+// - no exists/forall quantifiers in LTL properties
+// - no enum types (just single mtype)
 
 #define INIT
 
