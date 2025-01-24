@@ -23,9 +23,11 @@ To verify Promela model
 - execute
 ```
 $ spin -run -ltl never_0 Init.pml
-$ spin -run -ltl NoLibResets Init.pml
+$ spin -run -ltl Prop Init.pml
 ```
 Errors can be examined via
 ```
 $ spin -p -t Init.pml
 ```
+
+TODO: try other langs (Alloy, NuSMV/NuXmv, B)
