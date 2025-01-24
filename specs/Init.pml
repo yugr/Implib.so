@@ -202,14 +202,9 @@ init {
 
   // Init global state
 
-  i = 1
-  do
-    :: i <= FUNS -> {
-        shim_table[i - 1] = false
-        i++
-      }
-    :: else -> break
-  od
+  for (i : 1 .. FUNS) {
+    shim_table[i - 1] = false
+  }
 
   lib_handle = false
   lib_state = UNLOADED
@@ -221,14 +216,9 @@ init {
   // Start threads
 
   atomic {
-    i = 1
-    do
-      :: i <= THREADS -> {
-          run Thread(i)
-          i++
-        }
-      :: else -> break
-    od
+    for (i : 1 .. THREADS) {
+      run Thread(i)
+    }
   }
 
   // Termination(TLA): All threads terminate, lock is released and library is loaded
