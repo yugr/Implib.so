@@ -257,12 +257,14 @@ never {
   od
 }
 
-// NoLibResets(TLA): Library never UN-loaded
-ltl NoLibResets {
+ltl Prop {
   [](
+    // NoLibResets(TLA): Library never UN-loaded
+    // FIXME: use X when Debian/Ubuntu support it
+    // (https://github.com/thomaslee/spin-debian/commit/8b2c6e3881d9b1b70a53b46ca5f637b6d57eb385)
     (lib_state == LOADING -> [](lib_state == LOADING || lib_state == LOADED))
     && (lib_state == LOADED -> [](lib_state == LOADED))
   )
 }
 
-// TODO: forall predicates (LoadBeforeUse2, NoShimResets)
+// TODO: quantified predicates (LoadBeforeUse2, NoShimResets)
