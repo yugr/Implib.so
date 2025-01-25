@@ -60,7 +60,7 @@ CallStack == UNION {[1..len -> StackFrame] : len \in 0..MAX_DEPTH}
 
 Last(s) == s[Len(s)]
 
-Goto(t, pc) == [threads EXCEPT ![t] = [
+Goto(t, pc) == threads' = [threads EXCEPT ![t] = [
   @ EXCEPT ![Len(@)] = [
     @ EXCEPT !.pc = pc]
   ]
@@ -126,7 +126,7 @@ Init ==
 \* Thread starts execution
 Start(t) ==
   /\ Last(threads[t]).pc = "START"
-  /\ threads' = Goto(t, "DRIVER")
+  /\ Goto(t, "DRIVER")
   /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Thread calls shim
@@ -145,21 +145,21 @@ Call(t) ==
 FastPath(t) ==
   /\ Last(threads[t]).pc = "SHIM_START"
   /\ shim_table[Last(threads[t]).callee]
-  /\ threads' = Goto(t, "FUNC_START")
+  /\ Goto(t, "FUNC_START")
   /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Shim is unresolved so goto resolver
 SlowPath(t) ==
   /\ Last(threads[t]).pc = "SHIM_START"
   /\ ~shim_table[Last(threads[t]).callee]
-  /\ threads' = Goto(t, "RESOLVER_START")
+  /\ Goto(t, "RESOLVER_START")
   /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Enter critical section
 Lock(t) ==
   /\ Last(threads[t]).pc = "RESOLVER_START"
   /\ (rec_lock.owner = t \/ rec_lock.count = 0)
-  /\ threads' = Goto(t, "LOCKED")
+  /\ Goto(t, "LOCKED")
   /\ rec_lock' = [owner |-> t, count |-> rec_lock.count + 1]
   /\ UNCHANGED <<shim_table, lib_handle, lib_state>>
 
@@ -167,7 +167,7 @@ Lock(t) ==
 LoadLibrarySimple(t) ==
   /\ Last(threads[t]).pc = "LOCKED"
   /\ lib_handle
-  /\ threads' = Goto(t, "RESOLVED")
+  /\ Goto(t, "RESOLVED")
   /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Load library for the first time, running global ctors
@@ -187,7 +187,7 @@ LoadLibraryFirstTime(t) ==
 InitializeLibrary(t) ==
   /\ Last(threads[t]).pc = "DLOPENING"
   /\ lib_state = "LOADING"
-  /\ threads' = Goto(t, "DLOPENED")
+  /\ Goto(t, "DLOPENED")
   /\ lib_state' = "LOADED"
   /\ UNCHANGED <<shim_table, lib_handle, rec_lock>>
 
@@ -197,20 +197,20 @@ LoadLibraryRecursive(t) ==
   /\ Last(threads[t]).pc = "LOCKED"
   /\ ~lib_handle
   /\ lib_state \in {"LOADING", "LOADED"}
-  /\ threads' = Goto(t, "DLOPENED")
+  /\ Goto(t, "DLOPENED")
   /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Set lib_handle
 WriteHandle(t) ==
   /\ Last(threads[t]).pc = "DLOPENED"
-  /\ threads' = Goto(t, "WROTE_HANDLE")
+  /\ Goto(t, "WROTE_HANDLE")
   /\ lib_handle' = TRUE
   /\ UNCHANGED <<shim_table, lib_state, rec_lock>>
 
 \* Resolve symbol
 Resolve(t) ==
   /\ Last(threads[t]).pc = "WROTE_HANDLE"
-  /\ threads' = Goto(t, "RESOLVED")
+  /\ Goto(t, "RESOLVED")
   \* We publish only in first call (this is imprecise but ok for now)
   /\ shim_table' = IF rec_lock.count > 1 THEN shim_table ELSE [shim_table EXCEPT ![Last(threads[t]).callee] = TRUE]
   /\ UNCHANGED <<lib_handle, lib_state, rec_lock>>
@@ -218,14 +218,14 @@ Resolve(t) ==
 \* Exit critical section
 Unlock(t) ==
   /\ Last(threads[t]).pc = "RESOLVED"
-  /\ threads' = Goto(t, "UNLOCKED")
+  /\ Goto(t, "UNLOCKED")
   /\ rec_lock' = IF rec_lock.count = 1 THEN [owner |-> NoThread, count |-> 0] ELSE [owner |-> rec_lock.owner, count |-> rec_lock.count - 1]
   /\ UNCHANGED <<shim_table, lib_handle, lib_state>>
 
 \* Call after resolution
 ReCall(t) ==
   /\ Last(threads[t]).pc = "UNLOCKED"
-  /\ threads' = Goto(t, "FUNC_START")
+  /\ Goto(t, "FUNC_START")
   /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Thread returns from function

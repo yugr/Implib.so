@@ -14,7 +14,7 @@ To verify TLA+ model
 - execute
 ```
 $ rm -rf states
-$ java -jar tla2tools.jar -workers $(nproc) Init.tla
+$ java -jar ./tla2tools.jar -workers $(nproc) Init.tla
 ```
 (add `-coverage 1` for coverage stats).
 

@@ -4,7 +4,7 @@ set -eu
 #set -x
 
 rm -rf states
-if ! java -jar ~/Downloads/tla2tools.jar -workers `nproc` -coverage 0 Init.tla \
+if ! java -jar ./tla2tools.jar -workers `nproc` -coverage 0 Init.tla \
     | grep -q 'Model checking completed. No error has been found'; then
   echo >&2 'TLA verification failed'
   exit 1
