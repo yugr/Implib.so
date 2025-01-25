@@ -7,7 +7,7 @@
 # Use of this source code is governed by MIT license that can be
 # found in the LICENSE.txt file.
 
-# This is a stress test of thread safety via unthread library
+# This is a Deterministic Simulation test via unthread library
 # (https://github.com/mpdn/unthread)
 
 set -eu

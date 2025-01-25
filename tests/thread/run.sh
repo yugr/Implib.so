@@ -8,11 +8,9 @@
 # found in the LICENSE.txt file.
 
 # This is a test for checking thread safety of Implib's shims.
-# Run it like
-#   ./run.sh ARCH
-# where ARCH stands for any supported arch (arm, x86_64, etc., see `implib-gen -h' for full list).
-# Note that you may need to install qemu-user for respective platform
-# (i386 also needs gcc-multilib).
+#
+# There is also a separate driver for Deterministic Simulation Testing
+# in run_unthread.sh.
 
 set -eu
 
