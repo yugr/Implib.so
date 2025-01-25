@@ -7,6 +7,7 @@
 // - dedicated run for each LTL property
 // - no lexical scoping
 // - no exists/forall quantifiers in LTL properties
+// - no modules
 
 #define INIT
 
