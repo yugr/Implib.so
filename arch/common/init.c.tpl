@@ -59,6 +59,16 @@ static int do_dlclose;
 //   due to dlopen calling library constructors
 //   (usually happens only under IMPLIB_EXPORT_SHIMS)
 
+// Current recursive mutex approach will deadlock
+// if library constructor starts and joins a new thread
+// which (directly or indirectly) calls another library function.
+// Such situations should be very rare (although chances
+// are higher when -DIMLIB_EXPORT_SHIMS are enabled).
+//
+// Similar issue is present in Glibc so hopefully it's
+// not a big deal: // http://sourceware.org/bugzilla/show_bug.cgi?id=15686
+// (also google for "dlopen deadlock).
+
 static pthread_mutex_t mtx;
 static int rec_count;
 
