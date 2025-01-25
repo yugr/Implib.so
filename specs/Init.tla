@@ -60,11 +60,7 @@ CallStack == UNION {[1..len -> StackFrame] : len \in 0..MAX_DEPTH}
 
 Last(s) == s[Len(s)]
 
-Goto(t, pc) == threads' = [threads EXCEPT ![t] = [
-  @ EXCEPT ![Len(@)] = [
-    @ EXCEPT !.pc = pc]
-  ]
-]
+Goto(t, pc) == threads' = [threads EXCEPT ![t][Len(threads[t])].pc = pc]
 
 \* INVARIANTS AND PROPERTIES
 
@@ -134,11 +130,7 @@ Call(t) ==
   /\ Last(threads[t]).pc = "DRIVER"
   /\ Last(threads[t]).calls > 0
   /\ \E f \in FUNS :
-    /\ threads' = [threads EXCEPT ![t] = [
-        @ EXCEPT ![Len(@)] = [
-          pc |-> "SHIM_START", calls |-> @.calls - 1, callee |-> f]
-        ]
-      ]
+    /\ threads' = [threads EXCEPT ![t][Len(threads[t])] = [pc |-> "SHIM_START", calls |-> @.calls - 1, callee |-> f]]
   /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
 \* Shim is already resolved so call real function
@@ -176,7 +168,7 @@ LoadLibraryFirstTime(t) ==
   /\ ~lib_handle
   /\ lib_state = "UNLOADED"
   /\ threads' = [threads EXCEPT ![t] = Append(
-      [@ EXCEPT ![Len(@)] = [@ EXCEPT !.pc = "DLOPENING"]],
+      [@ EXCEPT ![Len(@)].pc = "DLOPENING"],
       [pc |-> "DRIVER", calls |-> CALLS, callee |-> ""]
     )]
   /\ lib_state' = "LOADING"
@@ -231,10 +223,8 @@ ReCall(t) ==
 \* Thread returns from function
 Return(t) ==
   /\ Last(threads[t]).pc = "FUNC_START"
-  /\ threads' = [threads EXCEPT ![t] = [
-      @ EXCEPT ![Len(@)] = [
-        @ EXCEPT !.pc = "DRIVER", !.callee = ""]
-      ]
+  /\ threads' = [threads EXCEPT ![t][Len(threads[t])] = [
+      @ EXCEPT !.pc = "DRIVER", !.callee = ""]
     ]
   /\ UNCHANGED <<shim_table, lib_handle, lib_state, rec_lock>>
 
