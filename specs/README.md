@@ -30,4 +30,6 @@ Errors can be examined via
 $ spin -p -t Init.pml
 ```
 
-TODO: try other langs (Alloy, NuSMV/NuXmv, B)
+TODO:
+- try other langs (Alloy, SMV, B)
+- integrate TLA model with Apalache
