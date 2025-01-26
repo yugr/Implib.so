@@ -133,6 +133,8 @@ static int load_library(void) {
 
 // Run dtor as late as possible in case library functions are
 // called in other global dtors
+// FIXME: this may crash if one thread is calling into library
+// while some other thread executes exit().
 static void __attribute__((destructor(101))) unload_lib(void) {
   if (lib_handle) {
     for (int i = 0; i < dlclose_count; ++i)
@@ -206,6 +208,11 @@ void *_${lib_suffix}_tramp_resolve(int i) {
   return addr;
 }
 
+// Below APIs are not thread-safe
+// and it's not clear how make them such
+// (we can not know if some other thread is
+// currently executing library code).
+
 // Helper for user to resolve all symbols
 void _${lib_suffix}_tramp_resolve_all(void) {
   size_t i;
@@ -215,6 +222,7 @@ void _${lib_suffix}_tramp_resolve_all(void) {
 
 // Allows user to specify manually loaded implementation library.
 void _${lib_suffix}_tramp_set_handle(void *handle) {
+  // TODO: call unload_lib ?
   lib_handle = handle;
   dlclose_count = 0;
 }
@@ -222,6 +230,7 @@ void _${lib_suffix}_tramp_set_handle(void *handle) {
 // Resets all resolved symbols. This is needed in case
 // client code wants to reload interposed library multiple times.
 void _${lib_suffix}_tramp_reset(void) {
+  // TODO: call unload_lib ?
   memset(_${lib_suffix}_tramp_table, 0, SYM_COUNT * sizeof(_${lib_suffix}_tramp_table[0]));
   lib_handle = 0;
   dlclose_count = 0;
