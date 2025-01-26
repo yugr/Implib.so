@@ -7,17 +7,16 @@
  * found in the LICENSE.txt file.
  */
 
-#include "interposed.h"
-
 #define NITER 1000000000L
+
+#ifdef BASELINE
+__attribute((noipa)) void foo() {}
+#else
+#include "interposed.h"
+#endif
 
 int main() {
   for (long i = 0; i < NITER; ++i)
-#ifdef BASELINE
-    asm volatile("");
-#else
     foo();
-#endif
-
   return 0;
 }
