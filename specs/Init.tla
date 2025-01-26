@@ -91,11 +91,15 @@ LoadBeforeUse2 ==
 \* Library handle set only if library is loaded (not necessarily initialized)
 LibHandleCorrectness == lib_handle => lib_state \in {"LOADING", "LOADED"}
 
-\* All threads terminate, lock is released and library is loaded
 Termination == <>[]
+  \* All threads terminate
   /\ \A t \in THREADS : Len(threads[t]) = 0
+  \* Lock is released
   /\ rec_lock.owner = NoThread /\ rec_lock.count = 0
+  \* Library is loaded
   /\ lib_state = "LOADED" /\ lib_handle
+  \* Some shims resolved
+  /\ \E fun \in FUNS : shim_table[fun]
 
 \* Library never UN-loaded
 NoLibResets ==
