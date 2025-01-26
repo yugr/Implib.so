@@ -83,7 +83,7 @@ jobs:
     - name: Upload coverage
       run: |
         for t in tests/*; do
-          if test -d $t && -f $t/.coverage; then
+          if test -d $t -a -f $t/.coverage; then
             (cd $t && coverage xml)
           fi
         done
