@@ -104,6 +104,17 @@ jobs:
 #    - uses: actions/checkout@v3
 #    - name: Run tests
 #      run: scripts/travis.sh
+  musl:
+    runs-on: ubuntu-latest
+    env:
+      CC: musl-gcc
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install deps
+      run: sudo apt-get update && sudo apt-get install musl-tools
+    - name: Run tests
+      run: scripts/travis.sh
+  # TODO: test on llvm-libc when it supports dlfcn
   x86:
     runs-on: ubuntu-latest
     env:

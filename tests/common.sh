@@ -1,3 +1,10 @@
+# Copyright 2019-2025 Yury Gribov
+#
+# The MIT License (MIT)
+# 
+# Use of this source code is governed by MIT license that can be
+# found in the LICENSE.txt file.
+
 if test -n "${TRAVIS:-}"; then
   set -x
 fi
@@ -94,6 +101,7 @@ fi
 
 # Do not bother with non-native targets
 if test -z "$INTERP" \
+    && ! echo "$CC" | grep -q musl-gcc \
     && uname | grep -q Linux \
     && echo 'int main() {}' | $CC $CFLAGS -fsanitize=thread -x c - -o /dev/null 2> /dev/null; then
   TSAN_AVAILABLE=1

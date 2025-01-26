@@ -23,7 +23,7 @@ tests/basic/run.sh $ARCH
 tests/exceptions/run.sh $ARCH
 tests/data-warnings/run.sh $ARCH
 tests/vtables/run.sh $ARCH
-if test -z "$ARCH"; then
+if test -z "$ARCH" && ! echo "${CC:-}" | grep -q musl-gcc; then
   # TODO: enable for other targets
   tests/ld/run.sh
 fi
@@ -34,9 +34,11 @@ fi
 tests/hidden/run.sh $ARCH
 tests/verbose/run.sh $ARCH
 tests/no_dlopen/run.sh $ARCH
-tests/multiple-dlopens/run.sh $ARCH
-tests/multiple-dlopens-2/run.sh $ARCH
-tests/multiple-dlopens-3/run.sh $ARCH
+if ! echo "${CC:-}" | grep -q musl-gcc; then  # Musl does not implement dlclose
+  tests/multiple-dlopens/run.sh $ARCH
+  tests/multiple-dlopens-2/run.sh $ARCH
+  tests/multiple-dlopens-3/run.sh $ARCH
+fi
 if ! echo "$ARCH" | grep -q powerpc; then
   tests/many-functions/run.sh $ARCH
 fi
@@ -47,3 +49,5 @@ if ! echo "$ARCH" | grep -q 'powerpc\|mips\|riscv'; then
 fi
 tests/thread/run.sh $ARCH
 tests/thread-2/run.sh $ARCH
+
+echo 'All tests passed'
