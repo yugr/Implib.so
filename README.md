@@ -101,7 +101,7 @@ void *mycallback(const char *lib_name) {
 $ implib-gen.py --dlopen-callback=mycallback libxyz.so
 ```
 
-(callback must have signature `void *(*)(const char *lib_name)` and return handle of loaded library).
+Callback must have signature `void *(*)(const char *lib_name)` and return handle of loaded library. Note that in some programs it may be called more than once and in parallel.
 
 Normally symbols are located via `dlsym` function but this can be overriden with custom callback
 by using `--dlsym-callback` (which must have signature
