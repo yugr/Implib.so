@@ -134,7 +134,8 @@ static int load_library(void) {
 // Run dtor as late as possible in case library functions are
 // called in other global dtors
 // FIXME: this may crash if one thread is calling into library
-// while some other thread executes exit().
+// while some other thread executes exit(). It's no clear
+// how to fix this besides simply NOT dlclosing library at all.
 static void __attribute__((destructor(101))) unload_lib(void) {
   if (lib_handle) {
     for (int i = 0; i < dlclose_count; ++i)
