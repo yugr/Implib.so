@@ -131,7 +131,7 @@ This is very similar to normal shlib call:
 * load from GOT
 * predictable indirect jump to real function
 
-so it should have equivalent performance.
+so it should have equivalent performance ([simple benchmark](tests/benchmark) shows up to 1% overhead).
 
 # Limitations
 
