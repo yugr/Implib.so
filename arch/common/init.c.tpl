@@ -47,7 +47,7 @@ extern "C" {
   } while(0)
 
 static void *lib_handle;
-static int do_dlclose;
+static int dlclose_count;
 
 #if ! NO_DLOPEN
 
@@ -113,10 +113,6 @@ static int load_library(void) {
     return publish;
   }
 
-  // With (non-default) IMPLIB_EXPORT_SHIMS we may call dlopen more than once,
-  // not sure if this is a problem. We could fix this by dlclosing if !publish
-  // or if we are not the first one to set lib_handle (via __sync_val_compare_and_swap).
-
 #if HAS_DLOPEN_CALLBACK
   extern void *$dlopen_callback(const char *lib_name);
   lib_handle = $dlopen_callback("$load_name");
@@ -126,21 +122,27 @@ static int load_library(void) {
   CHECK(lib_handle, "failed to load library '$load_name' via dlopen: %s", dlerror());
 #endif
 
-  do_dlclose = 1;
+  // With (non-default) IMPLIB_EXPORT_SHIMS we may call dlopen more than once
+  // so remember how many times we'll need to dlclose it
+  (void)__sync_fetch_and_add(&dlclose_count, 1);
 
   unlock();
 
   return publish;
 }
 
-static void __attribute__((destructor)) unload_lib(void) {
-  if(do_dlclose && lib_handle)
-    dlclose(lib_handle);
+// Run dtor as late as possible in case library functions are
+// called in other global dtors
+static void __attribute__((destructor(101))) unload_lib(void) {
+  if (lib_handle) {
+    for (int i = 0; i < dlclose_count; ++i)
+      dlclose(lib_handle);
+  }
 }
 #endif
 
 #if ! NO_DLOPEN && ! LAZY_LOAD
-static void __attribute__((constructor)) load_lib(void) {
+static void __attribute__((constructor(101))) load_lib(void) {
   load_library();
 }
 #endif
@@ -214,7 +216,7 @@ void _${lib_suffix}_tramp_resolve_all(void) {
 // Allows user to specify manually loaded implementation library.
 void _${lib_suffix}_tramp_set_handle(void *handle) {
   lib_handle = handle;
-  do_dlclose = 0;
+  dlclose_count = 0;
 }
 
 // Resets all resolved symbols. This is needed in case
@@ -222,7 +224,7 @@ void _${lib_suffix}_tramp_set_handle(void *handle) {
 void _${lib_suffix}_tramp_reset(void) {
   memset(_${lib_suffix}_tramp_table, 0, SYM_COUNT * sizeof(_${lib_suffix}_tramp_table[0]));
   lib_handle = 0;
-  do_dlclose = 0;
+  dlclose_count = 0;
 }
 
 #ifdef __cplusplus
