@@ -5,7 +5,7 @@
 
 # Motivation
 
-On Linux/Android, if you link against shared library you normally use `-lxyz` compiler option which makes your application depend on `libxyz.so`. This would cause `libxyz.so` to be forcedly loaded at program startup (and its constructors to be executed) even if you never call any of its functions.
+On Linux/Android/BSD, if you link against shared library you normally use `-lxyz` compiler option which makes your application depend on `libxyz.so`. This would cause `libxyz.so` to be forcedly loaded at program startup (and its constructors to be executed) even if you never call any of its functions.
 
 If you instead want to delay loading of `libxyz.so` (e.g. its unlikely to be used and you don't want to waste resources on it or [slow down startup time](https://lwn.net/Articles/341309/) or you want to select best platform-specific implementation at runtime), you can remove dependency from `LDFLAGS` and issue `dlopen` call manually. But this would cause `ld` to err because it won't be able to statically resolve symbols which are supposed to come from this shared library. At this point you have only two choices:
 * emit normal calls to library functions and suppress link errors from `ld` via `-Wl,-z,nodefs`; this is undesired because you loose ability to detect link errors for other libraries statically
@@ -144,7 +144,7 @@ The tool does not transparently support all features of POSIX shared libraries. 
 The tool also lacks the following important features:
 * symbol versions are not handled at all
 * keep fast paths of shims together to reduce I$ pressure
-* support for macOS and BSDs (actually BSDs mostly work)
+* support for macOS
 
 Finally, there are some minor TODOs in code.
 
