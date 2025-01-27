@@ -95,6 +95,9 @@ fi
 
 if uname | grep -q BSD; then
   LIBS='-pthread'
+elif echo "$CC" | grep -q musl-gcc; then
+  # Just libc.so in musl
+  LIBS=
 else
   LIBS='-ldl -pthread'
 fi
