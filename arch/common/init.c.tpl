@@ -161,8 +161,8 @@ static const char *const sym_names[] = {
 extern void *_${lib_suffix}_tramp_table[];
 
 // Can be sped up by manually parsing library symtab...
-void *_${lib_suffix}_tramp_resolve(int i) {
-  assert((unsigned)i < SYM_COUNT);
+void *_${lib_suffix}_tramp_resolve(size_t i) {
+  assert(i < SYM_COUNT);
 
   int publish = 1;
 

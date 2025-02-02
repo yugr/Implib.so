@@ -13,7 +13,7 @@ if test -z "${ARCH:-}"; then
   ARCH=$(uname -m)
 fi
 
-CFLAGS="-Wall -Wextra -Werror ${CFLAGS:-}"
+CFLAGS="-Wall -Wextra -Wconversion -Wsign-conversion -Werror ${CFLAGS:-}"
 
 if test $ARCH = $(uname -m); then
   # Native
