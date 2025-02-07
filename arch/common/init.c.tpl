@@ -47,7 +47,7 @@ extern "C" {
   } while(0)
 
 static void *lib_handle;
-static int dlclose_count;
+static int dlopened;
 
 #if ! NO_DLOPEN
 
@@ -123,8 +123,10 @@ static int load_library(void) {
 #endif
 
   // With (non-default) IMPLIB_EXPORT_SHIMS we may call dlopen more than once
-  // so remember how many times we'll need to dlclose it
-  (void)__sync_fetch_and_add(&dlclose_count, 1);
+  // so dlclose it if we are not the first ones
+  if (__sync_val_compare_and_swap(&dlopened, 0, 1)) {
+    dlclose(lib_handle);
+  }
 
   unlock();
 
@@ -137,9 +139,10 @@ static int load_library(void) {
 // while some other thread executes exit(). It's no clear
 // how to fix this besides simply NOT dlclosing library at all.
 static void __attribute__((destructor(101))) unload_lib(void) {
-  if (lib_handle) {
-    for (int i = 0; i < dlclose_count; ++i)
-      dlclose(lib_handle);
+  if (dlopened) {
+    dlclose(lib_handle);
+    lib_handle = 0;
+    dlopened = 0;
   }
 }
 #endif
@@ -225,7 +228,7 @@ void _${lib_suffix}_tramp_resolve_all(void) {
 void _${lib_suffix}_tramp_set_handle(void *handle) {
   // TODO: call unload_lib ?
   lib_handle = handle;
-  dlclose_count = 0;
+  dlopened = 0;
 }
 
 // Resets all resolved symbols. This is needed in case
@@ -234,7 +237,7 @@ void _${lib_suffix}_tramp_reset(void) {
   // TODO: call unload_lib ?
   memset(_${lib_suffix}_tramp_table, 0, SYM_COUNT * sizeof(_${lib_suffix}_tramp_table[0]));
   lib_handle = 0;
-  dlclose_count = 0;
+  dlopened = 0;
 }
 
 #ifdef __cplusplus
