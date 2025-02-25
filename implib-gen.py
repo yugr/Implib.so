@@ -49,6 +49,14 @@ def run(args, stdin=''):
     error(f"{args[0]} failed with retcode {p.returncode}:\n{err}")
   return out, err
 
+def is_binary_file(filename):
+  cmd = ['readelf', '-d', filename]
+  with subprocess.Popen(cmd, stdin=subprocess.DEVNULL,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL) as p:
+    p.communicate()
+  return p.returncode == 0
+
 def make_toc(words, renames=None):
   "Make an mapping of words to their indices in list"
   renames = renames or {}
@@ -102,7 +110,7 @@ def collect_syms(f):
       if name in syms_set:
         continue
       syms_set.add(name)
-      sym['Size'] = int(sym['Size'], 0)  # Readelf is inconistent on Size format
+      sym['Size'] = int(sym['Size'], 0)  # Readelf is inconsistent about Size format
       if '@' in name:
         sym['Default'] = '@@' in name
         name, ver = re.split(r'@+', name)
@@ -116,12 +124,49 @@ def collect_syms(f):
   if toc is None:
     error(f"failed to analyze symbols in {f}")
 
-  # Also collected demangled names
-  if syms:
-    out, _ = run(['c++filt'], '\n'.join((sym['Name'] for sym in syms)))
-    out = out.rstrip("\n")  # Some c++filts append newlines at the end
-    for i, name in enumerate(out.split("\n")):
-      syms[i]['Demangled Name'] = name
+  return syms
+
+def collect_def_exports(filename):
+  """Reads exported symbols from .def file."""
+
+  syms = []
+
+  with open(filename, 'r') as f:
+    while True:
+      try:
+        line = next(f)
+      except StopIteration:
+        break
+
+      line = line.strip()
+      if line != 'EXPORTS':
+        continue
+
+      while True:
+        try:
+          line = next(f)
+        except StopIteration:
+          break
+
+        line = line.strip()
+
+        # TODO: support renames
+        if not re.match(r'^[A-Za-z0-9_]+$', line):
+          break
+
+        sym = {
+          'Name': line,
+          'Bind': 'GLOBAL',
+          'Type': 'FUNC',
+          'Ndx': '0',
+          'Default': True,
+          'Version': None,
+          'Size': 0,
+        }
+        syms.append(sym)
+
+  if not syms:
+    warn(f"failed to locate symbols in {filename}")
 
   return syms
 
@@ -343,6 +388,24 @@ def read_soname(f):
 
   return None
 
+def read_library_name(filename):
+  """Read library name from .def file."""
+
+  with open(filename, 'r') as f:
+    for line in f.readlines():
+      line = line.strip()
+
+      if not line.startswith('LIBRARY'):
+        continue
+
+      m = re.match(r'^LIBRARY\s+([A-Za-z0-9_.\-]+)$', line)
+      if m is None:
+        error(f"failed to parse LIBRARY declaration in {filename}")
+
+      return m[1]
+
+  return None
+
 def main():
   """Driver function"""
   parser = argparse.ArgumentParser(description="Generate wrappers for shared library functions.",
@@ -356,7 +419,7 @@ Examples:
 
   parser.add_argument('library',
                       metavar='LIB',
-                      help="Library to be wrapped.")
+                      help="Library to be wrapped (or .def file with list of functions).")
   parser.add_argument('--verbose', '-v',
                       help="Print diagnostic info",
                       action='count',
@@ -458,12 +521,21 @@ Examples:
         if line:
           funs.append(line)
 
+  binary = is_binary_file(input_name)
+  stem = os.path.basename(input_name)
+  if not binary:
+    stem = re.sub(r'\.def$', '', stem)
+
   if args.library_load_name is not None:
     load_name = args.library_load_name
-  else:
+  elif binary:
     load_name = read_soname(input_name)
     if load_name is None:
-      load_name = os.path.basename(input_name)
+      load_name = stem
+  else:
+    load_name = read_library_name(input_name)
+    if load_name is None:
+      load_name = stem
 
   # Collect target info
 
@@ -488,7 +560,19 @@ Examples:
       conditions.append(s['Bind'] != 'WEAK')
     return all(conditions)
 
-  syms = list(filter(is_exported, collect_syms(input_name)))
+  if binary:
+    syms = collect_syms(input_name)
+  else:
+    syms = collect_def_exports(input_name)
+
+  # Also collected demangled names
+  if syms:
+    out, _ = run(['c++filt'], '\n'.join((sym['Name'] for sym in syms)))
+    out = out.rstrip("\n")  # Some c++filts append newlines at the end
+    for i, name in enumerate(out.split("\n")):
+      syms[i]['Demangled Name'] = name
+
+  syms = list(filter(is_exported, syms))
 
   def is_data_symbol(s):
     return (s['Type'] == 'OBJECT'
@@ -537,6 +621,9 @@ Examples:
   # Collect vtables
 
   if args.vtables:
+    if not binary:
+      error(f"vtables not supported for .def files")
+
     cls_tables = {}
     cls_syms = {}
 
@@ -580,7 +667,7 @@ Examples:
 
   # Generate assembly code
 
-  suffix = os.path.basename(input_name)
+  suffix = stem
   lib_suffix = re.sub(r'[^a-zA-Z_0-9]+', '_', suffix)
 
   tramp_file = f'{suffix}.tramp.S'
