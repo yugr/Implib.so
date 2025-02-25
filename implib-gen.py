@@ -146,7 +146,7 @@ def collect_def_exports(filename):
       line = lines.pop()
 
       if re.match(r'^\s*;', line):  # Comment
-          continue
+        continue
 
       # TODO: support renames
       m = re.match(r'^\s+([A-Za-z0-9_]+)\s*$', line)
