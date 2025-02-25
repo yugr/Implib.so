@@ -133,38 +133,37 @@ def collect_def_exports(filename):
   syms = []
 
   with open(filename, 'r') as f:
-    while True:
-      try:
-        line = next(f)
-      except StopIteration:
+    lines = f.readlines()
+  lines.reverse()
+
+  while lines:
+    line = lines.pop().strip()
+
+    if line != 'EXPORTS':
+      continue
+
+    while lines:
+      line = lines.pop()
+
+      if re.match(r'^\s*;', line):  # Comment
+          continue
+
+      # TODO: support renames
+      m = re.match(r'^\s+([A-Za-z0-9_]+)\s*$', line)
+      if m is None:
+        lines.append(line)
         break
 
-      line = line.strip()
-      if line != 'EXPORTS':
-        continue
-
-      while True:
-        try:
-          line = next(f)
-        except StopIteration:
-          break
-
-        line = line.strip()
-
-        # TODO: support renames
-        if not re.match(r'^[A-Za-z0-9_]+$', line):
-          break
-
-        sym = {
-          'Name': line,
-          'Bind': 'GLOBAL',
-          'Type': 'FUNC',
-          'Ndx': '0',
-          'Default': True,
-          'Version': None,
-          'Size': 0,
-        }
-        syms.append(sym)
+      sym = {
+        'Name': m[1],
+        'Bind': 'GLOBAL',
+        'Type': 'FUNC',
+        'Ndx': '0',
+        'Default': True,
+        'Version': None,
+        'Size': 0,
+      }
+      syms.append(sym)
 
   if not syms:
     warn(f"failed to locate symbols in {filename}")
@@ -395,15 +394,9 @@ def read_library_name(filename):
   with open(filename, 'r') as f:
     for line in f.readlines():
       line = line.strip()
-
-      if not line.startswith('LIBRARY'):
-        continue
-
-      m = re.match(r'^LIBRARY\s+([A-Za-z0-9_.\-]+)$', line)
-      if m is None:
-        error(f"failed to parse LIBRARY declaration in {filename}")
-
-      return m[1]
+      m = re.match(r'^(?:LIBRARY|NAME)\s+([A-Za-z0-9_.\-]+)$', line)
+      if m is not None:
+        return m[1]
 
   return None
 
