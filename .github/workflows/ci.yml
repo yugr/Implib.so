@@ -4,6 +4,8 @@
 name: CI
 on:
   push:
+    branches:
+    - master
     paths-ignore:
     - 'LICENSE.txt'
     - '**.md'
