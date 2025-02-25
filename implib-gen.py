@@ -50,6 +50,7 @@ def run(args, stdin=''):
   return out, err
 
 def is_binary_file(filename):
+  """Check if file is an ELF."""
   cmd = ['readelf', '-d', filename]
   with subprocess.Popen(cmd, stdin=subprocess.DEVNULL,
                         stdout=subprocess.DEVNULL,
@@ -622,7 +623,7 @@ Examples:
 
   if args.vtables:
     if not binary:
-      error(f"vtables not supported for .def files")
+      error("vtables not supported for .def files")
 
     cls_tables = {}
     cls_syms = {}
