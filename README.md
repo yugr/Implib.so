@@ -30,6 +30,9 @@ A typical use-case would look like this:
 $ implib-gen.py libxyz.so
 ```
 
+Instead of library you can use a [.def file](https://learn.microsoft.com/en-us/cpp/build/reference/module-definition-dot-def-files)
+with list of library functions.
+
 This will generate code for host platform (presumably x86\_64). For other targets do
 
 ```
