@@ -49,5 +49,6 @@ if ! echo "$ARCH" | grep -q 'powerpc\|mips\|riscv'; then
 fi
 tests/thread/run.sh $ARCH
 tests/thread-2/run.sh $ARCH
+tests/def/run.sh $ARCH
 
 echo 'All tests passed'
