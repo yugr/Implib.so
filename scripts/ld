@@ -78,7 +78,7 @@ def is_system_library(name):
   """
   Is library a basic one (and thus should not be wrapped)?
   """
-  return name in ['c', 'm', 'dl', 'rt', 'pthread', 'gcc', 'gcc_s']
+  return name in ['c', 'm', 'dl', 'rt', 'pthread', 'gcc', 'gcc_s', 'sys']
 
 def main():
   "Entry point"
