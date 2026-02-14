@@ -27,12 +27,12 @@ ${PYTHON:-} ../../implib-gen.py -q --target $TARGET libinterposed.so
 $CC $CFLAGS -shared -fPIC user.c libinterposed.so.tramp.S libinterposed.so.init.c -o libuser.so
 $CC $CFLAGS -shared -fPIC user.c libinterposed.so.tramp.S libinterposed.so.init.c -DIMPLIB_EXPORT_SHIMS -o libuser_export_shims.so
 
-if test $(readelf -D -sW libuser_export_shims.so | grep foo | wc -l) -eq 0; then
+if test $(readelf --dyn-syms -W libuser_export_shims.so | grep foo | wc -l) -eq 0; then
   echo "Shim symbol NOT exported by default" >&2
   exit 1
 fi
 
-if test $(readelf -D -sW libuser.so | grep foo | wc -l) -gt 0; then
+if test $(readelf --dyn-syms -W libuser.so | grep foo | wc -l) -gt 0; then
   echo "Hidden shim symbol exported" >&2
   exit 1
 fi
