@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-latest]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-latest]
         cc: [[gcc, g++], [clang, clang++]]
         py: [python3.6, python3.7, python3]  # We need f-strings so 3.6+
         exclude:
