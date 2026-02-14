@@ -22,12 +22,8 @@ jobs:
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04, ubuntu-latest]
         cc: [[gcc, g++], [clang, clang++]]
-        py: [python3.6, python3.7, python3]  # We need f-strings so 3.6+
+        py: [python3.7, python3]  # We need f-strings so 3.6+
         exclude:
-          - os: ubuntu-22.04
-            py: python3.6
-          - os: ubuntu-latest
-            py: python3.6
           - os: ubuntu-22.04
             cc: [clang, clang++]  # Disable due to https://sourceware.org/bugzilla/show_bug.cgi?id=28981
           - os: ubuntu-latest
