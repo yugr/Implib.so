@@ -528,12 +528,10 @@ Examples:
     load_name = args.library_load_name
   elif binary:
     load_name = read_soname(input_name)
-    if load_name is None:
-      load_name = stem
+    load_name = load_name or stem
   else:
     load_name = read_library_name(input_name)
-    if load_name is None:
-      load_name = stem
+    load_name = load_name or stem
 
   # Collect target info
 
