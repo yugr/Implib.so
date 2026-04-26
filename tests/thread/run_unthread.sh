@@ -37,7 +37,7 @@ ${PYTHON:-} ../../implib-gen.py -q libinterposed.so
 
 $CC $CFLAGS main.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
 
-for i in $(seq 1 1000); do
+for i in $(seq 1000); do
   export UNTHREAD_SEED=$(printf '%032x' $i)
   LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} ./a.out > a.out.log
   diff test.ref a.out.log
@@ -47,7 +47,7 @@ done
 
 $CC $CFLAGS -DIMPLIB_EXPORT_SHIMS main.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
 
-for i in $(seq 1 1000); do
+for i in $(seq 1000); do
   export UNTHREAD_SEED=$(printf '%032x' $i)
   LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} ./a.out > a.out.log
   diff test.ref a.out.log

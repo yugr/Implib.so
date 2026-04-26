@@ -35,7 +35,7 @@ ${PYTHON:-} ../../implib-gen.py -q --target $TARGET libinterposed.so
 
 $CC $CFLAGS -fPIE main.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
 
-for i in $(seq 1 $N); do
+for i in $(seq $N); do
   LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
   diff test.ref a.out.log
 done
@@ -44,7 +44,7 @@ done
 
 $CC $CFLAGS -DIMPLIB_EXPORT_SHIMS -fPIE main.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
 
-for i in $(seq 1 $N); do
+for i in $(seq $N); do
   LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
   diff test.ref a.out.log
 done
@@ -59,7 +59,7 @@ if test -n "$TSAN_AVAILABLE"; then
 
   $CC $CFLAGS -g -fsanitize=thread -fPIE main.c libinterposed.so.tramp.S libinterposed.so.init.c $LIBS
 
-  for i in $(seq 1 $N); do
+  for i in $(seq $N); do
     LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH:-} $INTERP ./a.out > a.out.log
     diff test.ref a.out.log
   done
