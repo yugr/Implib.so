@@ -672,7 +672,8 @@ Examples:
 
     exported_data = [s["Name"] for s in syms if is_data_symbol(s)]
     if exported_data:
-        # TODO: we can generate wrappers for const data without relocations (or only code relocations)
+        # TODO: we can generate wrappers for const data without relocations
+        # (or only code relocations)
         warn(
             f"library '{input_name}' contains data symbols which won't be intercepted: "
             + ", ".join(exported_data)
