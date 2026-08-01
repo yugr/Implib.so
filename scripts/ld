@@ -7,7 +7,7 @@
 
 """
 Wrapper for ld which automatically calls implib-gen.
-To enable, add it to PATH.
+To enable, add it to PATH (-B would also work ?).
 Flags are passed via env variable IMPLIBSO_LD_OPTIONS.
 """
 
