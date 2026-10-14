@@ -1,0 +1,87 @@
+name: Packaging
+
+on:
+  push:
+    paths:
+    - '.github/workflows/packaging.yml'
+    - 'pyproject.toml'
+    - 'setup.py'
+    - 'MANIFEST.in'
+    - 'README.md'
+    - 'LICENSE.txt'
+    - '__init__.py'
+    - '__main__.py'
+    - 'implib-gen.py'
+    - 'arch/**'
+    - 'tests/test_packaging.py'
+    - 'tests/test_distributions.py'
+  pull_request:
+    paths:
+    - '.github/workflows/packaging.yml'
+    - 'pyproject.toml'
+    - 'setup.py'
+    - 'MANIFEST.in'
+    - 'README.md'
+    - 'LICENSE.txt'
+    - '__init__.py'
+    - '__main__.py'
+    - 'implib-gen.py'
+    - 'arch/**'
+    - 'tests/test_packaging.py'
+    - 'tests/test_distributions.py'
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  Packaging:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        py: ['3.7', '3.x']
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.py }}
+    - name: Install release tools
+      run: python -m pip install build twine pylint setuptools
+    - name: Build and check distributions
+      run: |
+        python -m build
+        python -m twine check --strict dist/*
+        python -m unittest discover -s tests -p test_distributions.py
+    - name: Test installed wheel and source distribution
+      run: |
+        for artifact in dist/*.whl dist/*.tar.gz; do
+          python -m pip install --force-reinstall --no-deps "$artifact"
+          python -m unittest discover -s tests -p test_packaging.py
+        done
+    - name: Lint packaging code
+      run: python -m pylint __init__.py __main__.py setup.py tests/test_packaging.py tests/test_distributions.py
+    - name: Save tested release distributions
+      if: github.event_name == 'release' && !github.event.release.prerelease && matrix.py == '3.x'
+      uses: actions/upload-artifact@v4
+      with:
+        name: pypi-distributions
+        path: dist/
+        if-no-files-found: error
+  Publish:
+    if: github.event_name == 'release' && !github.event.release.prerelease
+    needs: Packaging
+    runs-on: ubuntu-latest
+    # Configure a PyPI Trusted Publisher for packaging.yml and environment "pypi".
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: pypi-distributions
+        path: dist/
+    - name: Publish distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
