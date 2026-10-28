@@ -1,0 +1,3 @@
+include LICENSE.txt README.md implib-gen.py setup.py
+include tests/test_packaging.py tests/test_distributions.py
+recursive-include arch *.ini *.tpl

@@ -17,3 +17,9 @@ tests/*/*.log
 
 # GDB
 .gdb_history
+
+# Python packaging
+.venv/
+build/
+dist/
+*.egg-info/

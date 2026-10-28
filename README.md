@@ -18,9 +18,28 @@ Implib.so provides an easy solution - link your program with a _wrapper_ which
 
 Generated wrapper code (often also called "shim" code or "shim" library) is analogous to Windows import libraries which achieve the same functionality for DLLs.
 
-Implib.so can also be used to [reduce API provided by existing shared library](doc/ReduceLibraryInterface.md) or [rename it's exported symbols](doc/RenameLibraryInterface.md). See [this page](doc/CMakeIntegration.md) for info on integrating Implib.so into a CMake project.
+Implib.so can also be used to [reduce API provided by existing shared library](https://github.com/yugr/Implib.so/blob/master/doc/ReduceLibraryInterface.md) or [rename it's exported symbols](https://github.com/yugr/Implib.so/blob/master/doc/RenameLibraryInterface.md). See [this page](https://github.com/yugr/Implib.so/blob/master/doc/CMakeIntegration.md) for info on integrating Implib.so into a CMake project.
 
 Implib.so was originally inspired by Stackoverflow question [Is there an elegant way to avoid dlsym when using dlopen in C?](https://stackoverflow.com/questions/45917816/is-there-an-elegant-way-to-avoid-dlsym-when-using-dlopen-in-c/47221180).
+
+# Installation
+
+With Python 3.7 or newer and a virtual environment activated, install the
+published package with:
+
+```sh
+python3 -m pip install implib-so
+```
+
+To install a source checkout instead, run `python3 -m pip install .`.
+Both `implib-gen` and `implib-gen.py` are installed; `python3 -m implib_so`
+is also supported.
+
+Use a supported Linux/Android/BSD environment. On Windows, use WSL; native
+Windows and macOS hosts are not supported. The generator requires `readelf`
+and `c++filt` (binutils or compatible tools) on `PATH`; pip does not install
+these system tools. A C/C++ toolchain is needed to compile and link the
+generated wrappers.
 
 # Usage
 
@@ -134,7 +153,7 @@ This is very similar to normal shlib call:
 * load from GOT
 * predictable indirect jump to real function
 
-so it should have equivalent performance ([stress test](tests/benchmark) which measures call overhead shows up to 1% overhead).
+so it should have equivalent performance ([stress test](https://github.com/yugr/Implib.so/tree/master/tests/benchmark) which measures call overhead shows up to 1% overhead).
 
 # Limitations
 
@@ -162,3 +181,12 @@ Delay-loaded libraries were once present on OSX (via `-lazy_lXXX` and `-lazy_lib
 Lazy loading is supported by Solaris shared libraries but was never implemented in Linux. There have been [some discussions](https://www.sourceware.org/ml/libc-help/2013-02/msg00017.html) in libc-alpha but no patches were posted.
 
 Implib.so-like functionality is used in [OpenGL loading libraries](https://www.khronos.org/opengl/wiki/OpenGL_Loading_Library) e.g. [GLEW](http://glew.sourceforge.net/) via custom project-specific scripts.
+
+# Releasing
+
+Configure a PyPI Trusted Publisher for this repository, workflow
+`packaging.yml`, and GitHub environment `pypi`. Update `project.version` in
+`pyproject.toml`, then publish a non-prerelease GitHub Release with the matching
+tag (`0.1.0` or `v0.1.0`, for example). The packaging workflow checks the built
+version against the tag and publishes the tested distributions to PyPI.
+GitHub prereleases run the checks but do not publish.
